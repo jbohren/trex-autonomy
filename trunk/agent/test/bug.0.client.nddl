@@ -1,0 +1,15 @@
+/**
+ * Simple goal to grasp. Should trigger an iterator. Will finish when observed position
+ * is the same as the target.
+ */
+
+#include "GamePlay.nddl"
+
+TestActions actions = new TestActions();
+GraspObject grasper = new GraspObject(Internal);
+Position pos = new Position(External);
+
+close();
+
+rejectable(grasper.Active g);
+g.x = 10;

@@ -1,0 +1,53 @@
+#include "Plasma.nddl"
+
+
+/**
+ * This global constant will be set when a deliberative reactor is loaded
+ */
+int missionEnd;
+
+enum Mode {
+	External, 	// Synchronize observations.
+	Internal, 	// Publish updates at the current tick
+	Ignore		// Not synchronized at all
+}
+
+class AgentTimeline extends Timeline {
+	Mode mode;
+	string defaultPredicate;
+
+	/**
+	 * A predicate to reflect that the timeline is undefined. Used to fill gaps
+	 * where they occur.
+	 */
+	predicate undefined{};
+
+	/**
+	 * A predicate which is used to block any successor states for a timeline
+         */
+	predicate Terminated{concurrent(end, missionEnd);}
+
+	AgentTimeline(Mode _mode){
+		mode = _mode;
+		defaultPredicate = "undefined";
+	}
+
+	AgentTimeline(Mode _mode, string _defaultPredicate){
+		mode = _mode;
+		defaultPredicate = _defaultPredicate;
+	}
+}
+
+/**
+ * Base class for actions. These will never be exchanged across reactors and are generated to
+ * accomplisg goals. This is a construct of a deliberative reactor
+ */
+class AgentActions {
+	AgentActions(){}
+}
+
+class StateVariable extends AgentTimeline{
+ 	predicate Holds{ eq(duration,1); }
+ 	StateVariable(Mode _mode){super(_mode);}
+	StateVariable(Mode _mode, string _defaultPredicate){super(_mode, _defaultPredicate);}
+}

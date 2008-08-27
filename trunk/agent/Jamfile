@@ -1,0 +1,9 @@
+SubDir TREX agent ;
+
+if ! $(TREX_READY) {
+	Module TREX : NDDL Solvers Resource ;
+	ModuleLibraries TREX : $(DLOPEN_LIBRARY) ;
+	SubInclude TREX agent base ;
+	SubInclude TREX agent component ;
+	SubInclude TREX agent test ;
+}

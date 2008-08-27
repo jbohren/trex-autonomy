@@ -1,0 +1,81 @@
+SubDir TREX agent test ;
+
+if ! $(TREX_READY) {
+
+ # Uncomment this if you want to run scalability tests
+ # include [ FDirName $(TREX) agent test s.jam ] ;
+
+ # Create a build target for synch problem generator
+ # synch-problem-generator width height growth I E
+ # Outputs:
+ # 1. synch.width.height.growth.I.E.cfg
+ # 2. synch.width.height.growth.i.j.nddl
+
+ # Create a build target for module tests
+ ModuleMain agent-module-tests : module-tests.cc GamePlayAdapter.cc GamePlay.o RecallAdapter.cc : TREX : agent-module-tests ;
+ RunModuleMain run-agent-module-tests : agent-module-tests ;
+ Depends run-agent-module-tests : agent-inputs ;
+
+ # Input files for reactors in test cases
+ TestInputFiles = 
+	bug.0.client.nddl
+	bug.0.server.nddl
+	synchronize.r.1.0.nddl
+	synchronize.r.0.0.nddl
+	GamePlay.Agent.nddl
+	Simulator.Umpire.nddl  
+	Simulator.Player1.nddl  
+	Simulator.Player2.nddl 
+	Numbers.A.nddl
+	Numbers.B.nddl 
+	Recall.A.nddl
+	Recall.B.nddl 
+	PersistedGoal.Exec.nddl 
+	Undefined.SingleTimeline.nddl
+	Undefined.Sensor.nddl 
+	Undefined.Derived.nddl  
+	Inconsistent.Exec.nddl
+	Action.0.Exec.nddl
+	Action.1.Exec.nddl
+	action.2.client.nddl
+	action.2.server.nddl
+	action.3.client.nddl
+	action.3.server.nddl
+	action.4.exec.nddl
+	repair.0.client.nddl
+	repair.0.server.nddl
+	repair.1.client.nddl
+	repair.1.server.nddl
+	repair.2.client.nddl
+	repair.2.server.nddl
+	repair.3.client.nddl
+	repair.3.server.nddl
+	synch.0.exec.nddl
+	synch.1.exec.nddl
+	synch.2.exec.nddl
+	dispatchlib.nddl
+	dispatch.0.creator.nddl
+	dispatch.0.reciver.nddl
+	dispatch.0.dispatcher.nddl
+	dispatch.1.creator.nddl
+	dispatch.1.reciver.nddl
+	dispatch.1.dispatcher.nddl
+	orienteering.0.orienteer.nddl
+	orienteering.1.orienteer.nddl
+	orienteering.2.orienteer.nddl
+	orienteering.3.orienteer.nddl
+	orienteering.4.orienteer.nddl
+	orienteering.5.orienteer.nddl
+	orienteering.5.breaker.nddl
+ ;
+
+ local file ;
+ for file in [ FGristFiles $(TestInputFiles) ] {
+  	local xml = $(file:S=.xml:G=) ;
+	LocalDepends agent-inputs : $(xml) ;
+  	NddlParser $(xml) : $(file) ;
+ }
+
+ NddlModel GamePlay.nddl : System ;
+
+}

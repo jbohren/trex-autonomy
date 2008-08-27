@@ -1,0 +1,11 @@
+#include "GamePlay.nddl"
+
+MotionSimulator ms = new MotionSimulator(Internal);
+HorizontalControl hc = new HorizontalControl(Internal);
+Valve v = new Valve(Internal);
+
+close();
+ 
+rejectable(ms.Holds g);
+g.start = 3;
+g.value = 2;

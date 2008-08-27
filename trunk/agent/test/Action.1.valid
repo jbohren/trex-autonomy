@@ -1,0 +1,5 @@
+0 NOTIFY  counter Counter.Holds
+0 NOTIFY  values ValueTimeline.undefined
+1 NOTIFY  values ValueTimeline.Holds
+2 NOTIFY  counter Counter.Holds
+3 NOTIFY  counter Counter.Holds
