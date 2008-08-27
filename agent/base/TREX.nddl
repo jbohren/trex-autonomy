@@ -1,5 +1,11 @@
-#include "Plasma.nddl"
 
+// Declare enumeration for Token States
+enum TokenStates {INACTIVE, ACTIVE, MERGED, REJECTED}
+
+// Declare a marker class to indicate the base class should be a Timeline
+// which enforces a total order. This should only arise where we
+// have predicates!
+class Timeline {}
 
 /**
  * This global constant will be set when a deliberative reactor is loaded
