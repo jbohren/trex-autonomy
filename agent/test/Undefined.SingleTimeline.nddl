@@ -1,0 +1,14 @@
+/**
+ * Use a single timeline where the model produces gaps. Ensure that the gaps are filled during execution with
+ * 'undefined' tokens.
+ */
+
+#include "GamePlay.nddl"
+
+CyclicTimeline timeline = new CyclicTimeline(Mode.Internal);
+
+close();
+
+// Do not place any facts
+rejectable(timeline.pred g);
+g.start = 1;

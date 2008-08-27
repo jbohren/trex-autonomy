@@ -1,0 +1,4 @@
+0 NOTIFY  counter Counter.Holds
+1 NOTIFY  counter Counter.Holds
+4 NOTIFY  counter Counter.Holds
+7 NOTIFY  counter Counter.Holds

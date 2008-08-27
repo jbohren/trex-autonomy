@@ -1,0 +1,170 @@
+GamePlayTests::test******************************
+   bugFixes Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testActions Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testSqueezeObserver Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testOneDeliberatorOneAdapter Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testSimulation Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testRecall Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testSynch Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testRepair Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testSimulationWithPlannerTimeouts Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testScalability Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testInconsistent Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testOneStepAhead Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testPersistedGoal Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testUndefinedSingleTimeline Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testUndefinedDerived Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   testDispatch Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+   OrienteeringSolver Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+Notifying plan database of addition
+ PASSED.
+GamePlayTests::test PASSED.
+AgentTests::test******************************

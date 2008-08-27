@@ -1,0 +1,43 @@
+#include "TREX.nddl"
+
+
+class CreatorTimeline extends AgentTimeline {
+	predicate Gamma{}
+	predicate Delta{}
+	
+	CreatorTimeline(Mode _mode){
+		super(_mode);
+	}
+}
+
+CreatorTimeline::Gamma {
+	leq(duration, 3);
+	meets(Delta);
+}
+
+class ReciverTimeline extends AgentTimeline {
+	predicate Alpha{}
+	predicate Beta{}
+
+	ReciverTimeline(Mode _mode){
+		super(_mode);
+	}
+}
+
+ReciverTimeline::Beta {
+	after(CreatorTimeline.Gamma);
+}
+
+class EqReciverTimeline extends AgentTimeline {
+	predicate Alpha{}
+	predicate Beta{}
+
+	EqReciverTimeline(Mode _mode){
+		super(_mode);
+	}
+}
+
+EqReciverTimeline::Beta {
+	met_by(CreatorTimeline.Gamma);
+}
+
