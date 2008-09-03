@@ -56,8 +56,12 @@ namespace TREX {
   }
 
   const TiXmlElement& Adapter::externalConfig( const TiXmlElement& configSrc){
-    const std::string newFile =  extractData(configSrc, "config").c_str();
-    return getConfig(newFile);
+    if(configSrc.Attribute("config") != NULL){
+      const std::string newFile =  extractData(configSrc, "config").c_str();
+      return getConfig(newFile);
+    }
+
+    return configSrc;
   }
 
   const TiXmlElement& Adapter::getConfig(const LabelStr& configFile){
