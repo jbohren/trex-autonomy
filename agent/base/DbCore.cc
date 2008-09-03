@@ -803,7 +803,6 @@ namespace TREX {
 
 	  // Now dispatch observation
 	  ObservationByReference obs(token);
-	  TREXLog() << nameString() << obs.toString() << std::endl;
 	  m_observer->notify(obs);
 
 	  // Log last published for this tick
@@ -953,7 +952,7 @@ namespace TREX {
 
     // If there is no current value, or the one we have cannot be extended, we have missed an
     // expected operation
-    if(token.isNoId() || token->end()->lastDomain().getUpperBound() ==  getCurrentTick()){
+    if(token.isNoId() || token->end()->lastDomain().getUpperBound() ==  tick || (tick == 0 && !isObservation(token))){
 
       condDebugMsg(token.isNoId(), "DbCore:extendCurrentValue", nameString() << "Missed expected observation. No current value.");
 		   
