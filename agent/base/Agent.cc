@@ -330,6 +330,7 @@ namespace TREX {
    */
   void Agent::notify(const Observation& observation){
     debugMsg("Agent:notify", observation.toString());
+    TREXLog() << observation.toString() << std::endl;
 
     if(m_enableEventLogger)
       m_eventLog.push_back(Agent::Event(getCurrentTick(), Agent::Notify, observation.getObjectName(), observation.getPredicate()));
