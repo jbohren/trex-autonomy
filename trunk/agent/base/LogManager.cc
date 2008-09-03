@@ -53,8 +53,6 @@ LogManager &LogManager::instance() {
 LogManager::LogManager() {
   char *base_dir = getenv("TREX_LOG_DIR");
   char dated_dir[17];
-  
-  assertTrue(NULL != base_dir, "TREX_LOG_DIR environment variable must be set");
 
   dated_dir[16] = '\0';
 
@@ -64,8 +62,14 @@ LogManager::LogManager() {
   strftime(dated_dir, 16, "/%Y.%j.", gmtime(&cur_time));
   
   // First I check if latest exists
-  std::string latest = base_dir;
-  std::string cur_basis = base_dir;
+  std::string latest = (base_dir != NULL ? base_dir : ".");
+
+  // Create if necessary
+  debugMsg("LogManager", "Setting up log directory in:" << latest);
+  static const mode_t  LOG_MODE = 0777; //S_IRUSR | S_IRGRP | S_IROTH | S_IWUSR | S_IWGRP | S_IWOTH;
+  mkdir(latest.c_str(), LOG_MODE);
+
+  std::string cur_basis = latest;
   size_t len = latest.length()+30;
   char *buf = new char[len+1];
 
@@ -84,35 +88,35 @@ LogManager::LogManager() {
       
       iss>>last;
     }
+
+    debugMsg("LogManager", "Unlinking latest directory");
     unlink(latest.c_str());
   }
+
   delete[] buf;
 
   for(unsigned i=1; i<MAX_LOG_ATTEMPT; ++i) {
     std::ostringstream oss;
 
     oss<<cur_basis<<(last+i);
+    if(mkdir(oss.str().c_str(), LOG_MODE) != 0)
+      continue;
 
-    int ret = mkdir(oss.str().c_str(), 0777);
+    m_path = oss.str();
+    // Create the "latest" symbolic link. As it is not  "critical" I am not checking it. 
+    // Normally the unlink as already been done 
+    //       unlink(latest.c_str());
+    symlink(m_path.c_str(), latest.c_str());
 
-    if( 0==ret ) {
-      m_path = oss.str();
-      // Create the "latest" symbolic link. As it is not  "critical" I am not checking it. 
+    m_syslog.open(file_name(TREX_LOG_FILE).c_str());
+    m_debug.open(file_name(TREX_DBG_FILE).c_str());
 
-      // Normally the unlink as already been done 
-//       unlink(latest.c_str());
-      symlink(m_path.c_str(), latest.c_str());
+    DebugMessage::setStream(m_debug);
 
-      m_syslog.open(file_name(TREX_LOG_FILE).c_str());
-      m_debug.open(file_name(TREX_DBG_FILE).c_str());
-
-      DebugMessage::setStream(m_debug);
-
-      debugMsg("LogManager", " logging directory is \""<<m_path<<'\"');
-      return;
-    } else
-      checkError(EEXIST==errno, "LogManager: "<<strerror(errno));
+    debugMsg("LogManager", " logging directory is \""<<m_path<<'\"');
+    return;
   }
+
   checkError(ALWAYS_FAIL, "LogManager: too many log dirs (MAX_LOG_ATTEMPT).");
 }
 
