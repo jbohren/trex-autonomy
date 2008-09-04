@@ -316,8 +316,6 @@ namespace TREX {
    * replicated entities in the foreignKeyTable.
    */
   void DbCore::handleRequest(const TokenId& goal){
-    TREXLog() << nameString() << "Request received: " << goal->toString() << std::endl;
-
     debugMsg("DbCore:handleRequest", nameString() << "Request received for " << goal->toString());
 
     // Get the client to work with
@@ -379,8 +377,6 @@ namespace TREX {
    * @see recover
    */
   void DbCore::handleRecall(const TokenId& tok){
-    TREXLog() << nameString() << "Recall received: " << tok->toString() << std::endl;
-
     debugMsg("DbCore:handleRecall", nameString() << "Recall received: " << tok->toString());
 
     // If we do not have the token locally, it has already been removed
@@ -897,7 +893,6 @@ namespace TREX {
 	// If the token has a  overlap with the dispatch window of at least on tick duration, send it
 	if(startTime.intersects(dispatchWindow)){
 	  debugMsg("DbCore:dispatchCommands", nameString() << "Dispatching " << token->toString());
-	  TREXLog() << nameString() << "Dispatching " << token->toString() << std::endl;
 	  token->getObject()->restrictBaseDomain(token->getObject()->lastDomain());
 	  server->request(token);
 	  tc.markDispatched(token);
@@ -926,9 +921,15 @@ namespace TREX {
 	TokenId token = *t_it;
 	checkError(token.isValid(), token);
 
+	debugMsg("DbCore:dispatchRecalls", nameString() << 
+		 "Evaluating " << token->toString() << " for recall. Dispatched[" << tc.isDispatched(token) << "] "
+		 "Ends:" << token->end()->baseDomain().toString());
+
 	// If the token has not been dispatched and it is not finished yet ,recall it.
-	if(tc.isDispatched(token) && token->end()->baseDomain().getUpperBound() > getCurrentTick())
+	if(tc.isDispatched(token) && token->end()->baseDomain().getUpperBound() > getCurrentTick()){
+	  debugMsg("DbCore:dispatchRecalls", nameString() << "Recalling " << token->toString());
 	  server->recall(token);
+	}
       }
     }
 
