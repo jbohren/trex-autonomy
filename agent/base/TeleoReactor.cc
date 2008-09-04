@@ -11,6 +11,7 @@
 #include "Agent.hh"
 #include "StringExtract.hh"
 #include "LogManager.hh"
+#include "Token.hh"
 #include "Utils.hh"
 
 #include <time.h>
@@ -232,6 +233,7 @@ namespace TREX {
    */
   void TeleoReactor::request(const TokenId& goal){
     Agent::instance()->logRequest(goal);
+    TREXLog() << nameString() << "Request received: " << goal->toString() << std::endl;
     handleRequest(goal);
   }
 
@@ -245,6 +247,7 @@ namespace TREX {
    */
   void TeleoReactor::recall(const TokenId& goal){
     Agent::instance()->logRecall(goal);
+    TREXLog() << nameString() << "Recall received: " << goal->toString() << std::endl;
     handleRecall(goal);
   }
 
