@@ -109,6 +109,23 @@ namespace TREX {
     checkError(m_latency <= m_lookAhead, "Makes no sense to lookahead more than you can deliberate. Biting off more than you can chew.");
   }
 
+
+  TeleoReactor::TeleoReactor(const LabelStr& agentName, const TiXmlElement& configData, TICK lookAhead, TICK latency, bool logDefault)
+    : m_id(this),
+      m_name(extractData(configData, "name")),
+      m_agentName(agentName),
+      m_lookAhead(lookAhead),
+      m_latency(latency),
+      m_thisObserver(new TeleoObserver(m_id)),
+      m_thisServer(new TeleoServer(m_id)),
+      m_syncUsage(RStat::zeroed), m_searchUsage(RStat::zeroed),
+      m_shouldLog(string_cast<bool>(logDefault, 
+				    checked_string(configData.Attribute("log")))) {
+    debugMsg("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
+
+    checkError(m_latency <= m_lookAhead, "Makes no sense to lookahead more than you can deliberate. Biting off more than you can chew.");
+  }
+
   TeleoReactor::~TeleoReactor(){
     m_thisObserver.release();
     m_thisServer.release();
