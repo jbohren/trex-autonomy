@@ -220,6 +220,16 @@ namespace TREX {
      */
     TeleoReactor(const LabelStr& agentName, const LabelStr& name, TICK lookAhead, TICK latency, bool log=false);
 
+
+    /**
+     * @brief Constructor will be explicitly passed the timing parameters
+     * @param configData xml configuration element.
+     * @param lookead The lookahead
+     * @param latency The latency
+     * @param logDefault default logging flag value in the absence of the log attribute 
+     */
+    TeleoReactor(const LabelStr& agentName, const TiXmlElement& configData, TICK lookAhead, TICK latency, bool logDefault=false);
+
   private:
     static TICK getLookAheadFromXML(const TiXmlElement& configData);
     TeleoReactorId m_id;

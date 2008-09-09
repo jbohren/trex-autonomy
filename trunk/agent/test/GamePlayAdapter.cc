@@ -18,7 +18,7 @@ namespace TREX {
   class GamePlayAdapter: public Adapter {
   public:
     GamePlayAdapter(const LabelStr& agentName, const TiXmlElement& configData)
-      : Adapter(agentName, "Adapter", 1, 0, "Adapter.cfg"){}
+      : Adapter(agentName, LabelStr("Adapter"), 1, 0, "Adapter.cfg"){}
 
     void handleInit(TICK initialTick, const std::map<double, ServerId>& serversByTimeline, const ObserverId& observer){
       m_observer = observer;

@@ -19,6 +19,11 @@ namespace TREX {
     getTimelines(m_internals, getConfig(configFile));
   }
 
+  Adapter::Adapter(const LabelStr& agentName, const TiXmlElement& configData, TICK lookAhead, TICK latency, bool logDefault)
+    : TeleoReactor(agentName, configData, lookAhead, latency, logDefault) {
+    getTimelines(m_internals, configData);
+  }
+
   Adapter::~Adapter(){}
 
   void Adapter::getTimelines(std::set<LabelStr>& results, const TiXmlElement& configSource){

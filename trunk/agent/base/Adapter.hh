@@ -33,6 +33,17 @@ namespace TREX {
     Adapter(const LabelStr& agentName, const LabelStr& name, TICK lookAhead, TICK latency, const LabelStr& configSrc,
 	    bool logDefault=false);
 
+    /**
+     * @brief Constructor for use when config data in the derived class is standardized to avoid unnecessary verbiage in the
+     * configuration file
+     * @param agentName the name of the agent in which it is to be included.
+     * @param configData the configuration xml element to set up connection. Extendable from base data elements.
+     * @param lookead The lookahead
+     * @param latency The latency
+     * @param logDefault logging flag value in the absence of the log attribute
+     */
+    Adapter(const LabelStr& agentName, const TiXmlElement& configData, TICK lookAhead, TICK latency, bool logDefault =false);
+
     virtual ~Adapter();
 
     /**
