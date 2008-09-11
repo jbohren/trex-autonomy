@@ -3,6 +3,7 @@
 #include "Constraints.hh"
 #include "GoalManager.hh"
 #include "OrienteeringSolver.hh"
+#include "GreedyOpenConditionManager.hh"
 #include "DbCore.hh"
 #include "DbSolver.hh"
 
@@ -23,7 +24,6 @@
 // Transactions
 #include "DbClientTransactionPlayer.hh"
 #include "DbClientTransactionLog.hh"
-//#include "TransactionInterpreter.hh"
 #include "NddlDefs.hh"
 
 // Misc
@@ -159,6 +159,7 @@ namespace TREX {
     REGISTER_FLAW_FILTER(cfm, TREX::NoGoalsFilter, NoGoals);
     REGISTER_FLAW_FILTER(cfm, TREX::DynamicGoalFilter, DynamicGoalFilter);
     REGISTER_FLAW_MANAGER(cfm, TREX::GoalManager, GoalManager);
+    REGISTER_FLAW_MANAGER(cfm, TREX::GreedyOpenConditionManager, GreedyOpenConditionManager);
     REGISTER_COMPONENT_FACTORY(cfm, TREX::EuclideanCostEstimator, EuclideanCostEstimator);
     REGISTER_COMPONENT_FACTORY(cfm, TREX::OrienteeringSolver, OrienteeringSolver);
     REGISTER_COMPONENT_FACTORY(cfm, TREX::EuropaSolverAdapter, EuropaSolverAdapter);
