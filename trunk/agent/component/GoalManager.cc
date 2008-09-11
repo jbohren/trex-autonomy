@@ -160,9 +160,6 @@ namespace TREX{
     return (nextGoal == token);
   }
 
-
-
-
   /**
    * @brief When a new flaw is added we will re-evaluate all the options. This is accomplished
    * by incrementing a cycle count which makes existing solution stale.
