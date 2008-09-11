@@ -13,26 +13,32 @@
 
 namespace TREX{
 
-  GoalsOnlyFilter::GoalsOnlyFilter(const TiXmlElement& configData): FlawFilter(configData, true) {}
-
-  bool GoalsOnlyFilter::test(const EntityId& entity){
+  bool isPositionDependentGoal(const EntityId& entity){
     checkError(TokenId::convertable(entity), "Invalid configuration for " << entity->toString());
 
     TokenId token(entity);
-    bool a = !token->getState()->baseDomain().isMember(Token::REJECTED);
-    condDebugMsg(a, "GoalManager", "Letting in: " << token->getState()->toString());
-    return a;
+    if(!token->getState()->baseDomain().isMember(Token::REJECTED))
+      return false;
+
+    if(token->getVariable(GoalManager::X()).isNoId() || token->getVariable(GoalManager::Y()).isNoId())
+      return false;
+
+    debugMsg("GoalManager", "Letting in: " << token->toString());
+
+    return true;
+  }
+
+  GoalsOnlyFilter::GoalsOnlyFilter(const TiXmlElement& configData): FlawFilter(configData, true) {}
+
+  bool GoalsOnlyFilter::test(const EntityId& entity){
+    return !isPositionDependentGoal(entity);
   }
 
   NoGoalsFilter::NoGoalsFilter(const TiXmlElement& configData): FlawFilter(configData, true) {}
 
   bool NoGoalsFilter::test(const EntityId& entity){
-    checkError(TokenId::convertable(entity), "Invalid configuration for " << entity->toString());
-
-    TokenId token(entity);
-    return token->getState()->baseDomain().isMember(Token::REJECTED);
+    return isPositionDependentGoal(entity);
   }
-
 
   /**
    * @brief Constructor will read xml configuration data as needed. Can extend to include a map input source for example.
