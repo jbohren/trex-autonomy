@@ -859,6 +859,11 @@ namespace TREX {
       for(std::list<TokenId>::const_iterator t_it = tokenSequence.begin(); t_it != tokenSequence.end(); ++t_it){
 	TokenId token = *t_it;
 
+	// If we have already dispatched the token we can skip it. We would be better served storing this execution frontier
+	// to more efficiently dispatch. This could be done in a derivative of the Timeline designed for execution systems
+	if(token->isCommitted() || tc.isDispatched(token))
+	  continue;
+
 	if (!initialized) {
 	  initialized = true;
 	  getActiveUncontrollableEvents(activeUncontrollableEvents);
@@ -868,11 +873,6 @@ namespace TREX {
 
 	debugMsg("DbCore:dispatchCommands", 
 		 nameString() << "Evaluating " << token->toString() << " for dispatch window [" << dispatchLB << ", " << dispatchUB << "]");
-
-	// If we have already dispatched the token we can skip it. We would be better served storing this execution frontier
-	// to more efficiently dispatch. This could be done in a derivative of the Timeline designed for execution systems
-	if(tc.isDispatched(token))
-	  continue;
 	
 	const IntervalIntDomain& startTime = token->start()->lastDomain();
 
