@@ -54,7 +54,7 @@ namespace TREX {
     bool synchronize();
 
     void notify(Observation const &observation);
-    void handleRequest(TokenId const &token);
+    bool handleRequest(TokenId const &token);
     void handleRecall(TokenId const &token);
 
     void queryTimelineModes(std::list<LabelStr> &externals, 

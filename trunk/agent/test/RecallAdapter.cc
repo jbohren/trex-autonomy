@@ -41,8 +41,7 @@ namespace TREX {
       checkError("This should never happen", observation.getObjectName().toString());
     }
 
-    void handleRequest(const TokenId& goal){
-    }
+    bool handleRequest(const TokenId& goal){ return true;}
 
   private:
     ObserverId m_observer; /*!< The agent observer interface*/

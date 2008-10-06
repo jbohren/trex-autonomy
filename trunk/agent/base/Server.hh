@@ -13,8 +13,9 @@ namespace TREX {
      * @brief Commands the server to handle a goal. This method should apply all the constraints attached to the
      * given token that it can reasonably support.
      * @param goal A token from the client database which is to be accomplished.
+     * @return true if the request can be received, false if it cannot be received and should be resent
      */
-    virtual void request(const TokenId& goal) = 0;
+    virtual bool request(const TokenId& goal) = 0;
 
     /**
      * @brief Commands the server to discard a goal.

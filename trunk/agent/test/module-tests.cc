@@ -1,6 +1,5 @@
 #include "Agent.hh"
 #include "Schema.hh"
-#include "TestSupport.hh"
 #include "Debug.hh"
 #include "Nddl.hh"
 #include "Utilities.hh"
@@ -8,11 +7,29 @@
 #include <time.h>
 #include <errno.h>
 
+#include <iostream>
 
 using namespace EUROPA;
 
 using namespace TREX;
 
+#define runTest(test) \
+  std::cout << "Running " << #test << " ....";\
+  std::cout << (test() ? " FAILED" : "SUCCESS") << std::endl;
+
+#define runTestSuite(test) { \
+  try{ \
+  std::cout << #test << "***************" << std::endl; \
+  if (test()) \
+    std::cout << #test << " PASSED." << std::endl; \
+  else \
+    std::cout << #test << " FAILED." << std::endl; \
+  }\
+  catch (...){			\
+    std::cout << #test << " FAILED";	\
+    exit(-1); \
+  }\
+  }
 
 /**
  * Run problem and handle setup and clean up
@@ -227,15 +244,15 @@ private:
 
     // Sleep for 2 seconds and ensure we are at tick 1
     Clock::sleep(2);
-    assertTrue(clk.getNextTick() == 1, toString(clk.getNextTick()));
+    assertTrue(clk.getNextTick() == 1);
 
     // Sleep for 0.1 seconds and ensure we are still at tick 1
     Clock::sleep(0.1);
-    assertTrue(clk.getNextTick() == 1, toString(clk.getNextTick()));
+    assertTrue(clk.getNextTick() == 1);
 
     // Now sleep for 0.5 seconds and we should be at tick 2
     Clock::sleep(1.0);
-    assertTrue(clk.getNextTick() == 2, toString(clk.getNextTick()));
+    assertTrue(clk.getNextTick() == 2);
 
     TICK startTick = clk.getNextTick();
     TICK counter(0);
@@ -246,7 +263,7 @@ private:
 
     TICK delta = clk.getNextTick() - startTick;
 
-    assertTrue(counter == delta, toString(counter) + "!=" + toString(delta));
+    assertTrue(counter == delta);
 
     return true;
   }

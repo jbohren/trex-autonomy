@@ -54,8 +54,11 @@ namespace TREX {
 
     /**
      * @brief Interception for requests received so they can be logged prior to delegation
+     * @param goal The goal token.
+     * @return true if the request has been received and does not need to be re-published. False if the request
+     * should be republished.
      */
-    void request(const TokenId& goal);
+    bool request(const TokenId& goal);
 
     /**
      * @brief Interception for recalls received so they can be logged prior to delegation
@@ -70,8 +73,10 @@ namespace TREX {
     /**
      * @brief Commands the server to handle a request expressed as a goal network.
      * @param goal The goal token.
+     * @return true if the request has been received and does not need to be re-published. False if the request
+     * should be republished.
      */
-    virtual void handleRequest(const TokenId& goal);
+    virtual bool handleRequest(const TokenId& goal);
 
     /**
      * @brief Tells the server to handle the recall notification for the given goals

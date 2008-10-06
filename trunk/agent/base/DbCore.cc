@@ -315,7 +315,7 @@ namespace TREX {
    * replicate the requested token and its related entities (variables and consraints). We maintain the mapping for all
    * replicated entities in the foreignKeyTable.
    */
-  void DbCore::handleRequest(const TokenId& goal){
+  bool DbCore::handleRequest(const TokenId& goal){
     debugMsg("DbCore:handleRequest", nameString() << "Request received for " << goal->toString());
 
     // Get the client to work with
@@ -366,9 +366,9 @@ namespace TREX {
     // Finally, we migrate constraints. This leverages the foreign key mapping constructed above.
     applyConstraints(goal);
 
-
-
     debugMsg("DbCore:handleRequest", nameString() << "Local Goal " << localGoal->toString() << " for request " << goal->toString());
+
+    return true;
   }
 
   /**
@@ -890,12 +890,18 @@ namespace TREX {
 	if(latestStart < getCurrentTick())
 	  continue;
 
-	// If the token has a  overlap with the dispatch window of at least on tick duration, send it
+	// If the token has an  overlap with the dispatch window of at least on tick duration, send it. If the request
+	// is accepted we mark it as dispatched, otherwise we break from this timeline, since we do not expect a server to receice a request
+	// for a latter goal if it does not accept a predecessor. Note that the semantics of accepting a request are not the same as rejecting
+	// the request outright. It is rather the question of whether you can serve the request now. Absent a positive reponse, we wil retry
+	// on the next iteration
 	if(startTime.intersects(dispatchWindow)){
 	  debugMsg("DbCore:dispatchCommands", nameString() << "Dispatching " << token->toString());
 	  token->getObject()->restrictBaseDomain(token->getObject()->lastDomain());
-	  server->request(token);
-	  tc.markDispatched(token);
+	  if(server->request(token))
+	    tc.markDispatched(token);
+	  else
+	    break;
 	}
       }
     }

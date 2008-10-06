@@ -87,10 +87,12 @@ void ObserverReactor::notify(Observation const &obs) {
 	   << " received at " << getCurrentTick());
 }
 
-void ObserverReactor::handleRequest(const TokenId& goal) {
+bool ObserverReactor::handleRequest(const TokenId& goal) {
   // Normally it will be never called
   debugMsg("ObserverReactor:handleRequest",nameString() << " Request received for " 
 	   << goal->toString());
+
+  return true;
 }
 
 void ObserverReactor::handleRecall(const TokenId& goal) {

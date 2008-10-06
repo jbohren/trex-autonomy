@@ -190,7 +190,7 @@ namespace TREX {
 
     void notify(const Observation& observations);
 
-    void handleRequest(const TokenId& goal);
+    bool handleRequest(const TokenId& goal);
 
     void handleRecall(const TokenId& goal);
 

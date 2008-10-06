@@ -45,8 +45,8 @@ namespace TREX {
      * @brief Commands the server to handle a request expressed as a goal network.
      * @param goal The goal token to accomplish.
      */
-    void request(const TokenId& goal) {
-      m_reactor->request(goal);
+    bool request(const TokenId& goal) {
+      return m_reactor->request(goal);
     }
 
     /**
@@ -248,16 +248,16 @@ namespace TREX {
   /**
    * @brief Log the request prior to delegation
    */
-  void TeleoReactor::request(const TokenId& goal){
+  bool TeleoReactor::request(const TokenId& goal){
     Agent::instance()->logRequest(goal);
     TREXLog() << nameString() << "Request received: " << goal->toString() << std::endl;
-    handleRequest(goal);
+    return handleRequest(goal);
   }
 
   /**
    * @brief Handle in the derived class if provided
    */
-  void TeleoReactor::handleRequest(const TokenId& goal){}
+  bool TeleoReactor::handleRequest(const TokenId& goal){return true;}
 
   /**
    * @brief Log the recall prior to delegation
