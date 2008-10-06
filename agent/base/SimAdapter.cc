@@ -342,8 +342,9 @@ void SimAdapter::notify(Observation const &obs) {
   debugMsg("SimAdapter:notify", " Ignoring "<<obs.toString());
 }
 
-void SimAdapter::handleRequest(TokenId const &token) {
+bool SimAdapter::handleRequest(TokenId const &token) {
   debugMsg("SimAdapter:handleRequest", " Ignoring token "<<token->toString());
+  return true;
 }
 
 void SimAdapter::handleRecall(TokenId const &token) {

@@ -66,7 +66,6 @@ namespace TREX {
     static const TiXmlElement& getConfig(const LabelStr& configFile);
   protected:
     /* STUBS since adapter should handle immediately */
-
     bool hasWork() {return false;}
     void resume(){}
     bool sendNotify(Observation const &obs);

@@ -36,7 +36,7 @@ namespace TREX {
       checkError("This should never happen", observation.getObjectName().toString());
     }
 
-    void handleRequest(const TokenId& goal){
+    bool handleRequest(const TokenId& goal){
       // Receipt of this goal means immediate execution, so we can propagate the bounds immediately
       checkError(goal->start()->lastDomain().isMember(getCurrentTick()), 
 		 getCurrentTick() << " is not a member of the current domain " <<
@@ -54,6 +54,8 @@ namespace TREX {
       const LabelStr& predicateName = goal->getPredicateName();
       ObservationByValue observation(timelineName, predicateName);
       m_observer->notify(observation);
+
+      return true;
     }
 
   private:

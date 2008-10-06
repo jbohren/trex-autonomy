@@ -28,7 +28,7 @@ namespace TREX {
 		    ObserverId const &observer);
 
     void notify(Observation const &obs);
-    void handleRequest(const TokenId& goal);
+    bool handleRequest(const TokenId& goal);
     void handleRecall(const TokenId& goal);
 
   protected:
