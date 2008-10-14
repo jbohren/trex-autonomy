@@ -1582,10 +1582,6 @@ namespace TREX {
       // Undo any impacts of solver. Reset this before making any deletions to avoid corrupting the stack
       m_solver->reset();
 
-      // Recall dispatched goals. This may be premature. We could wait to see if goals are restored. That would
-      // be an optimization- though possibly an important one.
-      dispatchRecalls();
-
       // Remove any tokens that have been recalled for this reactor
       processRecalls();
 
@@ -2022,6 +2018,10 @@ namespace TREX {
   }
 
   void DbCore::markInvalid(const std::string& comment){
+    // Recall dispatched goals if transitioning into this state
+    if(m_state != DbCore::INVALID)
+      dispatchRecalls();
+
     debugMsg("DbCore:markInvalid", nameString() << " is marked invalid. Hint:" << comment);
     m_state = DbCore::INVALID;
   }
