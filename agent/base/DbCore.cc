@@ -82,20 +82,13 @@ namespace TREX {
     // in the execution frontier, we need only concern ourselves with tokens that necessrily start before the end of the horizon.
     bool inScope = startTime.getUpperBound() < horizon().getUpperBound();
 
-    // If not necessarily in scope, we wish to be proactive about goals and their preconditions, but we wish to ignore implications
-    // of execution that do not have to be considered. Given that we have already excluded tokens that are necessarily outside the
-    // horizon, the cases we may now admit are:
-    // 1. It is a slave that must finish before the end of its master. This imposes strong decomposition assumptions.
-    // 2. It has no master, but it must be handled in the misssion eventually and could be handled now
-    if(!inScope){
-      TokenId master = token->master();
-      
-      // if it has a master and ends before it, slave.end.ub <= master.end.ub, then we include it. Also include if an action.
-      if(master.isId())
-	inScope =  DbCore::isAction(token) || !token->getPlanDatabase()->getTemporalAdvisor()->canPrecede(master, token);
-      else // If it has no master but must be in the mission, include it
-	inScope = startTime.getUpperBound() < Agent::instance()->getFinalTick();
-    }
+    // Now we consider if the token is inevitable, and could be considered in this planning cycle. 
+    // It is inevitable if it necessarily starts within the mission window.
+    inScope = inScope || startTime.getUpperBound() < Agent::instance()->getFinalTick();
+
+    // Finally, if it has a master that it could precede, since the master is already in the plan, the slave can be considered
+    if(!inScope && token->master().isId())
+      inScope =  DbCore::isAction(token) || !token->getPlanDatabase()->getTemporalAdvisor()->canPrecede(token->master(), token);
 
     debugMsg("DeliberationFilter:test", (!inScope ? "Exclude " : "Allow ") <<
 		 token->toString() << " with " << token->start()->lastDomain().toString() <<
