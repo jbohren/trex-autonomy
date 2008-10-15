@@ -141,14 +141,13 @@ EnumeratedDomain *SimAdapter::xmlAsEnumeratedDomain(TiXmlElement const &elem) {
 } // SimAdapter::xmlAsEnumeratedDomain(TiXmlElement const &)
 
 IntervalDomain *SimAdapter::xmlAsIntervalDomain(TiXmlElement const &elem) {
-  char const *type_st = elem.Attribute("type"); 
   char const *min_st = elem.Attribute("min"); 
   char const *max_st = elem.Attribute("max");
 
   IntervalDomain *domain = dynamic_cast<IntervalDomain *>(m_floatTypeFactory.baseDomain().copy());
   
   checkError(NULL!=domain,
-	     "SimAdapter:xmlAsIntervalDomain : type \""<<type_st<<"\" is not an interval domain type.");
+	     "SimAdapter:xmlAsIntervalDomain : type \""<< elem.Attribute("type") <<"\" is not an interval domain type.");
 
   double min = m_floatTypeFactory.createValue(min_st);
   double max = m_floatTypeFactory.createValue(max_st);
