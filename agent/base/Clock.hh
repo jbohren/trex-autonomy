@@ -4,6 +4,7 @@
 #include "TREXDefs.hh"
 #include "TeleoReactor.hh"
 #include "RStat.hh"
+#include <sys/time.h>
 #include <pthread.h>
 
 /**
@@ -30,7 +31,7 @@ namespace TREX {
      * @brief Helper method to provide a high-resolution sleep method
      * @see sleep(sleepDuration)
      */
-    void sleep() const;
+    virtual void sleep() const;
 
     /**
      * @brief Utility to implement high-resolution sleep
@@ -97,6 +98,8 @@ namespace TREX {
     TICK getNextTick();
 
   private:
+    static TICK selectStep(unsigned int stepsPerTick);
+
     TICK m_tick;
     TICK m_internalTicks;
     const TICK m_stepsPerTick;
@@ -114,6 +117,8 @@ namespace TREX {
      */
     void start();
 
+    void sleep() const;
+
     /**
      * @brief Retrieve the tick
      */
@@ -125,12 +130,18 @@ namespace TREX {
     static void* threadRunner(void* clk);
 
   private:
-
+    static void getDate(timeval &val);
+    void setNextTickDate();    
+    double timeToNextTick() const;
+    
+    bool m_started;
     TICK m_tick;
-    double m_secondsPerTick;
+    timeval m_secondsPerTick;
     pthread_t m_thread;
-    pthread_mutex_t m_lock;
+    mutable pthread_mutex_t m_lock;
+    timeval m_nextTickDate;
   };
+    
 }
 
 #endif
