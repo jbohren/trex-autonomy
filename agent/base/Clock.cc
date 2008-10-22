@@ -2,8 +2,10 @@
 #include <errno.h>
 #include <time.h>
 #include <cmath>
+#include <cstring>
 
 #include "LogManager.hh"
+#include "Guardian.hh"
 
 namespace TREX {
 
@@ -16,17 +18,19 @@ namespace TREX {
   }
 
   void Clock::sleep(double sleepDuration){
-    struct timespec tv;
-    tv.tv_sec = (time_t) sleepDuration;
-    tv.tv_nsec = (long) ((sleepDuration - tv.tv_sec) * 1e+9);
-
-    while( tv.tv_sec>0 || tv.tv_nsec>0 ){
+    if( sleepDuration>0.0 ) {
+      struct timespec tv;
+      tv.tv_sec = (time_t) sleepDuration;
+      tv.tv_nsec = (long) ((sleepDuration - tv.tv_sec) * 1e+9);
+      
+      while( tv.tv_sec>0 || tv.tv_nsec>0 ){
 	int rval = nanosleep(&tv, &tv);
-
+	
 	if(rval == 0) // We are done sleeping
 	  return;
-
-	checkError(errno == EINTR, "Must be interrupted but wasn't. Errno is: " << errno)
+	
+	checkError(errno == EINTR, "Must be interrupted but wasn't. Errno is: " << errno);
+      }
     }
   }
 
@@ -49,7 +53,7 @@ namespace TREX {
    * @brief Uses a high resolution sleep method internally
    */
   void Clock::sleep() const {
-    sleep(m_sleepSeconds);
+    sleep(getSleepDelay());
   }
 
   TICK PseudoClock::selectStep(unsigned int stepsPerTick) {
@@ -81,70 +85,62 @@ namespace TREX {
 
   RealTimeClock::RealTimeClock(double secondsPerTick, bool stats)
     : Clock(secondsPerTick/1000, stats),
-      m_started(false), m_tick(0) {
+      m_started(false), m_tick(0), m_floatTick(secondsPerTick) {
     m_secondsPerTick.tv_sec = static_cast<long>(std::floor(secondsPerTick));
     m_secondsPerTick.tv_usec = static_cast<long>(std::floor((secondsPerTick-m_secondsPerTick.tv_sec)*1e6));
-    pthread_mutex_init(&m_lock, NULL);
   }
 
   void RealTimeClock::start(){
     getDate(m_nextTickDate);
     setNextTickDate();
     m_started = true;
-    pthread_create(&m_thread, NULL, threadRunner, this);
   }
 
-  void RealTimeClock::setNextTickDate() {
-    m_nextTickDate.tv_usec += m_secondsPerTick.tv_usec;
-    m_nextTickDate.tv_sec += m_secondsPerTick.tv_sec + (m_nextTickDate.tv_usec/1000000);
+  void RealTimeClock::setNextTickDate(unsigned factor) {
+    m_nextTickDate.tv_usec += factor*m_secondsPerTick.tv_usec;
+    m_nextTickDate.tv_sec += factor*m_secondsPerTick.tv_sec + (m_nextTickDate.tv_usec/1000000);
     m_nextTickDate.tv_usec %= 1000000;
   }
 
-  double RealTimeClock::timeToNextTick() const {
+  double RealTimeClock::timeLeft() const {
     timeval tv;
     double result;
     getDate(tv);
     
     result = m_nextTickDate.tv_usec - tv.tv_usec;
     result /= 1e6;
-    result += m_nextTickDate.tv_sec-tv.tv_sec;
+    result += m_nextTickDate.tv_sec - tv.tv_sec;
+
     return result;
   }
     
   TICK RealTimeClock::getNextTick(){
-    pthread_mutex_lock(&m_lock);
-    TICK tick = m_tick;
-    pthread_mutex_unlock(&m_lock);
-    return tick;
+   Guardian<Mutex> guard(m_lock);
+    
+    if( m_started ) {      
+      double howLate = -timeLeft();
+      
+      if( howLate>=0 ) {
+	int tickIncr = 1+std::floor(howLate/m_floatTick);
+	m_tick += tickIncr;
+	setNextTickDate(tickIncr);
+// 	TREXLog()<<"[clock]["<<m_tick<<"] "<<howLate<<" secs late."<<std::endl; 
+      }
+    }
+    return m_tick;
   }
 
-  void RealTimeClock::sleep() const {
+  double RealTimeClock::getSleepDelay() const {    
     if( m_started ) {
       double delay;
-    
-      pthread_mutex_lock(&m_lock);
-      delay = timeToNextTick();
-      pthread_mutex_unlock(&m_lock);
-      
-      if( delay>0.0 )
-	Clock::sleep(delay);
+      {
+	Guardian<Mutex> guard(m_lock);
+	delay = timeLeft();
+      }
+//       TREXLog()<<"[clock]["<<m_tick<<"] sleeping for "<<delay<<" secs."<<std::endl;
+      return delay;
     } else 
-      Clock::sleep();
+      return Clock::getSleepDelay();
   }
 
-  void* RealTimeClock::threadRunner(void* clk){
-    RealTimeClock* This = (RealTimeClock*) clk;
-
-    // Loop forever, sleep for a tick
-    while(true){
-      Clock::sleep(This->timeToNextTick());
-      pthread_mutex_lock(&This->m_lock);
-      This->advanceTick(This->m_tick);
-      This->setNextTickDate();
-      pthread_mutex_unlock(&This->m_lock);
-    }
-
-    return NULL;
-  }
 }
-

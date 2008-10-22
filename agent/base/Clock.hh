@@ -5,7 +5,7 @@
 #include "TeleoReactor.hh"
 #include "RStat.hh"
 #include <sys/time.h>
-#include <pthread.h>
+#include "Mutex.hh"
 
 /**
  * @brief Declaration of clock interface and implementation sub-classes
@@ -31,7 +31,7 @@ namespace TREX {
      * @brief Helper method to provide a high-resolution sleep method
      * @see sleep(sleepDuration)
      */
-    virtual void sleep() const;
+    void sleep() const;
 
     /**
      * @brief Utility to implement high-resolution sleep
@@ -59,6 +59,9 @@ namespace TREX {
     }
 
   protected:
+    virtual double getSleepDelay() const {
+      return m_sleepSeconds;
+    }
     /**
      * @brief Constructor
      * @param sleepSeconds The number of seconds to sleep within the control loop before checking for work to do or clock updates
@@ -117,29 +120,26 @@ namespace TREX {
      */
     void start();
 
-    void sleep() const;
-
     /**
      * @brief Retrieve the tick
      */
     TICK getNextTick();
 
-    /**
-     * @brief Monitors elapsed time and increments the tick counter
-     */
-    static void* threadRunner(void* clk);
+  protected:
+    double getSleepDelay() const;
 
   private:
     static void getDate(timeval &val);
-    void setNextTickDate();    
-    double timeToNextTick() const;
-    
+    void setNextTickDate(unsigned factor=1);
+    double timeLeft() const;
+
     bool m_started;
     TICK m_tick;
+    double m_floatTick;
     timeval m_secondsPerTick;
-    pthread_t m_thread;
-    mutable pthread_mutex_t m_lock;
     timeval m_nextTickDate;
+    mutable Mutex m_lock;
+
   };
     
 }
