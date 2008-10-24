@@ -6,7 +6,7 @@
  *
  * @author Frederic Py <fpy@mbari.org>
  */
-#include "Mutex.hh"
+#include "MutexWrapper.hh"
 
 using namespace TREX;
 

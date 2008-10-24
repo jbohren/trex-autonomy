@@ -17,7 +17,7 @@
 #include "TREXDefs.hh"
 #include "LogManager.hh"
 
-#include "Mutex.hh"
+#include "MutexWrapper.hh"
 #include "Guardian.hh"
 
 using namespace TREX;

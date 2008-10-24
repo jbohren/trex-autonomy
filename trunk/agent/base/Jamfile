@@ -11,7 +11,6 @@ if ! $(TREX_READY) {
 	Agent.cc 
 	TeleoReactor.cc 
         ObserverReactor.cc
-	#DeliberativeReactor.cc 
 	Observer.cc 
 	Adapter.cc
 	Utilities.cc
@@ -23,7 +22,7 @@ if ! $(TREX_READY) {
         ObservationLogger.cc
         SimAdapter.cc
         Thread.cc
-        Mutex.cc
+        MutexWrapper.cc
         TextLog.cc
 	DbWriter.cc
 	;
