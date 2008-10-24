@@ -9,7 +9,7 @@
 #ifndef _THREAD_HH
 # define _THREAD_HH
 
-# include "Mutex.hh"
+# include "MutexWrapper.hh"
 
 namespace TREX {
 

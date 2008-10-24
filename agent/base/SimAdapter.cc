@@ -254,6 +254,7 @@ SimAdapter::SimAdapter(LabelStr const&agentName,
   }
 
   Adapter::getTimelines(m_internals,  Adapter::externalConfig(configData));
+
   loadObservations(xml_log);
   
 } // SimAdapter::SimAdapter

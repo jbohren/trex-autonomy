@@ -1,13 +1,13 @@
 /* -*- C++ -*-
  * $Id$
  */
-/** @file "Mutex.hh"
+/** @file "MutexWrapper.hh"
  * @brief Definition of the Mutex class
  *
  * @author Frederic Py <fpy@mbari.org>
  */
-#ifndef _MUTEX_HH
-# define _MUTEX_HH
+#ifndef _MUTEXWRAPPER_HH
+# define _MUTEXWRAPPER_HH
 
 # include <pthread.h>
 

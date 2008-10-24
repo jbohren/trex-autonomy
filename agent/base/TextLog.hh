@@ -13,7 +13,7 @@
 # include <memory>
 # include <sstream>
 
-# include "Mutex.hh"
+# include "MutexWrapper.hh"
 
 namespace TREX {
 
