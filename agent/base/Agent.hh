@@ -241,6 +241,11 @@ namespace TREX {
      */
     TeleoReactorId nextReactor();
 
+    /**
+     * Helper method to obtain the correct final tick value from the input parameter string
+     */
+    static TICK getFinalTick(const char * valueStr);
+
     static AgentId s_id; /*!< Store for the singleton instance */
     AgentId m_id; /*!< This Id */
     const LabelStr m_name; /*! Name - from configuration file. */

@@ -18,6 +18,13 @@ namespace TREX {
   AgentId Agent::s_id;
   bool Agent::s_terminated(false);
 
+  TICK Agent::getFinalTick(const char * valueStr){
+    if(strcmp(valueStr, "forever") == 0)
+      return PLUS_INFINITY - 1;
+
+    return atoi(valueStr);
+  }
+
   /**
    * @brief Connector to allow the agent to route observations. Will attach to internal reactors
    */
@@ -63,7 +70,7 @@ namespace TREX {
     m_name(extractData(configData, "name")),
     m_thisObserver(new AgentObserver(m_id)),
     m_currentTick(0),
-    m_finalTick(atoi(extractData(configData, "finalTick").c_str())),
+    m_finalTick(getFinalTick(extractData(configData, "finalTick").c_str())),
     m_clock(clock),
     m_synchUsage(RStat::zeroed), 
     m_deliberationUsage(RStat::zeroed),
