@@ -69,6 +69,12 @@ namespace TREX {
      * (errno==EINVAL).
      */
     RStat(who_type who=self);
+
+    /** 
+     * @brief Copy constructor
+     */
+    RStat(const RStat& org): _kind(org._kind), _snapshot(org._snapshot){}
+
     /** @brief Destructor */
     ~RStat() {}
     
