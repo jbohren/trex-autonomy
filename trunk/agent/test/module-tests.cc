@@ -15,7 +15,7 @@ using namespace TREX;
 
 #define runTest(test) \
   std::cout << "Running " << #test << " ....";\
-  std::cout << (test() ? " FAILED" : "SUCCESS") << std::endl;
+  std::cout << (test() ? " SUCCESS" : "FAILED") << std::endl;
 
 #define runTestSuite(test) { \
   try{ \
@@ -234,6 +234,7 @@ class AgentTests {
 public:
   static bool test(){
     runTest(testRealTimeClock);
+    runTest(testForeverConfiguration);
     return true;
   }
 
@@ -265,6 +266,20 @@ private:
 
     assertTrue(counter == delta);
 
+    return true;
+  }
+
+  static bool testForeverConfiguration(){
+    PseudoClock clock(0.0, 1);
+    TiXmlElement* root = initXml("Forever.cfg");
+
+    Agent::initialize(*root, clock);
+
+    assertTrue(Agent::instance()->getFinalTick() == (unsigned int) (PLUS_INFINITY-1));
+
+    Agent::reset();
+  
+    delete root;
     return true;
   }
 };
