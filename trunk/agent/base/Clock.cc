@@ -38,7 +38,7 @@ namespace TREX {
     if( m_processStats ) {
       try {
 	RStat tmp(m_cur);
-	m_cur.reset();
+	m_cur.reset(RStat::self);
 	m_diff = m_cur-tmp;
       } catch(ErrnoExcept e) {
 	warn(e.what());
@@ -121,7 +121,7 @@ namespace TREX {
       double howLate = -timeLeft();
       
       if( howLate>=0 ) {
-	int tickIncr = 1+std::floor(howLate/m_floatTick);
+	int tickIncr = 1+(int) std::floor(howLate/m_floatTick);
 	m_tick += tickIncr;
 	setNextTickDate(tickIncr);
 // 	TREXLog()<<"[clock]["<<m_tick<<"] "<<howLate<<" secs late."<<std::endl; 
