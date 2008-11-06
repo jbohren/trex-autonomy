@@ -22,6 +22,11 @@ namespace TREX {
   void makeFile(const std::string& outputStr, const char* prefix, const char* suffix);
 
   /**
+   * @brief Obatin the fully qualified path name for the given file by searching the local directory and then the path
+   */
+  std::string findFile(const std::string& fileName);
+
+  /**
    * @brief Helper method to access the object name of a token. Assumes object var is a singleton
    */
   const LabelStr& getObjectName(const TokenId& token);
