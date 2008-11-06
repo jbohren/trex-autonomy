@@ -285,6 +285,7 @@ private:
 };
 
 int main() {
+  setenv("TREX_PATH", "./orienteering", 1);
   initTREX();
   runTestSuite(GamePlayTests::test);
   runTestSuite(AgentTests::test);

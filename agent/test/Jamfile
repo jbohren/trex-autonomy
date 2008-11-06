@@ -60,13 +60,13 @@ if ! $(TREX_READY) {
 	dispatch.1.creator.nddl
 	dispatch.1.reciver.nddl
 	dispatch.1.dispatcher.nddl
-	orienteering.0.orienteer.nddl
-	orienteering.1.orienteer.nddl
-	orienteering.2.orienteer.nddl
-	orienteering.3.orienteer.nddl
-	orienteering.4.orienteer.nddl
-	orienteering.5.orienteer.nddl
-	orienteering.5.breaker.nddl
+	orienteering/orienteering.0.orienteer.nddl
+	orienteering/orienteering.1.orienteer.nddl
+	orienteering/orienteering.2.orienteer.nddl
+	orienteering/orienteering.3.orienteer.nddl
+	orienteering/orienteering.4.orienteer.nddl
+	orienteering/orienteering.5.orienteer.nddl
+	orienteering/orienteering.5.breaker.nddl
  ;
 
  local file ;
