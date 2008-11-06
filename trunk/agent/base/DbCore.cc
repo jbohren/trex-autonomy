@@ -198,12 +198,12 @@ namespace TREX {
       m_currentTickCycle(0),
       m_lastCompleteTick(MINUS_INFINITY),
       m_state(DbCore::INACTIVE),
-      m_solverCfg(extractData(configData, "solverConfig")),
+      m_solverCfg(findFile(extractData(configData, "solverConfig").toString())),
       m_planLog(LogManager::instance().file_name(compose(agentName, compose(getName(), "plan")).toString()).c_str()) {
 
     instancesByDb().insert(std::pair<PlanDatabaseId, DbCoreId>(m_db, getId()));
 
-    const LabelStr  configFile(compose(getAgentName(), compose(getName(), "xml")));
+    const LabelStr  configFile(findFile(compose(getAgentName(), compose(getName(), "xml")).toString()));
 
     LogManager::use(configFile.toString());
     m_assembly.playTransactions(configFile.c_str());

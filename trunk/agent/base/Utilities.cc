@@ -35,7 +35,7 @@ namespace TREX {
     // Keep the sleep seconds tiny since we want to run tests quickly. Higher values yield lower cpu utilization
     // but also affect the likelihood of missing a tick. For testing it should be basically 0.
     PseudoClock clock(0.0, stepsPerTick);
-    TiXmlElement* root = initXml( configFile );
+    TiXmlElement* root = initXml( findFile(configFile).c_str() );
 
     Agent::initialize(*root, clock);
 
@@ -61,14 +61,14 @@ namespace TREX {
   bool hasValidFile(const char* problemName){
     std::string fname(problemName);
     fname = fname + ".valid";
-    std::ifstream f(fname.c_str());
+    std::ifstream f(findFile(fname).c_str());
     return f.good();
   }
 
   bool isValid(const std::string& testStr, const char* problemName){
     std::string fname(problemName);
     fname = fname + ".valid";
-    std::ifstream f(fname.c_str());
+    std::ifstream f(findFile(fname).c_str());
     assertTrue(f.good(), "There should be a file for " + fname);
     std::stringstream sstr;
     sstr << testStr;
@@ -103,6 +103,36 @@ namespace TREX {
     std::ofstream f(fname.c_str());
     f << outputStr;
     f.close();
+  }
+
+  std::string findFile(const std::string& fileName){
+    static std::vector<std::string> sl_locations;
+
+    if(sl_locations.empty()){
+      sl_locations.push_back("./");
+
+      char * path = getenv("TREX_PATH");
+      if(path != NULL){
+	LabelStr pathLblStr(path);
+	unsigned int count = pathLblStr.countElements(":");
+	for(unsigned int i = 0; i < count; i++){
+	  sl_locations.push_back(pathLblStr.getElement(i, ":").toString() + "/");
+	}
+      }
+    }
+
+    std::string qualifiedFileName = "";
+
+    // Search the path in order
+    for(std::vector<std::string>::const_iterator it = sl_locations.begin(); it != sl_locations.end(); ++it){
+      const std::string& path = *it;
+      std::string qualifiedFileName = path + fileName;
+      std::ifstream f(qualifiedFileName.c_str());
+      if(f.good())
+	return qualifiedFileName;
+    }
+
+    return fileName;
   }
 
   SetDefault::SetDefault(const LabelStr& name,

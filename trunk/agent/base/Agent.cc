@@ -6,6 +6,7 @@
 #include "Agent.hh"
 #include "Assembly.hh"
 #include "Utils.hh"
+#include "Utilities.hh"
 #include "Observer.hh"
 #include "Token.hh"
 #include "TokenVariable.hh"
@@ -80,7 +81,7 @@ namespace TREX {
     bool useExternalFile = (configData.Attribute("config") != NULL);
 
     // Obtain the configuration file if present, otherwise expect that the configuration is provided in-line
-    const TiXmlElement* configSrcRoot = (useExternalFile ? initXml(extractData(configData, "config").c_str()) : &configData);
+    const TiXmlElement* configSrcRoot = (useExternalFile ? initXml(findFile(extractData(configData, "config").toString()).c_str()) : &configData);
 
     // Should always be true
     Entity::gcRequired() = true;
