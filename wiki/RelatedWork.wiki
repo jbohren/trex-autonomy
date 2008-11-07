@@ -1,3 +1,20 @@
 #summary Describes TREX in the context of other approaches to execution.
 
-= Under Construction =
+= Introduction =
+
+== Behavior-based Executives ==
+
+
+== Procedural Executives ==
+ * PLEXIL
+ * TDL
+ * PRS
+ * APEX
+ * CRL
+ * Timeliner
+ * 
+
+== Model-based, Tightly Integrated ==
+ * IDEA
+ * TITAN
+ * CLEaR
