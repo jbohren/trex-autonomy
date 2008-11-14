@@ -28,13 +28,24 @@ namespace TREX {
 
   void Adapter::getTimelines(std::set<LabelStr>& results, const TiXmlElement& configSource){
     // Iterate over internal and external configuration specifications
+    bool foundAttribute = false;
+    LabelStr foundName;
+    if (configSource.Attribute("timelineName")) {
+      foundAttribute = true;
+      foundName = extractData(configSource, "timelineName");
+      results.insert(foundName);
+    }
     for (TiXmlElement * child = configSource.FirstChildElement();
            child != NULL;
            child = child->NextSiblingElement()) {
 
         if(strcmp(child->Value(), "Timeline") == 0) {
 	  LabelStr name = extractData(*child, "name");
-	  results.insert(name);
+	  if (foundAttribute && foundName == name) {
+	    TREXLog() << extractData(configSource, "name") << ": Note: timelineName attribute implies a <timeline> tag. The tag is being ignored.\n";
+	  } else {
+	    results.insert(name);
+	  }
 	}
     }
   }
