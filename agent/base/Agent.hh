@@ -55,7 +55,7 @@ namespace TREX {
     /**
      * @brief The Agent is a singleton per process.
      */
-    static AgentId initialize(const TiXmlElement& configData, Clock& clock);
+    static AgentId initialize(const TiXmlElement& configData, Clock& clock, TICK timeLimit = 0);
 
     /**
      * @brief Accessor for the singleton instance
@@ -212,7 +212,7 @@ namespace TREX {
     /**
      * @brief Instantiated by singleton initialization function
      */
-    Agent(const TiXmlElement& configData, Clock& clock, bool enableLogging = true);
+    Agent(const TiXmlElement& configData, Clock& clock, TICK timelimit, bool enableLogging = true);
 
     /**
      * @brief execute the next reactor for a step.

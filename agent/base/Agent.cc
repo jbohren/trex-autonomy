@@ -41,9 +41,9 @@ namespace TREX {
     AgentId m_agent;
   };
 
-  AgentId Agent::initialize(const TiXmlElement& configData, Clock& clock){
+  AgentId Agent::initialize(const TiXmlElement& configData, Clock& clock, TICK timeLimit){
     checkError(s_id.isNoId(), "Already have an active agent. Must reset first.");
-    new Agent(configData, clock);
+    new Agent(configData, clock, timeLimit);
     return s_id;
   }
 
@@ -66,12 +66,12 @@ namespace TREX {
     }
   }
 
-  Agent::Agent(const TiXmlElement& configData, Clock& clock, bool enableLogging): 
+  Agent::Agent(const TiXmlElement& configData, Clock& clock, TICK timeLimit, bool enableLogging): 
     m_id(this), 
     m_name(extractData(configData, "name")),
     m_thisObserver(new AgentObserver(m_id)),
     m_currentTick(0),
-    m_finalTick(getFinalTick(extractData(configData, "finalTick").c_str())),
+    m_finalTick(timeLimit == 0 ?getFinalTick(extractData(configData, "finalTick").c_str()) : timeLimit),
     m_clock(clock),
     m_synchUsage(RStat::zeroed), 
     m_deliberationUsage(RStat::zeroed),
