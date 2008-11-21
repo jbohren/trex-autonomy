@@ -235,6 +235,7 @@ public:
   static bool test(){
     runTest(testRealTimeClock);
     runTest(testForeverConfiguration);
+    runTest(testTimelimitOverride);
     return true;
   }
 
@@ -282,12 +283,26 @@ private:
     delete root;
     return true;
   }
+
+  static bool testTimelimitOverride(){
+    PseudoClock clock(0.0, 1);
+    TiXmlElement* root = initXml("Forever.cfg");
+
+    Agent::initialize(*root, clock, 10);
+
+    assertTrue(Agent::instance()->getFinalTick() == (TICK) 10);
+
+    Agent::reset();
+  
+    delete root;
+    return true;
+  }
 };
 
 int main() {
   setenv("TREX_PATH", "./orienteering", 1);
   initTREX();
-  runTestSuite(GamePlayTests::test);
   runTestSuite(AgentTests::test);
+  runTestSuite(GamePlayTests::test);
   return 0;
 }
