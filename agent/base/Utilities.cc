@@ -175,7 +175,9 @@ namespace TREX {
 	m_param.intersect(m_param.getLowerBound(), m_param.getLowerBound());
     }
 
-    handleCompletion();
+    // This is removed because we should not be restricting the base domain during propagation since
+    // it may lead to rule firing, which can cause domains to be relaxed
+    //handleCompletion();
   }
 
 
