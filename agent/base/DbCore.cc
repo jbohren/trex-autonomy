@@ -1218,7 +1218,7 @@ namespace TREX {
 	debugMsg("DbCore:updateGoals", nameString() << "Updating unplanned goal " << goalToken->toString());
 
 	// If the goal is impossible based on time then reject it
-	if (latestStart < (getCurrentTick() + getLatency())) {
+	if (latestStart < getCurrentTick()) {
 	  debugMsg("DbCore:updateGoals", nameString() << "Rejecting timed out goal " << goalToken->toString());
 	  goalToken->reject();
 	}
