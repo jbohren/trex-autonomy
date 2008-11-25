@@ -607,7 +607,7 @@ namespace TREX {
       return false;
     }
 
-    if(Agent::instance()->getFinalTick() < (m_currentTickCycle + 1 + getLatency())){
+    if(Agent::instance()->getFinalTick() < (m_currentTickCycle + 1)){
       debugMsg("DbCore:hasWork", nameString() << "Extends beyond final tick.");
       return false;
     }
