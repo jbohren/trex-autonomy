@@ -69,6 +69,11 @@ namespace TREX {
 
     static void cleanupLog();
 
+    /**
+     * Returns the TICK value corresponding to 'forever'
+     */
+    static TICK forever();
+
     virtual ~Agent();
 
     /**

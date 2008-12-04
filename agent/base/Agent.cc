@@ -17,11 +17,16 @@
 namespace TREX {
 
   AgentId Agent::s_id;
+
   bool Agent::s_terminated(false);
+
+  TICK Agent::forever() {
+    return PLUS_INFINITY / 8;
+  }
 
   TICK Agent::getFinalTick(const char * valueStr){
     if(strcmp(valueStr, "forever") == 0)
-      return PLUS_INFINITY - 1;
+      return  forever();
 
     return atoi(valueStr);
   }
