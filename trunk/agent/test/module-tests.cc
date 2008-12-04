@@ -276,7 +276,7 @@ private:
 
     Agent::initialize(*root, clock);
 
-    assertTrue(Agent::instance()->getFinalTick() == (unsigned int) (PLUS_INFINITY-1));
+    assertTrue(Agent::instance()->getFinalTick() == Agent::forever());
 
     Agent::reset();
   
