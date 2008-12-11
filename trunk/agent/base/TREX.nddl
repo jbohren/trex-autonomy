@@ -2,6 +2,15 @@
 // Declare enumeration for Token States
 enum TokenStates {INACTIVE, ACTIVE, MERGED, REJECTED}
 
+
+// Declare built in constraints used for common TREX use cases
+
+constraint default(var, value) { var <: numeric && value <: numeric }
+constraint defaultOnCommit(var, value) { var <: numeric && value <: numeric }
+constraint assertCompleted(s) { s <: TokenStates }
+constraint assertRejected(s) { s <: TokenStates }
+
+
 // Declare a marker class to indicate the base class should be a Timeline
 // which enforces a total order. This should only arise where we
 // have predicates!
