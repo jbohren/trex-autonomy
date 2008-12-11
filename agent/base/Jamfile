@@ -3,6 +3,7 @@ SubDir TREX agent base ;
 if ! $(TREX_READY) {
 
  ModuleBase TREX :
+ 	TestMonitor.cc
 	Assembly.cc
 	Synchronizer.cc
 	Clock.cc
