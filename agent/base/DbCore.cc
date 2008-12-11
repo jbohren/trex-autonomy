@@ -891,8 +891,21 @@ namespace TREX {
 	if(startTime.intersects(dispatchWindow)){
 	  debugMsg("DbCore:dispatchCommands", nameString() << "Dispatching " << token->toString());
 	  token->getObject()->restrictBaseDomain(token->getObject()->lastDomain());
-	  if(server->request(token))
+
+	  if(server->request(token)){
 	    tc.markDispatched(token);
+
+	    // If the token has a parameter for dispatch_time then we should update. It would be ideal if one day
+	    // we specialize token structures to carry such intrinsic parameters
+	    static const LabelStr PARAM_DISPATCH_TIME("dispatch_time");
+	    static const LabelStr PARAM_TYPE_INT("int");
+	    ConstrainedVariableId var = token->getVariable(PARAM_DISPATCH_TIME);
+	    checkError(var.isNoId() || var->lastDomain().getTypeName() == PARAM_TYPE_INT, var->toString());
+	    if(var.isId()){
+	      IntervalIntDomain dispatch_time(getCurrentTick(), getCurrentTick());
+	      var->restrictBaseDomain(dispatch_time);
+	    }
+	  }
 	  else
 	    break;
 	}
