@@ -60,6 +60,8 @@ if ! $(TREX_READY) {
 	dispatch.1.creator.nddl
 	dispatch.1.reciver.nddl
 	dispatch.1.dispatcher.nddl
+	dispatch.2.client.nddl
+	dispatch.2.server.nddl
 	orienteering/orienteering.0.orienteer.nddl
 	orienteering/orienteering.1.orienteer.nddl
 	orienteering/orienteering.2.orienteer.nddl
