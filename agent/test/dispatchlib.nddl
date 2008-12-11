@@ -2,12 +2,13 @@
 
 
 class CreatorTimeline extends AgentTimeline {
-	predicate Gamma{}
-	predicate Delta{}
+  predicate Gamma{}
+
+  predicate Delta{}
 	
-	CreatorTimeline(Mode _mode){
-		super(_mode);
-	}
+  CreatorTimeline(Mode _mode){
+    super(_mode);
+  }
 }
 
 CreatorTimeline::Gamma {
@@ -16,12 +17,13 @@ CreatorTimeline::Gamma {
 }
 
 class ReciverTimeline extends AgentTimeline {
-	predicate Alpha{}
-	predicate Beta{}
+  predicate Alpha{}
+  predicate Beta{
+  }
 
-	ReciverTimeline(Mode _mode){
-		super(_mode);
-	}
+  ReciverTimeline(Mode _mode){
+    super(_mode);
+  }
 }
 
 ReciverTimeline::Beta {
@@ -39,5 +41,16 @@ class EqReciverTimeline extends AgentTimeline {
 
 EqReciverTimeline::Beta {
 	met_by(CreatorTimeline.Gamma);
+}
+
+/**
+ * This class has a predicate with a dispatch time paramater. Use to verify that it gets set
+ * on dispatch
+ */
+class SimpleTestForDispatchTime extends AgentTimeline {
+  predicate p{
+    int dispatch_time;
+    neq(dispatch_time, start);
+  }
 }
 

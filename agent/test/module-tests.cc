@@ -3,6 +3,7 @@
 #include "Debug.hh"
 #include "Nddl.hh"
 #include "Utilities.hh"
+#include "TestMonitor.hh"
 #include <pthread.h>
 #include <time.h>
 #include <errno.h>
@@ -35,12 +36,15 @@ using namespace TREX;
  * Run problem and handle setup and clean up
  */
 void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const char* problemName){
+  TREX::TestMonitor::reset();
   TREX::runAgent(configFile, stepsPerTick, problemName);
+  assertTrue(TREX::TestMonitor::success(), TREX::TestMonitor::toString().c_str());
 }
 
 class GamePlayTests {
 public:
   static bool test(){
+    runTest(testDispatch);
     runTest(bugFixes);
     runTest(testActions);
     runTest(testSqueezeObserver);
@@ -56,7 +60,6 @@ public:
     runTest(testPersistedGoal);
     runTest(testUndefinedSingleTimeline);
     runTest(testUndefinedDerived);
-    runTest(testDispatch);
     runTest(OrienteeringSolver);
     return true;
   }
@@ -211,6 +214,7 @@ private:
    * Tests dispatching.
    */
   static bool testDispatch(){
+    runAgentWithSchema("dispatch.2.cfg", 50, "dispatch.2");
     runAgentWithSchema("dispatch.0.cfg", 50, "dispatch.0");
     runAgentWithSchema("dispatch.1.cfg", 50, "dispatch.1");
     return true;
