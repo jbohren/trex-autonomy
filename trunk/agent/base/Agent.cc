@@ -12,6 +12,7 @@
 #include "TokenVariable.hh"
 #include "Object.hh"
 #include "LogManager.hh"
+#include "AgentListener.hh"
 #include <algorithm>
 
 namespace TREX {
@@ -188,6 +189,14 @@ namespace TREX {
 
     // Release the id, deallocating the memory
     m_thisObserver.release();
+
+    // Cleanup all the remaining listeners. Use this while loop instead of an iterator
+    // because listeners will call back to unregister when deleted, so the underlying buffer
+    // here will change
+    while(!m_listeners.empty()){
+      AgentListenerId l = m_listeners.front();
+      delete (AgentListener *) l;
+    }
 
     m_id.remove();
   }
@@ -408,6 +417,22 @@ namespace TREX {
 
   const std::vector<Agent::Event>& Agent::getEventLog() const { return m_eventLog;}
 
+
+  void Agent::registerListener(const AgentListenerId& listener){
+    m_listeners.push_back(listener);
+  }
+
+  void Agent::unregisterListener(const AgentListenerId& listener){
+    for(std::list<AgentListenerId>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it){
+      AgentListenerId l = *it;
+      checkError(l.isValid(), l);
+      if(l == listener){
+	m_listeners.erase(it);
+	return;
+      }
+    }
+  }
+
   std::string Agent::toString(const  std::vector<Event>& eventLog){
     std::stringstream ss;
     for(unsigned int i = 0;i<eventLog.size(); i++){
@@ -478,4 +503,19 @@ namespace TREX {
     return m_monitor;
   }
 
+  void Agent::notifyRejected(const TokenId token){
+    for(std::list<AgentListenerId>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it){
+      AgentListenerId l = *it;
+      checkError(l.isValid(), l);
+      l->notifyRejected(token);
+    }
+  }
+
+  void Agent::notifyCompleted(const TokenId& token){
+    for(std::list<AgentListenerId>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it){
+      AgentListenerId l = *it;
+      checkError(l.isValid(), l);
+      l->notifyCompleted(token);
+    }
+  }
 }

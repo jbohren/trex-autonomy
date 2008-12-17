@@ -18,6 +18,7 @@ if ! $(TREX_READY) {
 
  # Input files for reactors in test cases
  TestInputFiles = 
+ 	test_monitor.exec.nddl
 	bug.0.client.nddl
 	bug.0.server.nddl
 	synchronize.r.1.0.nddl

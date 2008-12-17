@@ -257,6 +257,24 @@ namespace TREX {
      checkError(m_solver.isValid(), m_solver);
      m_solver.release();
 
+     // Purge goals, ensuring messages are sent for all goals abut their final status if appropriate
+
+     for(TokenSet::iterator it = m_goals.begin(); it != m_goals.end(); ++it){
+       TokenId goal = *it;
+
+       // Use the active token if it is merged
+       if(goal->isMerged())
+	 goal = goal->getActiveToken();
+
+
+       // If goal rejected, this is easy!
+       if(goal->isRejected())
+	 Agent::instance()->notifyRejected(goal);
+
+       if(goal->isCommitted() && goal->end()->lastDomain().getUpperBound() <= getCurrentTick())
+	 Agent::instance()->notifyCompleted(goal);
+     }
+
      instancesByDb().clear();
 
      s_foreignKeyRelation.clear();
@@ -716,11 +734,22 @@ namespace TREX {
     return tok->getPlanDatabase()->getSchema()->isA(tok->getBaseObjectType(), Agent::ACTION());
   }
 
+  /**
+   * In terminating a token, we can declare its final outcome if it were a goal
+   */
   void DbCore::terminate(const TokenId& token){
     static unsigned int sl_counter(0);
     sl_counter++;
 
     debugMsg("DbCore:terminate", nameString() << "Terminating " << token->toString());
+
+    // If it is a goal, generate messages indicating its eventual fate
+    if(isGoal(token)){
+      if(token->isInactive() || token->isRejected())
+	Agent::instance()->notifyRejected(token);
+      else
+	Agent::instance()->notifyCompleted(token);
+    }
 
     // Terminate token. Will discard in batch later
     token->terminate();
@@ -740,7 +769,7 @@ namespace TREX {
       TimelineId timeline = it->first;
       TICK lastPublished = it->second;
 
-      // Can skip if we already published for the current tick
+      // Can skip if already published for the current tick
       checkError((lastPublished == (TICK) PLUS_INFINITY) || (lastPublished <= getCurrentTick()), lastPublished << " > " << getCurrentTick());
       if(lastPublished == getCurrentTick())
 	continue;

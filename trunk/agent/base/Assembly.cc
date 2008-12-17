@@ -6,6 +6,7 @@
 #include "GreedyOpenConditionManager.hh"
 #include "DbCore.hh"
 #include "DbSolver.hh"
+#include "TestMonitor.hh"
 
 #include "ModuleConstraintEngine.hh"
 #include "ModulePlanDatabase.hh"
@@ -31,6 +32,12 @@
 
 #include <fstream>
 #include <sstream>
+
+//#define USE_CODE_GENERATOR
+
+#ifdef USE_CODE_GENERATOR
+#include "Rule.hh"
+#endif
 
 namespace TREX {
 
@@ -151,6 +158,8 @@ namespace TREX {
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), LessThanConstraint, "lt", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TestLessThan, "testLT", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), Neighborhood, "neighborhood", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::CompletionMonitorConstraint, "assertCompleted", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::RejectionMonitorConstraint, "assertRejected", "Default");
 
     // Orienteering solver component registration
 

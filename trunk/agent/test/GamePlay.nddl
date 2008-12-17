@@ -297,6 +297,14 @@ ValueTimeline::Holds{
 		contains(TestActions.multiply action);
 		eq(action.multiplier, 10);
 	}
+
+	// Use the magic number of 1111 to indicate an inconsistency
+	/* BUG IN INTERPRETER
+	if(value == 1111){
+	  eq(1, 0); // Will alwyas fail of course.
+	  }
+	*/
+	neq(value, 1111);
 }
 
 class Valve extends AgentTimeline {
