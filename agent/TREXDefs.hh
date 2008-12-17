@@ -15,6 +15,9 @@ namespace TREX {
   class Agent;
   typedef Id<Agent> AgentId;
 
+  class AgentListener;
+  typedef Id<AgentListener> AgentListenerId;
+
   class TeleoReactor;
   typedef Id<TeleoReactor> TeleoReactorId;
 

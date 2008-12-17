@@ -27,7 +27,7 @@ using namespace TREX;
     std::cout << #test << " FAILED." << std::endl; \
   }\
   catch (...){			\
-    std::cout << #test << " FAILED";	\
+    std::cout << #test << " FAILED with an exception.";	\
     exit(-1); \
   }\
   }
@@ -38,12 +38,14 @@ using namespace TREX;
 void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const char* problemName){
   TREX::TestMonitor::reset();
   TREX::runAgent(configFile, stepsPerTick, problemName);
-  assertTrue(TREX::TestMonitor::success(), TREX::TestMonitor::toString().c_str());
+  bool result = TREX::TestMonitor::success();
+  assertTrue(result, TREX::TestMonitor::toString().c_str());
 }
 
 class GamePlayTests {
 public:
   static bool test(){
+    runTest(testTestMonitor);
     runTest(testDispatch);
     runTest(bugFixes);
     runTest(testActions);
@@ -66,6 +68,10 @@ public:
 
 private:
 
+  static bool testTestMonitor(){
+    runAgentWithSchema("test_monitor.cfg", 50, "test_monitor");
+    return true;
+  }
   static bool bugFixes(){
     runAgentWithSchema("bug.0.cfg", 50, "bug.0");
     return true;

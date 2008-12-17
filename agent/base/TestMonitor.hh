@@ -3,6 +3,7 @@
 
 #include "Constraint.hh"
 #include "Token.hh"
+#include "AgentListener.hh"
 
 using namespace EUROPA;
 
@@ -19,21 +20,13 @@ using namespace EUROPA;
  */
 namespace TREX {
 
-
+  /**
+   * Constraints below are used to mark tokens with expected results in terms of completed or
+   * rejected. This allows assertions of expected behavior in the input NDDL file
+   */
   class TestMonitorConstraintBase : public Constraint {
   public:
     virtual ~TestMonitorConstraintBase();
-
-
-    /**
-     * @brief True if the base domain of the underlying token state variable is a singleton.
-     */
-    bool isResolved() const;
-
-    /**
-     * @brief True if the state variable of the token is a singleton and is not rejected.
-     */
-    bool isCompleted() const;
 
   protected:
     TestMonitorConstraintBase(const LabelStr& name,
@@ -42,11 +35,7 @@ namespace TREX {
 			      const std::vector<ConstrainedVariableId>& variables,
 			      bool shouldBeCompleted_);
 
-    void handleExecute();
-
-    TokenId m_token;
-    AbstractDomain& m_state;
-    const bool shouldBeCompleted;
+    void handleExecute(){}
   };
 
   class CompletionMonitorConstraint: public TestMonitorConstraintBase {
@@ -65,6 +54,10 @@ namespace TREX {
 			       const std::vector<ConstrainedVariableId>& variables);
   };
 
+  /**
+   * @brief A class to aggregate expected results and integrate messages from execution to
+   * determine if conditions have been met.
+   */
   class TestMonitor {
   public:
     /**
@@ -84,19 +77,28 @@ namespace TREX {
     static std::string toString();
 
   private:
-    friend class testMonitorConstraintBase;
+    /**
+     * @brief A Listener to route messages for update of entries in the test monitor
+     */
+    class AgentListener: public TREX::AgentListener {
+    public:
+      void notifyRejected(const TokenId& token);
+      void notifyCompleted(const TokenId& token);
+    };
+
+    friend class TestMonitorConstraintBase;
+    friend class TestMonitor::AgentListener;
 
     /**
      * @brief Call on creation of a constraint to register it for evaluation
      */
-    static void registerConstraint(const TestMonitorConstraintBase& c);
+    static void registerCondition(int key, const std::string& label, bool expectedValue);
 
     /**
-     * @brief When a constraint is deleted, clean it up
+     * @brief Call on resolution of a token
      */
-    static void unregisterConstraint(const TestMonitorConstraintBase& c);
-
-
+    static void updateValue(int key, bool completed);
+				  
     /**
      * @brief Defines the row structure for test monitor entries. This class is used by the TestMonitor.
      */

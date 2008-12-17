@@ -140,6 +140,16 @@ namespace TREX {
     void logRecall(const TokenId& goal);
 
     /**
+     * @brief When a goal has been rejected
+     */
+    void notifyRejected(const TokenId token);
+
+    /**
+     * @brief When a goal has been completed
+     */
+    void notifyCompleted(const TokenId& token);
+
+    /**
      * @brief Test if the mission is over. Exposed publically to facilitate testing
      */
     bool missionCompleted() const;
@@ -173,6 +183,16 @@ namespace TREX {
      * @brief Accessor for the event log
      */
     const std::vector<Event>& getEventLog() const;
+
+    /**
+     * @brief Register a listener for token rejection or completion messages
+     */
+    void registerListener(const AgentListenerId& listener);
+
+    /**
+     * @brief Unregister a listener.
+     */
+    void unregisterListener(const AgentListenerId& listener);
 
     /**
      * @brief Utility to create an event log
@@ -263,6 +283,7 @@ namespace TREX {
     std::map< double, TeleoReactorId> m_ownersByTimeline; /*!< Lookup table for getting owners */
     std::vector<TeleoReactorId> m_sortedReactors; /*!< Sorted by dependency for synchronization */
     std::vector<TeleoReactorId> m_deliberators; /*!< The agenda of reactors for deliberation. Refreshed on every tick. */
+    std::list<AgentListenerId> m_listeners; /*!< For monitoring events by external listeners */
 
     Clock& m_clock;
     PerformanceMonitor m_monitor;
