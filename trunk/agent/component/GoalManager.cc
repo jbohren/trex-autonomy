@@ -23,6 +23,10 @@ namespace TREX{
     if(token->getVariable(GoalManager::X()).isNoId() || token->getVariable(GoalManager::Y()).isNoId())
       return false;
 
+    if(!token->getVariable(GoalManager::X())->lastDomain().isSingleton() 
+       || !token->getVariable(GoalManager::Y())->lastDomain().isSingleton())
+      return false;
+
     debugMsg("GoalManager", "Letting in: " << token->toString());
 
     return true;
