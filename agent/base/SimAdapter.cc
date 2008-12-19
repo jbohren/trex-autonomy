@@ -16,6 +16,7 @@
 #include "Adapter.hh"
 #include "SimAdapter.hh"
 #include "Agent.hh"
+#include "Utilities.hh"
 
 using namespace TREX;
 
@@ -239,7 +240,7 @@ SimAdapter::SimAdapter(LabelStr const&agentName,
    m_stringTypeFactory("string"),
    m_symbolTypeFactory("symbol"){
   std::string s = agentName.toString() + ".log";
-  char const *file_name = s.c_str();
+  char const *file_name = findFile(s).c_str();
   TiXmlDocument xml_log(LogManager::use(file_name));
   
   checkError(NULL!=file_name, 
