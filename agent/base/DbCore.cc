@@ -267,12 +267,10 @@ namespace TREX {
 	 goal = goal->getActiveToken();
 
 
-       // If goal rejected, this is easy!
        if(goal->isRejected())
 	 Agent::instance()->notifyRejected(goal);
 
-       // If a goal is committed, we assume it is OK if its end time includes the current tick
-       if(goal->isCommitted() && goal->end()->lastDomain().isMember(getCurrentTick()))
+       if(goal->isCommitted())
 	 Agent::instance()->notifyCompleted(goal);
      }
 
