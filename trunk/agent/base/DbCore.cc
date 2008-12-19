@@ -254,6 +254,8 @@ namespace TREX {
   }
 
    DbCore::~DbCore(){
+     debugMsg("DbCore:~DbCore", "Cleaning up " << getName().toString());
+
      checkError(m_solver.isValid(), m_solver);
      m_solver.release();
 
@@ -261,17 +263,19 @@ namespace TREX {
 
      for(TokenSet::iterator it = m_goals.begin(); it != m_goals.end(); ++it){
        TokenId goal = *it;
+       debugMsg("DbCore:~DbCore", "Evaluating buffered goal " << goal->toString());
 
-       // Use the active token if it is merged
-       if(goal->isMerged())
-	 goal = goal->getActiveToken();
-
-
-       if(goal->isRejected())
+       if(goal->isRejected()){
+	 debugMsg("DbCore:~DbCore", goal->toString() << " was rejected.");
 	 Agent::instance()->notifyRejected(goal);
-
-       if(goal->isCommitted())
+       }
+       else if(goal->isCommitted() || (goal->isMerged() && goal->getActiveToken()->isCommitted())){
+	 debugMsg("DbCore:~DbCore", goal->toString() << " was completed.");
 	 Agent::instance()->notifyCompleted(goal);
+       }
+       else {
+	 debugMsg("DbCore:~DbCore", goal->toString() << " was not resolved.");
+       }
      }
 
      instancesByDb().clear();
