@@ -1,6 +1,24 @@
 #include "TestMonitor.hh"
 
 namespace TREX {
+
+  TestConditionHandler::TestConditionHandler(const TiXmlElement& config)
+    : FlawHandler(config){}
+
+  DecisionPointId TestConditionHandler::create(const DbClientId& client, const EntityId& flaw, const LabelStr& explanation) const {
+    DecisionPoint* dp = new EUROPA::SOLVERS::OpenConditionDecisionPoint(client, flaw, *FlawHandler::m_configData, explanation);
+    dp->setContext(m_context);
+    return dp->getId();
+  }
+
+  bool TestConditionHandler::customStaticMatch(const EntityId& entity) const {
+    return TestMonitor::isCondition(entity->getKey()); 
+  }
+
+  unsigned int TestConditionHandler::staticFilterCount() const {
+    return 1 + FlawHandler::staticFilterCount();
+  }
+
   TestMonitorConstraintBase::TestMonitorConstraintBase(const LabelStr& name,
 						       const LabelStr& propagatorName,
 						       const ConstraintEngineId& constraintEngine,
@@ -76,6 +94,16 @@ namespace TREX {
 	entry.resolved = true;
       }
     }
+  }
+
+  bool TestMonitor::isCondition(int key){
+    for(std::list< Entry >::iterator it = entries().begin(); it != entries().end(); ++it){
+      Entry& entry = *it;
+      if(entry.key == key)
+	return true;
+    }
+
+    return false;
   }
 
   void TestMonitor::AgentListener::notifyRejected(const TokenId& token){

@@ -4,6 +4,8 @@
 #include "Constraint.hh"
 #include "Token.hh"
 #include "AgentListener.hh"
+#include "OpenConditionDecisionPoint.hh"
+#include "FlawHandler.hh"
 
 using namespace EUROPA;
 
@@ -19,6 +21,30 @@ using namespace EUROPA;
  *  TestMonitor::reset();
  */
 namespace TREX {
+  using namespace EUROPA;
+  using namespace EUROPA::SOLVERS;
+
+  /**
+   * @brief We use a custom flaw handler to resolve tokens applied as conditions. The key is the mapping
+   * to match the token as part of a TestMonitor
+   */
+  class TestConditionHandler: public FlawHandler{
+  public:
+    TestConditionHandler(const TiXmlElement& config);
+
+    DecisionPointId create(const DbClientId& client, const EntityId& flaw, const LabelStr& explanation) const;
+
+    /**
+     * @brief Tests for a match between this factory and the entity
+     */
+    bool customStaticMatch(const EntityId& entity) const;
+
+    /**
+     * @brief Extends static filter count to permit a weight to be applied if custom filtering
+     * is used. A future feature place holder!
+     */
+    unsigned int staticFilterCount() const;
+  };
 
   /**
    * Constraints below are used to mark tokens with expected results in terms of completed or
@@ -75,6 +101,12 @@ namespace TREX {
      * @brief Outputs the expected result
      */
     static std::string toString();
+
+    /**
+     * @brief Test if a given key is a registered condition token
+     * @return true if the key is an entry in the buffered list. Otherwise false.
+     */
+    static bool isCondition(int key);
 
   private:
     /**
