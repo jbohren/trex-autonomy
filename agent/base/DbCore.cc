@@ -54,6 +54,10 @@ namespace TREX {
 	token = RuleInstanceId(parent)->getToken();
       else
 	token = parent;
+
+      // If ever the parent token is inactive then the variable is not deciable
+      if(!token->isActive())
+	return true;
     }
     else
       token = entity;
@@ -91,7 +95,7 @@ namespace TREX {
       inScope =  DbCore::isAction(token) || !token->getPlanDatabase()->getTemporalAdvisor()->canPrecede(token->master(), token);
 
     debugMsg("DeliberationFilter:test", (!inScope ? "Exclude " : "Allow ") <<
-		 token->toString() << " with " << token->start()->lastDomain().toString() <<
+		 entity->toString() << " with token scope " << token->start()->lastDomain().toString() <<
 		 " AND " << token->end()->lastDomain().toString());
 
     return !inScope;

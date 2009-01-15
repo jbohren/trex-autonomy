@@ -176,5 +176,8 @@ namespace TREX {
     // Standard flaw filters used in DbCore
     REGISTER_FLAW_FILTER(cfm, DeliberationFilter, DeliberationFilter);
     REGISTER_FLAW_FILTER(cfm, SOLVERS::SingletonFilter, NotSingletonGuard);
+
+    // Custom flaw handlers
+    REGISTER_COMPONENT_FACTORY(cfm, TREX::TestConditionHandler, TestConditionHandler);
   }
 }
