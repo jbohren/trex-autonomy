@@ -27,21 +27,23 @@ namespace TREX{
        || !token->getVariable(GoalManager::Y())->lastDomain().isSingleton())
       return false;
 
-    debugMsg("GoalManager", "Letting in: " << token->toString());
-
     return true;
   }
 
   GoalsOnlyFilter::GoalsOnlyFilter(const TiXmlElement& configData): FlawFilter(configData, true) {}
 
   bool GoalsOnlyFilter::test(const EntityId& entity){
-    return !isPositionDependentGoal(entity);
+    bool result = !isPositionDependentGoal(entity);
+    debugMsg("GoalsOnlyFilter:test", (result ? "Excluding " : "Allowing ") << entity->toString());
+    return result;
   }
 
   NoGoalsFilter::NoGoalsFilter(const TiXmlElement& configData): FlawFilter(configData, true) {}
 
   bool NoGoalsFilter::test(const EntityId& entity){
-    return isPositionDependentGoal(entity);
+    bool result = isPositionDependentGoal(entity);
+    debugMsg("NoGoalsFilter:test", (result ? "Excluding " : "Allowing ") << entity->toString());
+    return result;
   }
 
   /**
@@ -334,8 +336,7 @@ namespace TREX{
    * 3. remove
    * There are O(n^2) neigbors
    *
-   * @note There is alot more we can do to exploit temporal constraints and evaluate feasibility. We are not including
-   * deadlines and we are not factoring in the possibility that insertion in the solution imposes implied temporal constraints.
+   * @note There is alot more we can do to exploit temporal constraints and evaluate feasibility.
    * @todo Cache feasibility of current solution
    */
   void GoalManager::selectNeighbor(GoalManager::SOLUTION& s, TokenId& delta){
