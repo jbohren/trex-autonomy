@@ -3,7 +3,18 @@
 namespace TREX {
 
   TestConditionHandler::TestConditionHandler(const TiXmlElement& config)
-    : FlawHandler(config){}
+    : FlawHandler(config){
+    // Refresh the weight to use the over-ridden function
+    refreshWeight();
+
+    debugMsg("TestConditionHandler:TestConditionHandler", "Allocation of Factory");
+  }
+
+  std::string TestConditionHandler::toString() const{
+    std::stringstream ss;
+    ss << "[TestConditionHandler]" << FlawHandler::toString();
+    return ss.str();
+  }
 
   DecisionPointId TestConditionHandler::create(const DbClientId& client, const EntityId& flaw, const LabelStr& explanation) const {
     DecisionPoint* dp = new EUROPA::SOLVERS::OpenConditionDecisionPoint(client, flaw, *FlawHandler::m_configData, explanation);
@@ -12,11 +23,9 @@ namespace TREX {
   }
 
   bool TestConditionHandler::customStaticMatch(const EntityId& entity) const {
-    return TestMonitor::isCondition(entity->getKey()); 
-  }
-
-  unsigned int TestConditionHandler::staticFilterCount() const {
-    return 1 + FlawHandler::staticFilterCount();
+    bool result = TestMonitor::isCondition(entity->getKey());
+    debugMsg("TestConditionHandler:customStaticMatch", entity->toString() << " is " << (result ? "" : "not ") << "a match.");
+    return result;
   }
 
   TestMonitorConstraintBase::TestMonitorConstraintBase(const LabelStr& name,
