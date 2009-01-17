@@ -32,6 +32,8 @@ namespace TREX {
   public:
     TestConditionHandler(const TiXmlElement& config);
 
+    std::string toString() const;
+
     DecisionPointId create(const DbClientId& client, const EntityId& flaw, const LabelStr& explanation) const;
 
     /**
@@ -40,10 +42,9 @@ namespace TREX {
     bool customStaticMatch(const EntityId& entity) const;
 
     /**
-     * @brief Extends static filter count to permit a weight to be applied if custom filtering
-     * is used. A future feature place holder!
+     * @brief Sets a single custom static filer
      */
-    unsigned int staticFilterCount() const;
+    unsigned int customStaticFilterCount() const {return 1;}
   };
 
   /**
