@@ -22,35 +22,44 @@ class Timeline {}
 int missionEnd;
 
 enum Mode {
-	External, 	// Synchronize observations.
-	Internal, 	// Publish updates at the current tick
-	Ignore		// Not synchronized at all
+  External, 	// Synchronize observations.
+  Internal, 	// Publish updates at the current tick
+  Ignore	// Not synchronized at all
 }
 
 class AgentTimeline extends Timeline {
-	Mode mode;
-	string defaultPredicate;
+  Mode mode; // Indicate if an internal or external timeline
+  string defaultPredicate; // Sets the default predicate value for filling out an emty timeline and resettting
+  bool persistent; // Indicate if the current value can be discarded on a reset to recover
 
-	/**
-	 * A predicate to reflect that the timeline is undefined. Used to fill gaps
-	 * where they occur.
-	 */
-	predicate undefined{};
+  /**
+   * A predicate to reflect that the timeline is undefined. Used to fill gaps
+   * where they occur.
+   */
+  predicate undefined{};
 
-	/**
-	 * A predicate which is used to block any successor states for a timeline
-         */
-	predicate Terminated{concurrent(end, missionEnd);}
+  /**
+   * A predicate which is used to block any successor states for a timeline
+   */
+  predicate Terminated{concurrent(end, missionEnd);}
 
-	AgentTimeline(Mode _mode){
-		mode = _mode;
-		defaultPredicate = "undefined";
-	}
+  AgentTimeline(Mode _mode){
+    mode = _mode;
+    defaultPredicate = "undefined";
+    persistent = true;
+  }
 
-	AgentTimeline(Mode _mode, string _defaultPredicate){
-		mode = _mode;
-		defaultPredicate = _defaultPredicate;
-	}
+  AgentTimeline(Mode _mode, string _defaultPredicate){
+    mode = _mode;
+    defaultPredicate = _defaultPredicate;
+    persistent = true;
+  }
+
+  AgentTimeline(Mode _mode, string _defaultPredicate, bool _persistent){
+    mode = _mode;
+    defaultPredicate = _defaultPredicate;
+    persistent = _persistent;
+  }
 }
 
 /**

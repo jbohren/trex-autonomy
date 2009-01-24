@@ -1231,7 +1231,7 @@ namespace TREX {
     }
   }
 
-  bool DbCore::onTimeline(const TokenId& token, const LabelStr& timelineMode) {
+  bool DbCore::onTimeline(const TokenId& token, const LabelStr& timelineMode){
     if(token->getObject()->lastDomain().isSingleton()){
       ObjectId object = token->getObject()->lastDomain().getSingletonValue();
       if(token->getPlanDatabase()->getSchema()->isA(object->getType(), Agent::TIMELINE())){
@@ -1633,8 +1633,14 @@ namespace TREX {
       // Revert to INACTIVE state
       m_state = DbCore::INACTIVE;
 
-      if(!m_synchronizer.relax() || !m_synchronizer.resolve())
-	return false;
+      // First just try to relax and resolve. If that fails the first time, apply a stronger
+      // relaxation where we discard current values that are not persistent.
+      if(!m_synchronizer.relax(false) || !m_synchronizer.resolve()){
+	// Cleare the state again
+	m_state = DbCore::INACTIVE;
+	if(!m_synchronizer.relax(true) || !m_synchronizer.resolve())
+	  return false;
+      }
 
       debugMsg("DbCore:synchronize", nameString() <<  "Repaired Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
 

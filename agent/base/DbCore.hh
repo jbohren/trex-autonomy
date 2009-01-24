@@ -343,7 +343,7 @@ namespace TREX {
     void configure();
 
     /**
-     * @brief Helper method to test of the token is on a timeline of the given type.
+     * @brief Helper method to test if the token is on a timeline of the given type.
      */
     static bool onTimeline(const TokenId& token, const LabelStr& timelineMode);
 

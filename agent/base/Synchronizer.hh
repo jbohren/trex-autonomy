@@ -22,9 +22,11 @@ namespace TREX {
     /**
      * @brief Relax the database. Must retain commited values at the execution frontier, and keep current observations,
      * but want to relax goals and their implications.
+     * @param discardCurrentValues If true, then current tokens, that belong to internal, non-persistent timelines, will be discarded.
+     * @see resetRemainingTokens
      * @return true if successful, otherwise false
      */
-    bool relax();
+    bool relax(bool discardCurrentValues);
 
   private:
 
@@ -106,13 +108,20 @@ namespace TREX {
 
     /**
      * @brief Reset remaining tokens
+     * @param discardCurrentValues If true, then current tokens, that belong to internal, non-persistent timelines, will be discarded.
      */
-    void resetRemainingTokens();
+    void resetRemainingTokens(bool discardCurrentValues);
 
     /**
      * @brief test if the current value
      */
     bool isCurrent(const TokenId& token);
+
+    /**
+     * @brief Helper method to test if the token is on a persistent object
+     */
+    static bool isPersistent(const TokenId& token);
+
 
     /**
      * @brief Copy a value at the execution frontier. Used to re-apply the model.
