@@ -5,6 +5,7 @@
 #include "PlanDatabaseWriter.hh"
 #include "PlanDatabase.hh"
 #include "Timeline.hh"
+#include "Agent.hh"
 
 namespace TREX {
 
@@ -40,10 +41,13 @@ namespace TREX {
    * @brief Will be a unit decision if it has only one option to be resolved or if it has a specific position
    * in the plan. The latter case arises where we have a token that must go in a specific time slot but which
    * could merge onto the plan or insert and nudge the plan. The resolution model will only try one. If that fails, it will
-   * relax the plan. Note that any token that is rejectable is not in scope.
+   * relax the plan. 
+   * @note Any token that is rejectable is not in scope.
    */
   bool Synchronizer::isUnit(const TokenId& token){
-    if(token->start()->lastDomain().isSingleton() || token->start()->lastDomain().getUpperBound() < m_core->getCurrentTick() ||
+
+    if(token->start()->lastDomain().isSingleton() || 
+       token->start()->lastDomain().getUpperBound() < m_core->getCurrentTick() ||
        !m_db->hasCompatibleTokens(token) || 
        !m_db->hasOrderingChoice(token))
       return true;
@@ -99,13 +103,10 @@ namespace TREX {
    * @brief Relax the plan at the execution frontier, but keep what is entailed by prior state.
    * the model, and current observations..
    */
-  bool Synchronizer::relax() {
+  bool Synchronizer::relax(bool discardCurrentValues) {
     TREXLog() << m_core->nameString() << "Beginning database relax." << std::endl;
 
     debugMsg("Synchronizer:relax", m_core->nameString() << "START");
-
-    // Want to verify that there is no propagation during the reset
-    unsigned int lastCycle = m_db->getConstraintEngine()->cycleCount();
 
     // Reset observations to base values. It is important that we do this before processing
     // other tokens as we want to recover the current observation and the easiest way to
@@ -120,16 +121,14 @@ namespace TREX {
     resetGoals();
 
     // Reset remaining tokens
-    resetRemainingTokens();
+    resetRemainingTokens(discardCurrentValues);
 
     // Purge bad links in foreign key table.
     m_core->purgeOrphanedKeys();
 
-    if(m_db->getConstraintEngine()->cycleCount() > (lastCycle + 1))
-      TREXLog() << m_core->nameString() << "WARNING: Propagation occured during relaxation.";
-
-    checkError(m_db->getConstraintEngine()->cycleCount() <= (lastCycle + 1), "Bug somewhere!");
     checkError(m_core->verifyEntities(), "Bug somewhere.");
+
+    debugMsg("Synchronizer:relax", m_core->nameString() << "Prior to insertion of copied values" << std::endl << PlanDatabaseWriter::toString(m_db));
 
     // Final step before trying again to resolve
     if(insertCopiedValues()){
@@ -287,7 +286,7 @@ namespace TREX {
    * Assumes we have already reset goals and observations. Will also force a copy of current committed tokens to re-apply the model.
    * @see relax
    */
-  void Synchronizer::resetRemainingTokens(){
+  void Synchronizer::resetRemainingTokens(bool discardCurrentValues){
     debugMsg("Synchronizer:resetRemainingTokens", m_core->nameString() << "START");
 
     std::vector<TokenId> tokensToDiscard;
@@ -303,7 +302,8 @@ namespace TREX {
       // Case 1: The value is current. This means it is committed, which implies it was previously found to be consistent
       // during synchronization. 
       if(isCurrent(token)){
-	copyValue(token);
+	if(!discardCurrentValues || isPersistent(token))
+	  copyValue(token);
 	tokensToDiscard.push_back(token);
 	continue;
       }
@@ -313,7 +313,6 @@ namespace TREX {
       if(!m_core->isGoal(token) && !m_core->isObservation(token))
 	tokensToDiscard.push_back(token);
     }
-
 
     // Now we clean up all the tokens we plan to discard.
     debugMsg("Synchronizer:resetRemainingTokens", "Discarding " << tokensToDiscard.size() << " tokens");
@@ -600,6 +599,12 @@ namespace TREX {
     if(m_core->isInvalid() || m_core->inDeliberation(token))
       return false;
 
+    // If the token is in the past, we will not insert it. Just remove it from the agenda and return OK
+    if(token->end()->lastDomain().getUpperBound() == Agent::instance()->getCurrentTick()){
+      m_core->m_tokenAgenda.erase(token);
+      return true;
+    }
+
     if(token->isInactive())
       token->activate();
 
@@ -734,5 +739,21 @@ namespace TREX {
     token->getObject()->specify(timeline);
 
     return insertToken(token, stepCount);
+  }
+
+  /**
+   * @see TREX.nddl for definition of parameters of AgentTimeline
+   */
+  bool Synchronizer::isPersistent(const TokenId& token){
+    if(token->getObject()->lastDomain().isSingleton()){
+      ObjectId object = token->getObject()->lastDomain().getSingletonValue();
+      if(token->getPlanDatabase()->getSchema()->isA(object->getType(), Agent::TIMELINE())){
+	ConstrainedVariableId mode = object->getVariables()[2];
+	if(mode->lastDomain().isMember(true))
+	  return true;
+      }
+    }
+
+    return false;
   }
 }

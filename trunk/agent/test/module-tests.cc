@@ -45,6 +45,7 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){
+    runTest(testPersistence);
     runTest(testTestMonitor);
     runTest(testDispatch);
     runTest(bugFixes);
@@ -59,7 +60,6 @@ public:
     runTest(testScalability);
     runTest(testInconsistent);
     runTest(testOneStepAhead);
-    runTest(testPersistedGoal);
     runTest(testUndefinedSingleTimeline);
     runTest(testUndefinedDerived);
     runTest(OrienteeringSolver);
@@ -163,7 +163,8 @@ private:
    * This test will see that when an internal timeline value becomes a fact, it is persisted unless a consistent and complete plan
    * produces a new fact to replace it. Planning will be resumed to try to recover the situation but this will always fail.
    */
-  static bool testPersistedGoal(){
+  static bool testPersistence(){
+    runAgentWithSchema("persistence.0.cfg", 20, "persistence.0");
     runAgentWithSchema("PersistedGoal.cfg", 20, "PersistedGoal");
     return true;
   }
@@ -312,7 +313,7 @@ private:
 int main() {
   setenv("TREX_PATH", "./orienteering", 1);
   initTREX();
-  runTestSuite(AgentTests::test);
   runTestSuite(GamePlayTests::test);
+  runTestSuite(AgentTests::test);
   return 0;
 }

@@ -311,6 +311,7 @@ class Valve extends AgentTimeline {
 	predicate Open{}
 	predicate Closed{}
 	Valve(Mode _mode){super(_mode, "Closed");}
+	Valve(Mode _mode, bool _persistent){super(_mode, "Closed", _persistent);}
 }
 
 Valve::Open{
@@ -605,3 +606,45 @@ TestActions::doGrasp{
     }
   }
 }
+
+/**
+ * Model Components to Test the persistence model. For this we require scenarios where
+ * an internal timeline value is always inconsistent at the end, and we want to ensure
+ * that we can reject the value in question and revert to the default value. We also
+ * want to ensure that persistent objects are respected.
+ */
+class PersistenceTest_Container extends AgentTimeline {
+  predicate Inactive{}
+  predicate Active {
+    leq(duration, 3);
+  }
+
+  /**
+   * Neer persistent
+   */
+  PersistenceTest_Container(Mode _mode){
+    super(_mode, "Inactive", false);
+  }
+}
+
+  PersistenceTest_Container::Active{
+    meets(Inactive);
+    met_by(Inactive);
+
+    // Set all valves open
+    Valve valves;
+    foreach (v in valves){
+      equals(v.Open);
+    }
+
+    // Always inconsistent. Should force a partial reset
+    if(end){
+      eq(1, 0);
+    }
+  }
+
+  PersistenceTest_Container::Inactive{
+    meets(Active);
+    met_by(Active);
+  }
+
