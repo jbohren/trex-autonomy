@@ -31,6 +31,8 @@ namespace TREX {
    */
   const LabelStr& getObjectName(const TokenId& token);
 
+  std::vector<ConstrainedVariableId> appendStateVar(const std::vector<ConstrainedVariableId>& variables);
+
   /**
    * @brief Binds default values for token parameters if they are not singletons.
    */
@@ -46,8 +48,6 @@ namespace TREX {
     void setSource(const ConstraintId& constraint);
     void handleExecute();
     virtual bool defaultGuardSatisfied();
-    virtual void handleCompletion(){}
-    static std::vector<ConstrainedVariableId> appendStateVar(const std::vector<ConstrainedVariableId>& variables);
 
     TokenId m_token;
     AbstractDomain& m_param;
@@ -65,9 +65,23 @@ namespace TREX {
 		      const std::vector<ConstrainedVariableId>& variables);
   protected:
     bool defaultGuardSatisfied();
-    void handleCompletion();
   };
 
+  /**
+   * @brief Binds default values when a token is committed
+   */
+  class AbsMaxOnCommit : public Constraint {
+  public:
+    AbsMaxOnCommit(const LabelStr& name,
+		   const LabelStr& propagatorName,
+		   const ConstraintEngineId& constraintEngine,
+		   const std::vector<ConstrainedVariableId>& variables);
+  private:
+    void setSource(const ConstraintId& constraint);
+    void handleExecute();
+    TokenId m_token;
+    AbstractDomain& m_param;
+  };
 
   /**
    * @brief bindMax: binds the target with the max possible value from the source

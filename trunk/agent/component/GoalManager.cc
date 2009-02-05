@@ -265,8 +265,6 @@ namespace TREX{
     utility = 0;
     TokenId predecessor;
     unsigned int numConflicts(0);
-
-    static const LabelStr INACTIVE("Navigator.Inactive");
     double pathLength = 0;
     Position currentPosition = getCurrentPosition();
 

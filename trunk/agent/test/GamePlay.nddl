@@ -307,6 +307,31 @@ ValueTimeline::Holds{
 	neq(value, 1111);
 }
 
+/**
+ * Test constraints
+ */
+ValueTimeline::Holds{
+  int a, b, c, d;
+  eq(a, 1);
+  eq(b, [-10, 10]);
+  eq(c, [-10, 9]);
+  eq(d, [-9, 10]);
+
+  absMaxOnCommit(a);
+  absMaxOnCommit(b);
+  absMaxOnCommit(c);
+  absMaxOnCommit(d);
+
+  /*
+  if(end){
+    eq(a, 1);
+    eq(b, 10);
+    eq(c, -10);
+    eq(d, 10);
+  }
+  */
+}
+
 class Valve extends AgentTimeline {
 	predicate Open{}
 	predicate Closed{}
