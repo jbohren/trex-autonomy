@@ -45,11 +45,11 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){
-    runTest(testPersistence);
     runTest(testTestMonitor);
+    runTest(testActions);
+    runTest(testPersistence);
     runTest(testDispatch);
     runTest(bugFixes);
-    runTest(testActions);
     runTest(testSqueezeObserver);
     runTest(testOneDeliberatorOneAdapter);
     runTest(testSimulation);
@@ -314,6 +314,6 @@ int main() {
   setenv("TREX_PATH", "./orienteering", 1);
   initTREX();
   runTestSuite(GamePlayTests::test);
-  runTestSuite(AgentTests::test);
+  //runTestSuite(AgentTests::test);
   return 0;
 }

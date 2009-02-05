@@ -153,7 +153,7 @@ namespace TREX {
     // Register constraints
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefault, "default", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefaultOnCommit, "defaultOnCommit", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), BindMax, "bindMax", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), AbsMaxOnCommit, "absMaxOnCommit", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefault, "bind", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), LessThanConstraint, "lt", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TestLessThan, "testLT", "Default");

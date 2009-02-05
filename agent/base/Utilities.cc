@@ -135,6 +135,18 @@ namespace TREX {
     return fileName;
   }
 
+  std::vector<ConstrainedVariableId> appendStateVar(const std::vector<ConstrainedVariableId>& variables){
+    // It can be the case that when we are copying a constraint, for example when merging, that the state variable will already have
+    // been added. Thus we check the scope and only append if we have to
+    std::vector<ConstrainedVariableId> newScope(variables);
+    if(newScope.size() == 2){
+      TokenId token = DbCore::getParentToken(variables[0]);
+      newScope.push_back(token->getState());
+    }
+
+    return newScope;
+  }
+
   SetDefault::SetDefault(const LabelStr& name,
 			 const LabelStr& propagatorName,
 			 const ConstraintEngineId& constraintEngine,
@@ -174,23 +186,6 @@ namespace TREX {
       else
 	m_param.intersect(m_param.getLowerBound(), m_param.getLowerBound());
     }
-
-    // This is removed because we should not be restricting the base domain during propagation since
-    // it may lead to rule firing, which can cause domains to be relaxed
-    //handleCompletion();
-  }
-
-
-  std::vector<ConstrainedVariableId> SetDefault::appendStateVar(const std::vector<ConstrainedVariableId>& variables){
-    // It can be the case that when we are copying a constraint, for example when merging, that the state variable will already have
-    // been added. Thus we check the scope and only append if we have to
-    std::vector<ConstrainedVariableId> newScope(variables);
-    if(newScope.size() == 2){
-      TokenId token = DbCore::getParentToken(variables[0]);
-      newScope.push_back(token->getState());
-    }
-
-    return newScope;
   }
 
   SetDefaultOnCommit::SetDefaultOnCommit(const LabelStr& name,
@@ -208,8 +203,35 @@ namespace TREX {
     return m_token->isCommitted();
   }
 
-  void SetDefaultOnCommit::handleCompletion(){
-    m_variables[0]->restrictBaseDomain(m_param);
+  /*************************************************************************
+   * AbsMaxOnCommit.
+   *************************************************************************/
+  AbsMaxOnCommit::AbsMaxOnCommit(const LabelStr& name,
+				 const LabelStr& propagatorName,
+				 const ConstraintEngineId& constraintEngine,
+				 const std::vector<ConstrainedVariableId>& variables)
+    : Constraint(name, propagatorName, constraintEngine, appendStateVar(variables)),
+      m_token(DbCore::getParentToken(m_variables[0])),
+      m_param(getCurrentDomain(m_variables[0])){
+    checkError(m_token.isValid(), m_token);
+    checkError(m_param.isNumeric(), toString() << " only valid for numeric variables.");
+  }
+
+  void AbsMaxOnCommit::setSource(const ConstraintId& constraint){
+    AbsMaxOnCommit* c = (AbsMaxOnCommit*) constraint;
+    m_token = c->m_token;
+  }
+
+  void AbsMaxOnCommit::handleExecute() {
+    checkError(m_token.isValid(), m_token);
+
+    if(!m_token->isCommitted() || m_param.isSingleton())
+      return;
+
+    if(fabs(m_param.getUpperBound()) >= fabs(m_param.getLowerBound()))
+      m_param.set(m_param.getUpperBound());
+    else
+      m_param.set(m_param.getUpperBound());
   }
 
   BindMax::BindMax(const LabelStr& name,
