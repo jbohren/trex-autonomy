@@ -139,11 +139,13 @@ namespace TREX {
     // It can be the case that when we are copying a constraint, for example when merging, that the state variable will already have
     // been added. Thus we check the scope and only append if we have to
     std::vector<ConstrainedVariableId> newScope(variables);
-    if(newScope.size() == 2){
-      TokenId token = DbCore::getParentToken(variables[0]);
-      newScope.push_back(token->getState());
+    TokenId token = DbCore::getParentToken(variables[0]);
+    for(std::vector<ConstrainedVariableId>::const_iterator it = newScope.begin(); it != newScope.end(); ++it){
+      if(*it == token->getState())
+	return newScope;
     }
 
+    newScope.push_back(token->getState());
     return newScope;
   }
 
