@@ -9,6 +9,7 @@
 #include "TestMonitor.hh"
 
 #include "ModuleConstraintEngine.hh"
+#include "DefaultPropagator.hh"
 #include "ModulePlanDatabase.hh"
 #include "ModuleRulesEngine.hh"
 #include "ModuleTemporalNetwork.hh"
@@ -69,6 +70,9 @@ namespace TREX {
     m_rulesEngine = ((RulesEngine*) getComponent("RulesEngine"))->getId();
     m_ppw = NULL;
 
+    // Add another propagator to handle propagation of commitment constraints. Will be scheduled last to ensure that
+    // the nextwork is fully propagated before we make any commitments.
+    new DefaultPropagator(LabelStr("OnCommit"), m_constraintEngine->getId());
 
     // Disable auto propagation
     m_constraintEngine->setAutoPropagation(false);
@@ -151,9 +155,10 @@ namespace TREX {
     checkError(constraintEngine.isValid(), "No ConstraintEngine registered");
 
     // Register constraints
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefaultOnCommit, "defaultOnCommit", "OnCommit");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), AbsMaxOnCommit, "absMaxOnCommit", "OnCommit");
+
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefault, "default", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefaultOnCommit, "defaultOnCommit", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), AbsMaxOnCommit, "absMaxOnCommit", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefault, "bind", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), LessThanConstraint, "lt", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TestLessThan, "testLT", "Default");
