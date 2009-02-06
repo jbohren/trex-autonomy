@@ -11,11 +11,6 @@ if ! $(TREX_READY) {
  # 1. synch.width.height.growth.I.E.cfg
  # 2. synch.width.height.growth.i.j.nddl
 
- # Create a build target for module tests
- ModuleMain agent-module-tests : module-tests.cc GamePlayAdapter.cc GamePlay.o RecallAdapter.cc : TREX : agent-module-tests ;
- RunModuleMain run-agent-module-tests : agent-module-tests ;
- Depends run-agent-module-tests : agent-inputs ;
-
  # Input files for reactors in test cases
  TestInputFiles = 
  	test_monitor.exec.nddl
@@ -76,11 +71,12 @@ if ! $(TREX_READY) {
 
  local file ;
  for file in [ FGristFiles $(TestInputFiles) ] {
-  	local xml = $(file:S=.xml:G=) ;
-	LocalDepends agent-inputs : $(xml) ;
-  	NddlParser $(xml) : $(file) ;
+        NddlParser $(file:S=.xml) : $(file) ;
+	LocalDepends run-agent-module-tests : $(file:S=.xml) ;
  }
 
- NddlModel GamePlay.nddl : System ;
 
+ # Create a build target for module tests
+ ModuleMain agent-module-tests : module-tests.cc GamePlayAdapter.cc RecallAdapter.cc : TREX : agent-module-tests ;
+ RunModuleMain run-agent-module-tests : agent-module-tests ;
 }
