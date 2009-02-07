@@ -500,20 +500,10 @@ namespace TREX {
 
   bool Synchronizer::fire(const RuleInstanceId& r, unsigned int& stepCount){
 
-    if(!r->isExecuted()){
-      const std::vector<ConstrainedVariableId>& guards = r->getGuards();
-      for(std::vector<ConstrainedVariableId>::const_iterator it = guards.begin(); it != guards.end(); ++it){
-	ConstrainedVariableId guard = getActiveGuard(*it);
-	if(guard.isId() && guard->lastDomain().isSingleton() && !guard->isSpecified() && guard->canBeSpecified()){
-	  debugMsg("Synchronizer:fire", m_core->nameString() << "Binding guard " << guard->toString() << " for " << r->getToken()->toString());
-	  guard->specify(guard->lastDomain().getSingletonValue());
-
-	  stepCount++;
-
-	  if(!m_core->propagate())
-	    return false;
-	}
-      }
+    if(!r->isExecuted() && r->test()){
+      stepCount++;
+      if(!m_core->propagate())
+	return false;
     }
 
     // Apply to children
