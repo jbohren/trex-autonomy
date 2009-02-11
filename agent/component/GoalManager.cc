@@ -190,9 +190,7 @@ namespace TREX{
     if(token->isRejected()) {
       setState(STATE_REQUIRE_PLANNING);
     }
-
-    // If the token is active, remove it from the current solution if present
-    if(token->isActive()) {
+    else {
       SOLUTION::iterator it = m_currentSolution.begin();
       while(it != m_currentSolution.end()){
 	TokenId t = *it;
