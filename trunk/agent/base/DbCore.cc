@@ -162,6 +162,10 @@ namespace TREX {
     m_dispatchedTokens.insert(key);
   }
 
+  void TimelineContainer::clearDispatched(const TokenId& token){
+    m_dispatchedTokens.erase(token->getKey());
+  }
+
   void TimelineContainer::handleRemoval(const TokenId& token){
     m_dispatchedTokens.erase(token->getKey());
   }
@@ -396,6 +400,8 @@ namespace TREX {
    */
   void DbCore::handleRecall(const TokenId& tok){
     debugMsg("DbCore:handleRecall", nameString() << "Recall received: " << tok->toString());
+
+    markInvalid("Recall received. Will reset internal timelines.");
 
     // If we do not have the token locally, it has already been removed
     if(!hasEntity(tok))
@@ -973,10 +979,11 @@ namespace TREX {
 		 "Evaluating " << token->toString() << " for recall. Dispatched[" << tc.isDispatched(token) << "] "
 		 "Ends:" << token->end()->baseDomain().toString());
 
-	// If the token has not been dispatched and it is not finished yet ,recall it.
+	// If the token has been dispatched and it is not finished yet ,recall it.
 	if(tc.isDispatched(token) && token->end()->baseDomain().getUpperBound() > getCurrentTick()){
 	  debugMsg("DbCore:dispatchRecalls", nameString() << "Recalling " << token->toString());
 	  server->recall(token);
+	  tc.clearDispatched(token);
 	}
       }
     }
@@ -1099,6 +1106,12 @@ namespace TREX {
     checkError(token->isCommitted(), "Should be committed before this call.");
 
     if(!propagate())
+      return false;
+
+
+    // If the tokens end time is >= the current tick, defer termination handling since still in the synchronization
+    // window
+    if(token->end()->baseDomain().getUpperBound() >= getCurrentTick())
       return false;
 
     // Update base domains on uncommitted slaves.
@@ -1620,12 +1633,14 @@ namespace TREX {
    */
   bool DbCore::synchronize(){
 
+    processPendingTokens();
+
     if(isSolverTimedOut() || !completeExternalTimelines() || !m_synchronizer.resolve()){
       // Undo any impacts of solver. Reset this before making any deletions to avoid corrupting the stack
       m_solver->reset();
 
       // Remove any tokens that have been recalled for this reactor
-      processRecalls();
+      bool discardCurrentValues = processRecalls();
 
       // Now bring our tick up to speed
       m_currentTickCycle = getCurrentTick();
@@ -1635,7 +1650,7 @@ namespace TREX {
 
       // First just try to relax and resolve. If that fails the first time, apply a stronger
       // relaxation where we discard current values that are not persistent.
-      if(!m_synchronizer.relax(false) || !m_synchronizer.resolve()){
+      if(discardCurrentValues || !m_synchronizer.relax(false) || !m_synchronizer.resolve()){
 	// Cleare the state again
 	m_state = DbCore::INACTIVE;
 	if(!m_synchronizer.relax(true) || !m_synchronizer.resolve())
@@ -1656,10 +1671,14 @@ namespace TREX {
     notifyObservers();
     updateGoals();
     archive();
+
+    debugMsg("DbCore:synchronize", nameString() <<  "Synchronized Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
+
     return m_state != DbCore::INVALID;;
   }
 
-  void DbCore::processRecalls(){
+  bool DbCore::processRecalls(){
+    bool recalls = false;
     for(unsigned int i=0;i<m_recallBuffer.size(); i++){
       int tokenKey = m_recallBuffer[i];
       EntityId entity = Entity::getEntity(tokenKey);
@@ -1667,10 +1686,12 @@ namespace TREX {
       if(entity.isId()){
 	TokenId token = (TokenId) entity;
 	token->discard();
+	recalls = true;
       }
     }
 
     m_recallBuffer.clear();
+    return recalls;
   }
 
 
@@ -1807,6 +1828,9 @@ namespace TREX {
    */
   void DbCore::commitAndRestrict(const TokenId& token){
     token->commit();
+
+    // Propagate constraints before binding attribute base domains.
+    propagate();
 
     if(!token->getObject()->baseDomain().isSingleton())
       token->getObject()->restrictBaseDomain(token->getObject()->lastDomain());
