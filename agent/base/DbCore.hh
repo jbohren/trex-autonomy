@@ -85,6 +85,11 @@ namespace TREX {
     void markDispatched(const TokenId& token);
 
     /**
+     * @brief Reset the dispatch flag.
+     */
+    void clearDispatched(const TokenId& token);
+
+    /**
      * @brief Handle removal of a token. Unbuffer
      */
     void handleRemoval(const TokenId& token);
@@ -469,9 +474,10 @@ namespace TREX {
 
     /**
      * @brief Process buffered goal keys that have been recalled.
+     * @return true if a recall was made
      * @see Synchronize
      */
-    void processRecalls();
+    bool processRecalls();
 
     /**
      * @brief Utility to cmmit a token and restrict its base domains based on current time. Will propagate as it goes.

@@ -287,7 +287,8 @@ namespace TREX {
    * @see relax
    */
   void Synchronizer::resetRemainingTokens(bool discardCurrentValues){
-    debugMsg("Synchronizer:resetRemainingTokens", m_core->nameString() << "START");
+    debugMsg("Synchronizer:resetRemainingTokens", m_core->nameString() << 
+	     "START with discarding current internal values " << (discardCurrentValues ? "enabled." : "disabled."));
 
     std::vector<TokenId> tokensToDiscard;
     const TokenSet allTokens = m_db->getTokens();
