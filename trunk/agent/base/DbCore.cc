@@ -366,6 +366,7 @@ namespace TREX {
     localGoal->start()->restrictBaseDomain(goal->start()->lastDomain());
     localGoal->end()->restrictBaseDomain(goal->end()->lastDomain());
     localGoal->duration()->restrictBaseDomain(goal->duration()->lastDomain());
+    setDispatchTime(localGoal);
  
     addEntity(goal, localGoal);
     addEntity(goal->getObject(), localGoal->getObject());
@@ -936,17 +937,7 @@ namespace TREX {
 
 	  if(server->request(token)){
 	    tc.markDispatched(token);
-
-	    // If the token has a parameter for dispatch_time then we should update. It would be ideal if one day
-	    // we specialize token structures to carry such intrinsic parameters
-	    static const LabelStr PARAM_DISPATCH_TIME("dispatch_time");
-	    static const LabelStr PARAM_TYPE_INT("int");
-	    ConstrainedVariableId var = token->getVariable(PARAM_DISPATCH_TIME);
-	    checkError(var.isNoId() || var->lastDomain().getTypeName() == PARAM_TYPE_INT, var->toString());
-	    if(var.isId()){
-	      IntervalIntDomain dispatch_time(getCurrentTick(), getCurrentTick());
-	      var->restrictBaseDomain(dispatch_time);
-	    }
+	    setDispatchTime(token);
 	  }
 	  else
 	    break;
@@ -984,6 +975,7 @@ namespace TREX {
 	  debugMsg("DbCore:dispatchRecalls", nameString() << "Recalling " << token->toString());
 	  server->recall(token);
 	  tc.clearDispatched(token);
+	  resetDispatchTime(token);
 	}
       }
     }
@@ -2188,4 +2180,25 @@ namespace TREX {
 
     m_pendingTokens.clear();
   }
+
+  void DbCore::setDispatchTime(const TokenId& token) const {
+    ConstrainedVariableId var = dispatch_time(token);
+    if(var.isId())
+      var->specify(getCurrentTick());
+  }
+
+  void DbCore::resetDispatchTime(const TokenId& token) const {
+    ConstrainedVariableId var = dispatch_time(token);
+    if(var.isId())
+      var->reset();
+  }
+
+  ConstrainedVariableId DbCore::dispatch_time(const TokenId& token) {
+    static const LabelStr PARAM_DISPATCH_TIME("dispatch_time");
+    static const LabelStr PARAM_TYPE_INT("int");
+    ConstrainedVariableId var = token->getVariable(PARAM_DISPATCH_TIME);
+    checkError(var.isNoId() || var->lastDomain().getTypeName() == PARAM_TYPE_INT, var->toString());
+    return var;
+  }
+
 }

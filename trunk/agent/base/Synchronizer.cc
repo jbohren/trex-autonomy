@@ -178,19 +178,21 @@ namespace TREX {
 
       // Case 1: The goal must end in the past
       if(endTime.getUpperBound() <= m_core->getCurrentTick()){
+	debugMsg("Synchronizer:resetGoals", m_core->nameString() << "Ends in the past");
 	past.push_back(goal);
 	continue;
       }
 
       // Case 3: The goal was previously rejected and cannot be started. This is also considered the past.
       if(goal->isRejected() && goal->start()->baseDomain().getUpperBound() < m_core->getCurrentTick()){
+	debugMsg("Synchronizer:resetGoals", m_core->nameString() << "Rejected");
 	past.push_back(goal);
 	continue;
       }
 
       // Case 4: The goal is merged with a current value. We will remove the goal as it has already been started.
       if(goal->isMerged() && isCurrent(goal->getActiveToken())){
-	TokenId activeToken = goal->getActiveToken();
+	debugMsg("Synchronizer:resetGoals", m_core->nameString() << "Merged with current value.");
 	past.push_back(goal);
 	continue;
       }
@@ -207,6 +209,7 @@ namespace TREX {
 
       // Case 6: The goal cannot be planned in time
       if(goal->start()->baseDomain().getUpperBound() <= (m_core->getCurrentTick() + m_core->getLatency())){
+	debugMsg("Synchronizer:resetGoals", m_core->nameString() << "Might have to start before we have time to plan.");
 	past.push_back(goal);
 	continue;
       }
@@ -220,7 +223,7 @@ namespace TREX {
 
     for(std::vector<TokenId>::const_iterator it = past.begin(); it != past.end(); ++it){
       TokenId token = *it;
-      debugMsg("Synchronizer:resetGoals", m_core->nameString() << "Discarding goal that has passed:" << token->toString());
+      debugMsg("Synchronizer:resetGoals", m_core->nameString() << "Discarding goal:" << token->toString());
       m_core->cleanupGoal(token);
       token->discard();
     }

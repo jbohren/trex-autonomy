@@ -509,6 +509,15 @@ namespace TREX {
      */
     static void deactivateIgnoredToken(const TokenId& token);
 
+
+
+    /**
+     * @brief Utilities for handling dispatch time settings for dispatched and received tokens
+     */
+    static ConstrainedVariableId dispatch_time(const TokenId& token);
+    void setDispatchTime(const TokenId& token) const;
+    void resetDispatchTime(const TokenId& token) const;
+
     Assembly m_assembly; /*!< Contains the components for the EUROPA Database - can be cut down, customized */
 
     const PlanDatabaseId m_db; /*!< EUROPA Database contained in the assembly */
