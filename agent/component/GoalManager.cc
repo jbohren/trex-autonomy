@@ -213,7 +213,8 @@ namespace TREX{
     if(m_positionSourceCfg != sl_nullLabel){
       debugMsg("GoalManager:handleInitialize", "Looking to source position information from '" << m_positionSourceCfg.toString() << "'");
       m_positionSource = getPlanDatabase()->getObject(m_positionSourceCfg);
-      checkError(m_positionSource.isValid(), "No position source for GoalManager.");
+      checkError(m_positionSource.isValid(), 
+		 "No position source for GoalManager. See Goal Manager Configuration in solver to set the source for getting position data.");
     }
   }
 
