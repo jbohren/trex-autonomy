@@ -41,8 +41,8 @@ namespace TREX {
 	m_cur.reset(RStat::self);
 	m_diff = m_cur-tmp;
       } catch(ErrnoExcept e) {
-	warn(e.what());
-	warn("\tDisabling process statisitics.");
+	
+	debugMsg("TREX", e.what() << "Disabling process statistics.");
 	m_processStats = false;
       }
     }

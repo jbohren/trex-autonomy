@@ -44,25 +44,25 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 
 class GamePlayTests {
 public:
-  static bool test(){
-    runTest(OrienteeringSolver);
+  static bool test(){ 
     runTest(testRepair);
     runTest(bugFixes);
+    runTest(testUndefinedSingleTimeline);
+    runTest(testUndefinedDerived);
+    runTest(testActions); 
+    runTest(OrienteeringSolver);
+    runTest(testSynch);  
+    runTest(testDispatch);
+    runTest(testPersistence);
     runTest(testScalability);
     runTest(testTestMonitor);
-    runTest(testActions);
-    runTest(testPersistence);
-    runTest(testDispatch);
     runTest(testSqueezeObserver);
     runTest(testOneDeliberatorOneAdapter);
     runTest(testSimulation);
     runTest(testRecall);
-    runTest(testSynch);
     runTest(testSimulationWithPlannerTimeouts);
     runTest(testInconsistent);
     runTest(testOneStepAhead);
-    runTest(testUndefinedSingleTimeline);
-    runTest(testUndefinedDerived);
     return true;
   }
 
@@ -314,6 +314,6 @@ int main() {
   setenv("TREX_PATH", "./orienteering", 1);
   initTREX();
   runTestSuite(GamePlayTests::test);
-  //runTestSuite(AgentTests::test);
+  runTestSuite(AgentTests::test);
   return 0;
 }

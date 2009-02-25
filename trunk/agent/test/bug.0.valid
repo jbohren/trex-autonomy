@@ -16,5 +16,5 @@
 7 REQUEST pos Position.Holds
 7 NOTIFY  pos Position.Holds
 8 NOTIFY  pos Position.Holds
-8 RECALL pos Position.Holds
 9 NOTIFY  pos Position.Holds
+9 NOTIFY  grasper GraspObject.Inactive

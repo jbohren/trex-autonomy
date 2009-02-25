@@ -604,6 +604,7 @@ class Position extends AgentTimeline {
   Position(Mode _mode){super(_mode, "Holds");}
 };
 
+
 TestActions::doGrasp{
   contained_by(GraspObject.Active g);
   eq(x, g.x);

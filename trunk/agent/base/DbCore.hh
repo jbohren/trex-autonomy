@@ -340,7 +340,7 @@ namespace TREX {
     /**
      * @brief Utility to dactive the main solver when done with it.
      */
-    void deactivateSolver();
+    bool deactivateSolver();
 
     /**
      * @brief Utility for construction
@@ -517,6 +517,9 @@ namespace TREX {
     static ConstrainedVariableId dispatch_time(const TokenId& token);
     void setDispatchTime(const TokenId& token) const;
     void resetDispatchTime(const TokenId& token) const;
+
+    /** UTILITIES FOR ANALYSIS **/
+    bool timelinesAreComplete();
 
     Assembly m_assembly; /*!< Contains the components for the EUROPA Database - can be cut down, customized */
 
