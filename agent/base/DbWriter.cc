@@ -666,8 +666,9 @@ namespace TREX {
 
   void DbWriter::addSourcePath(const char* path) {
     std::string spath(path);
-    if(path == "" || path == ":")
+    if((strcmp(path,"") == 0) || (strcmp(path,":") == 0))
       return;
+
     debugMsg("DbWriter:addSourcePath", "Adding path '" << spath << "'");
     sourcePaths.push_back(spath);
   }

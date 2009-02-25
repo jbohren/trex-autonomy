@@ -73,7 +73,7 @@ void ObservationLogger::declTimeline(LabelStr const &name,
     
     oss<<"ObservationLogger : timeline \""<<name<<"\" multiply declared.\n"
        <<"                    keeping the first one.";
-    warn(oss.str());
+    debugMsg("TREX", oss.str());
   }
 }
 

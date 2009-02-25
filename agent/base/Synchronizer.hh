@@ -28,6 +28,11 @@ namespace TREX {
      */
     bool relax(bool discardCurrentValues);
 
+
+    /** UTILITIES FOR ANALYSIS OF FAILURES **/
+    std::string tokenResolutionFailure(const TokenId& tokenToResolve, const TokenId& merge_candidate) const;
+    std::string propagationFailure() const;
+
   private:
 
     /**
@@ -38,7 +43,7 @@ namespace TREX {
     /**
      * @brief Resolve a specific token at the execution frontier
      */
-    bool resolveToken(const TokenId& token, unsigned int& stepCount);
+    bool resolveToken(const TokenId& token, unsigned int& stepCount, const TokenId& mergeCandidate);
 
     /**
      * @brief Fire all rules in the execution frontier
@@ -59,7 +64,7 @@ namespace TREX {
      * @brief Merge a token if the option is there
      * @return true if it tried a merge, false if it did not
      */
-    bool mergeToken(const TokenId& token);
+    bool mergeToken(const TokenId& token, const TokenId& mergeCandidate);
 
     /**
      * @brief Insert a token and resolve its slaves
@@ -89,12 +94,12 @@ namespace TREX {
     /**
      * @brief Test for a unit decision in the synchronization scope
      */
-    bool isUnit(const TokenId& token);
+    bool isUnit(const TokenId& token, TokenId& mergeCandidate);
 
     /**
      * @brief Test for synchronization scope
      */
-    bool inSynchScope(const TokenId& token);
+    bool inSynchScope(const TokenId& token, TokenId& mergeCandidate);
 
     /**
      * @brief Reset goals as part of repair
@@ -121,7 +126,6 @@ namespace TREX {
      * @brief Helper method to test if the token is on a persistent object
      */
     static bool isPersistent(const TokenId& token);
-
 
     /**
      * @brief Copy a value at the execution frontier. Used to re-apply the model.

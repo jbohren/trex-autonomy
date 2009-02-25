@@ -1,6 +1,7 @@
 /**
- * Use a single timeline where the model produces gaps. Ensure that the gaps are filled during execution with
- * 'undefined' tokens.
+ * Use a single timeline where the model produces gaps. These gaps prohibit a plan from being integrated to
+ * execution thus exercising the code to constrain a plan to meet the execution frontier. We expect that
+ * planning fails and the original value is always extended through relaxation
  */
 
 #include "GamePlay.nddl"

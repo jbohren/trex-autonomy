@@ -44,7 +44,13 @@ namespace TREX {
     TokenId token;
 
     if(ConstrainedVariableId::convertable(entity)){
-      EntityId parent = ConstrainedVariableId(entity)->parent();
+      ConstrainedVariableId var = entity;
+
+      // Exclude if already a singleton
+      if(var->lastDomain().isSingleton())
+	return true;
+
+      EntityId parent = var->parent();
 
       // Exclude variable if global or contained by an object
       if(parent.isNoId() || ObjectId::convertable(parent))
@@ -708,12 +714,12 @@ namespace TREX {
 	logPlan();
       }
 
-      deactivateSolver();
 
-      // Restore to inactive state
-      m_state = DbCore::INACTIVE;
-
-      debugMsg("DbCore:resume", nameString() << "COMPLETED ");
+      if(deactivateSolver()){
+	// Restore to inactive state
+	m_state = DbCore::INACTIVE;
+	debugMsg("DbCore:resume", nameString() << "COMPLETED ");
+      }
     }
 
     return;
@@ -816,8 +822,10 @@ namespace TREX {
 	  commitAndRestrict(token);
 
 	// If the latest end time <= the current tick, skip ahead
-	if(endTime.getUpperBound() <= getCurrentTick())
+	if(endTime.getUpperBound() <= getCurrentTick()){
+	  token->restrictBaseDomains();
 	  continue;
+	}
 
 	// If the start time is not a singleton it does not have to be dispatched, so we do not.
 	if(startTime.getUpperBound() > getCurrentTick() && !startTime.isSingleton())
@@ -1050,6 +1058,7 @@ namespace TREX {
     if(!m_db->getConstraintEngine()->propagate()){
       TREXLog() << nameString() << "Inconsistent plan." << std::endl;
       debugMsg("DbCore:propagate", nameString() << "Inconsistent plan.");
+      debugMsg("trex:analysis", nameString() << m_synchronizer.propagationFailure());
       markInvalid("The constraint network is inconsistent. To investigate, enable ConstraintEngine in Debug.cfg. Look for EMPTIED domain in log output to find the culprit.");
     }
     else {
@@ -1182,13 +1191,20 @@ namespace TREX {
   /**
    * @brief We deactivate the solver if it has failed to find a plan in time, or when it has terminated.
    */
-  void DbCore::deactivateSolver(){
+  bool DbCore::deactivateSolver(){
     debugMsg("DbCore:deactivateSolver", nameString());
     m_solver->clear();
 
     // Now bring our tick up to speed
     m_currentTickCycle = getCurrentTick();
     m_lastCompleteTick = getCurrentTick();
+
+    if(!timelinesAreComplete()){
+      markInvalid("Incomplete after planning. Need to further constrain the model to require the planner to integrate the plan to the execution frontier.");
+      return false;
+    }
+
+    return true;
   }
 
   bool DbCore::hasEntity(const EntityId& entity){
@@ -1292,7 +1308,7 @@ namespace TREX {
 	garbage.push_back(goalToken);
 
       // If the goal is active, we can restrict the start time base domain to be greater than or equal to the current tick. This is
-      // important so facilitate archiving where tokens in the future have ordering relatiosn to those in the past.
+      // important so facilitate archiving where tokens in the future have ordering relations to those in the past.
       if(goalToken->isActive() && !goalToken->isCommitted() && latestStart >= getCurrentTick())
 	goalToken->start()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
     }
@@ -1314,7 +1330,9 @@ namespace TREX {
       TokenId observation = *it;
       checkError(observation.isValid(), observation);
       checkError(observation->isActive() || observation->isMerged(), 
-		 observation->toString() << " has state " << observation->getState()->toString());
+		 observation->toString() << " has state " << observation->getState()->toString() <<
+		 " This implies that the plan is incomplete (i.e. not stitched into the execution frontier)" <<
+		 " since we were unable to unambiguously integrate the observation.");
 
       TokenId activeToken = (observation->isActive() ? observation : observation->getActiveToken());
 
@@ -1326,6 +1344,9 @@ namespace TREX {
       if(!propagate())
 	return;
     }
+
+
+    // Internal timelines
 
     // Actions that have started should be committed
     IntervalIntDomain startBaseDomain(getCurrentTick() + 1, PLUS_INFINITY);
@@ -1738,8 +1759,10 @@ namespace TREX {
       }
 
       // We have a distance bound
-      if(distanceBounds.getLowerBound() >= 0 && !distanceBounds.isSingleton())
+      if(distanceBounds.getLowerBound() >= 0 && !distanceBounds.isSingleton()){
+	debugMsg("DbCore:hasPendingPredecessors", token->toString() << " must finish first.");
 	return true;
+      }
     }
 
     return false;
@@ -1819,6 +1842,8 @@ namespace TREX {
    * can be restricted because the past is monotonic.
    */
   void DbCore::commitAndRestrict(const TokenId& token){
+    debugMsg("DbCore:commitAndRestrict", nameString() << "(" << token->getKey() << ") " << token->toString());
+
     token->commit();
 
     // Propagate constraints before binding attribute base domains.
@@ -2086,7 +2111,7 @@ namespace TREX {
     if(m_state != DbCore::INVALID)
       dispatchRecalls();
 
-    debugMsg("DbCore:markInvalid", nameString() << " is marked invalid. Hint:" << comment);
+    debugMsg("trex:analysis", nameString() << " is marked invalid. Hint:" << comment);
     m_state = DbCore::INVALID;
   }
 
@@ -2201,4 +2226,41 @@ namespace TREX {
     return var;
   }
 
+  bool DbCore::timelinesAreComplete(){
+    std::list<ObjectId> objects;
+    m_db->getObjectsByType(Agent::TIMELINE(), objects);
+
+    for(std::list<ObjectId>::const_iterator it = objects.begin(); it != objects.end(); ++it){
+      TimelineId timeline = (TimelineId) *it;
+      const std::list<TokenId>& tokenSequence = timeline->getTokenSequence();
+      TokenId pred;
+      for(std::list<TokenId>::const_iterator t_it = tokenSequence.begin(); t_it != tokenSequence.end(); ++t_it){
+	TokenId token = *t_it;
+	checkError(token.isValid(), token);
+
+	// If the token is not committed, and it has a predecessor, then there should be no distance allowed between it and its predecessor
+	if(!token->isCommitted() && pred.isId()){
+	  IntervalIntDomain separationDistance = 
+	    m_db->getTemporalAdvisor()->getTemporalDistanceDomain(pred->end(), token->start(), true);
+
+	  // If there is a gap, bridge it
+	  if(separationDistance.getUpperBound() > 0){
+	    debugMsg("trex:analysis", nameString() << token->toString() << " is not constrained to succeed " << pred->toString() <<
+		     " Posting concurrency constraint to integrate the plan.");
+
+	    m_db->getConstraintEngine()->createConstraint("concurrent", makeScope(pred->end(), token->start()));
+
+	    if(!propagate())
+	      return false;
+
+	    break;
+	  }
+	}
+
+	pred = token;
+      }
+    }
+
+    return true;
+  }
 }

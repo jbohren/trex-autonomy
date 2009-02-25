@@ -5,7 +5,6 @@
 #include "Token.hh"
 #include "TokenVariable.hh"
 #include "Observer.hh"
-#include "GamePlay.hh"
 
 /**
  * @author Conor McGann

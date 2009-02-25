@@ -1,6 +1,8 @@
 /**
  * Simple goal to grasp. Should trigger an iterator. Will finish when observed position
- * is the same as the target.
+ * is the same as the target. The iterator is designed to be conditioned on feedback to
+ * determine when it should finish, and we force it to only get the expected feedback event
+ * at tick 7. Thus we will keep trying additional actions.
  */
 
 #include "GamePlay.nddl"

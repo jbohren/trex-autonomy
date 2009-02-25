@@ -29,9 +29,9 @@ namespace TREX {
   /**
    * @brief Will be in scope if in the tick horizon and in scope for this reactor, and a unit decision
    */
-  bool Synchronizer::inSynchScope(const TokenId& token){
+  bool Synchronizer::inSynchScope(const TokenId& token, TokenId& mergeCandidate){
     if(inTickHorizon(token, m_core->getCurrentTick()) && 
-       m_core->inScope(token) && !m_core->inDeliberation(token) && isUnit(token))
+       m_core->inScope(token) && !m_core->inDeliberation(token) && isUnit(token, mergeCandidate))
 	return true;
 
     return false;
@@ -44,14 +44,52 @@ namespace TREX {
    * relax the plan. 
    * @note Any token that is rejectable is not in scope.
    */
-  bool Synchronizer::isUnit(const TokenId& token){
+  bool Synchronizer::isUnit(const TokenId& token, TokenId& merge_candidate){
+    // Compute compatible tokens, using an exact test
+    std::vector<TokenId> compatible_tokens;
+    m_db->getCompatibleTokens(token, compatible_tokens, PLUS_INFINITY, true);
 
-    if(token->start()->lastDomain().isSingleton() || 
-       token->start()->lastDomain().getUpperBound() < m_core->getCurrentTick() ||
-       !m_db->hasCompatibleTokens(token) || 
-       !m_db->hasOrderingChoice(token))
+    // Iterate over tokens to find one suitable for merging in synchronization
+    unsigned int merge_choice_count(0);
+    for(std::vector<TokenId>::const_iterator it = compatible_tokens.begin(); it != compatible_tokens.end(); ++it){
+      TokenId candidate = *it;
+
+      // If the token in question is in deliberation, continue
+      if(m_core->inDeliberation(candidate))
+	continue;
+
+      merge_choice_count++;;
+      merge_candidate = candidate;
+
+      // if the candidate could be extended, then it is effectively another option. Consider als the case where the candidate is flexible in its end
+      // time but the token in question is not. Put another way, the candidate is NECESSARILY extended if this tokens end time exlcudes the option
+      if(token->end()->lastDomain().getLowerBound() <= m_core->getCurrentTick() &&
+	 candidate->end()->lastDomain().isMember(m_core->getCurrentTick()) &&
+	 candidate->end()->lastDomain().isMember(m_core->getCurrentTick() + 1)){
+	debugMsg("Synchronizer:isUnit", "Additional choice for merging on " << candidate->toString() <<
+		 " ending in " << candidate->end()->toString() << 
+		 " for token " << token->toString() << " with start = " << token->start()->lastDomain().toString());
+	merge_choice_count++;
+      }
+    }
+
+    // If we have only one option to merge onto, and we have nowhere to insert the token, then we will have a unit decision
+    if(merge_choice_count == 1 && !m_db->hasOrderingChoice(token)){
+      debugMsg("Synchronizer:isUnit", "Found unit decision for " << token->toString() <<
+	       " with start = " << token->start()->lastDomain().toString() << ". One spot to merge it.");
       return true;
+    }
 
+    if(merge_choice_count == 0){
+      merge_candidate = TokenId::noId();
+
+      debugMsg("Synchronizer:isUnit", "Found unit decision for " << token->toString() <<
+	       " with start = " << token->start()->lastDomain().toString() << ". No ordering choice.");
+
+      return true;
+    }
+
+    debugMsg("Synchronizer:isUnit", "Excluding " << token->toString());
     return false;
   }
 
@@ -352,11 +390,15 @@ namespace TREX {
     token->start()->restrictBaseDomain(source->start()->baseDomain());
     token->end()->restrictBaseDomain(IntervalIntDomain(m_core->getCurrentTick(), PLUS_INFINITY));
 
-    if(m_core->isObservation(source))
+    if(m_core->isObservation(source)){
+      // Current observations should have their values extended in case this did not happen correctly before pre-emption was required
+      //checkError(m_core->isCurrentObservation(source), "Should only be copying current observations. But copied " << source->toString());
+      //token->end()->restrictBaseDomain(IntervalIntDomain(m_core->getCurrentTick() + 1, PLUS_INFINITY));
       m_core->bufferObservation(token);
+    }
     else if(m_core->isGoal(source)){
-      token->end()->restrictBaseDomain(source->end()->baseDomain());
-      m_goals.insert(token);
+	token->end()->restrictBaseDomain(source->end()->baseDomain());
+	m_goals.insert(token);
     }
 
     // Update the duration also, based on base domain values of start and end
@@ -406,7 +448,8 @@ namespace TREX {
 	  continue;
 
 	// If outside the horizon or out of scope, skip it
-	if(!inSynchScope(token))
+	TokenId merge_candidate;
+	if(!inSynchScope(token, merge_candidate))
 	  continue;
 
 	stepCount++;
@@ -416,7 +459,7 @@ namespace TREX {
 		 std::endl << PlanDatabaseWriter::toString(m_db));
 
 	// Resolve the token and ensure consistency in order to continue.
-	if(!resolveToken(token, stepCount) || !m_core->propagate())
+	if(!resolveToken(token, stepCount, merge_candidate) || !m_core->propagate())
 	  return false;
       }
 
@@ -427,9 +470,11 @@ namespace TREX {
     return true;
   }
 
-  bool Synchronizer::resolveToken(const TokenId& token, unsigned int& stepCount){
-    if(mergeToken(token) || insertToken(token, stepCount))
+  bool Synchronizer::resolveToken(const TokenId& token, unsigned int& stepCount, const TokenId& merge_candidate){
+    if(mergeToken(token, merge_candidate) || insertToken(token, stepCount))
       return true;
+
+    debugMsg("trex:analysis", m_core->nameString() << tokenResolutionFailure(token, merge_candidate));
 
     m_core->markInvalid(std::string("Could not insert ") + token->toString() + 
 			" into the plan. The plan is not compatible with observations and must be relaxed. Enable all DbCore messages and also enable Synchronizer messages in the Debug.cfg file.");
@@ -552,38 +597,23 @@ namespace TREX {
   /**
    * Only merge it. True if we tried to merge, false if we did not.
    */
-  bool Synchronizer::mergeToken(const TokenId& token){
-    if(m_core->isInvalid())
+  bool Synchronizer::mergeToken(const TokenId& token, const TokenId& merge_candidate){
+    if(m_core->isInvalid() || merge_candidate.isNoId())
       return false;
 
     // No need to try if already active, or if cannot be merged
     if(!token->isInactive() || !token->getState()->lastDomain().isMember(Token::MERGED))
       return false;
 
-    // Compute a choice to merge. Only one
-    std::vector<TokenId> results;
-    m_db->getCompatibleTokens(token, results, 1, false);
 
-    // If we have a hit, merge
-    if(results.size() == 1){
-      TokenId activeToken = results[0];
+    token->merge(merge_candidate);
 
-      // Check that the active token is complete. If not, cannot merge onto it since that would draw it into
-      // execution, leading to commitment.
-      if(m_core->inDeliberation(activeToken))
-	return false;
+    debugMsg("Synchronizer:mergeToken", 
+	     m_core->nameString() << "Merging " << token->toString() << " onto " << merge_candidate->toString());
 
-      token->merge(activeToken);
+    m_core->propagate();
 
-      debugMsg("Synchronizer:mergeToken", 
-	       m_core->nameString() << "Merging " << token->toString() << " onto " << activeToken->toString());
-
-      m_core->propagate();
-
-      return true;
-    }
-
-    return false;
+    return true;
   }
 
   /**
@@ -601,6 +631,9 @@ namespace TREX {
 
     if(token->isInactive())
       token->activate();
+
+    checkError(token->getObject()->lastDomain().isSingleton(), 
+	       "Expecting " << token->getKey() << " to be a singleton for synchronization");
 
     ObjectId object = token->getObject()->lastDomain().getSingletonValue();
 
@@ -637,13 +670,14 @@ namespace TREX {
 	return false;
 
       TokenId slave = *it;
+      TokenId merge_candidate;
 
-      if(!inSynchScope(slave))
+      if(!inSynchScope(slave, merge_candidate))
 	continue;
 
       stepCount++;
 
-      if(!resolveToken(slave, stepCount))
+      if(!resolveToken(slave, stepCount, merge_candidate))
 	return false;
     }
 
@@ -658,6 +692,8 @@ namespace TREX {
     if(m_core->isInvalid())
       return false;
 
+    debugMsg("Synchronizer:completeInternalTimelines", m_core->nameString() << "START");
+
     unsigned int max_i = m_core->m_internalTimelineTable.size();
     TICK tick = m_core->getCurrentTick();
 
@@ -670,6 +706,7 @@ namespace TREX {
       TokenId token;
       while(it != tokens.end()){
 	TokenId candidate = *it;
+	debugMsg("Synchronizer:completeInternalTimelines", m_core->nameString() << "Evaluating " << candidate->toString() << " for processing at the execution frontier");
 
 	// Terminate if we have moved past tao
 	if(candidate->start()->lastDomain().getLowerBound() > tick)
@@ -678,6 +715,7 @@ namespace TREX {
 	// Terminate, selecting the candidate, if it contains tao
 	if(candidate->start()->lastDomain().getLowerBound() <= tick && 
 	   candidate->end()->lastDomain().getUpperBound() > tick){
+	  debugMsg("Synchronizer:completeInternalTimelines", m_core->nameString() << candidate->toString() << " has been selected for processing at the execution frontier");
 	  token = candidate;
 	  break;
 	}
@@ -703,6 +741,8 @@ namespace TREX {
       if(!m_core->propagate())
 	return false;
     }
+
+    debugMsg("Synchronizer:completeInternalTimelines", m_core->nameString() << "END");
 
     return true;
   }
@@ -749,5 +789,94 @@ namespace TREX {
     }
 
     return false;
+  }
+
+  std::string Synchronizer::propagationFailure() const {
+    std::stringstream ss;
+
+    ConstraintEngineId ce = m_db->getConstraintEngine();
+
+    if(!ce->constraintConsistent()){
+      ss <<  "Constraint Network is inconsistent. " << std::endl;
+
+      const ConstrainedVariableSet& variables = ce->getVariables();
+      for(ConstrainedVariableSet::const_iterator v_it = variables.begin(); v_it != variables.end(); ++v_it){
+	ConstrainedVariableId var = *v_it;
+
+	if(var->lastDomain().isEmpty()){
+
+	  ConstraintSet constraints;
+	  TokenSet tokens;
+	  var->constraints(constraints);
+	  for(ConstraintSet::const_iterator c_it = constraints.begin(); c_it != constraints.end(); ++c_it){
+	    ConstraintId constraint = *c_it;
+	    const std::vector<ConstrainedVariableId>& scope = constraint->getScope();
+	    for(unsigned int i=0; i<scope.size(); i++){
+	      TokenId parent;
+	      if(scope[i]->parent() == EntityId::noId())
+		continue;
+	      if(RuleInstanceId::convertable(scope[i]->parent())){
+		RuleInstanceId r = (RuleInstanceId) scope[i]->parent();
+		parent = r->getToken();
+	      }
+	      else if(TokenId::convertable(scope[i]->parent()))
+		parent = (TokenId) scope[i]->parent();
+
+	      if(parent.isId())
+		tokens.insert(parent);
+	    }
+	  }
+
+	  // Now output the results
+	  ss <<  "Variable " << var->getName().toString() << "(" << var->getKey() << ") is empty." << std::endl << std::endl;
+
+	  ss << "Related Tokens: " << std::endl;
+
+	  for(TokenSet::const_iterator t_it = tokens.begin(); t_it != tokens.end(); ++t_it){
+	    TokenId token = *t_it;
+	    ss << "  " << token->toString() << std::endl;
+	  }
+
+	  ss << std::endl << "Related Constraints: " << std::endl;
+
+	  for(ConstraintSet::const_iterator c_it = constraints.begin(); c_it != constraints.end(); ++c_it){
+	    ConstraintId constraint = *c_it;
+	    ss << constraint->toString() << std::endl << std::endl ;
+	  }
+
+	  break;
+	}
+      }
+    }
+    return ss.str();
+  }
+
+  std::string Synchronizer::tokenResolutionFailure(const TokenId& tokenToResolve, const TokenId& merge_candidate) const {
+    std::stringstream ss;
+
+    ss << "Failed to resolve " << tokenToResolve->toString() << ". Analysis results below" << std::endl << std::endl;
+
+    if(m_core->isObservation(tokenToResolve))
+      ss << tokenToResolve->toString() << " is an observation." << std::endl << std::endl;
+
+    if(tokenToResolve->master().isId()){
+      const TokenId master = tokenToResolve->master();
+      ss << tokenToResolve->toString() << " is implied by the model and a slave of " << master->toString() << std::endl << std::endl;
+    }
+
+    // If the network is inconsistent then we want to analyze the neighborhood of the empty variable
+    if(!m_db->getConstraintEngine()->constraintConsistent()){
+      ss << propagationFailure();   
+    }
+    else if(merge_candidate.isId()){
+      ss << merge_candidate->toString() << " is not compatible in database below:" << std::endl;
+      ss << PlanDatabaseWriter::toString(m_db) << std::endl;
+    }
+    else {
+      ss << "No compatible tokens and no locations for insertion in database below:" << std::endl;
+      ss << PlanDatabaseWriter::toString(m_db) << std::endl;
+    }
+
+    return ss.str();
   }
 }
