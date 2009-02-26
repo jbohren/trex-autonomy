@@ -160,20 +160,28 @@ namespace TREX {
   void TimelineContainer::setServer(const ServerId& server){ m_server = server;}
 
   bool TimelineContainer::isDispatched(const TokenId& token){
-    return m_dispatchedTokens.find(token->getKey()) != m_dispatchedTokens.end();
+    for(TokenSet::const_iterator it = m_dispatchedTokens.begin(); it != m_dispatchedTokens.end(); ++it){
+      TokenId t = *it;
+      checkError(t.isValid(), t << " is a bad id in " << m_timeline->getName().toString());
+    }
+
+    return m_dispatchedTokens.find(token) != m_dispatchedTokens.end();
   }
 
-  void TimelineContainer::markDispatched(const TokenId& token){
-    int key = token->getKey();
-    m_dispatchedTokens.insert(key);
+  const TokenSet& TimelineContainer::getDispatchedTokens() const {
+    return m_dispatchedTokens;
+  }
+
+  void TimelineContainer::markDispatched(const TokenId& token){    
+    m_dispatchedTokens.insert(token);
   }
 
   void TimelineContainer::clearDispatched(const TokenId& token){
-    m_dispatchedTokens.erase(token->getKey());
+    m_dispatchedTokens.erase(token);
   }
 
   void TimelineContainer::handleRemoval(const TokenId& token){
-    m_dispatchedTokens.erase(token->getKey());
+    m_dispatchedTokens.erase(token);
   }
 
   DbCore::Exception::Exception(const std::string& description): m_description(description) {
@@ -876,7 +884,6 @@ namespace TREX {
 
     std::vector<TokenId> activeUncontrollableEvents;
     bool initialized(false);
-
     for(std::map<int, TimelineContainer>::iterator it = m_externalTimelineTable.begin(); it != m_externalTimelineTable.end(); ++it){
       TimelineContainer& tc = it->second;
       TimelineId timeline = tc.getTimeline();
@@ -1019,6 +1026,8 @@ namespace TREX {
       TREXLog() << nameString() <<  "Missed expected observation on " << timeline->toString() << std::endl;
 
       // Force invalid state to trigger a repair
+      debugMsg("trex:analysis:synchronization", nameString() << missingObservation(timeline));
+
       markInvalid(std::string("Expected an observation for ") + timeline->toString() + ". Are observations being generated?. The plan may simply be broken.");
 
       return false;
@@ -1058,7 +1067,7 @@ namespace TREX {
     if(!m_db->getConstraintEngine()->propagate()){
       TREXLog() << nameString() << "Inconsistent plan." << std::endl;
       debugMsg("DbCore:propagate", nameString() << "Inconsistent plan.");
-      debugMsg("trex:analysis", nameString() << m_synchronizer.propagationFailure());
+      debugMsg("trex:analysis:synchronization", nameString() << m_synchronizer.propagationFailure());
       markInvalid("The constraint network is inconsistent. To investigate, enable ConstraintEngine in Debug.cfg. Look for EMPTIED domain in log output to find the culprit.");
     }
     else {
@@ -1760,6 +1769,7 @@ namespace TREX {
 
       // We have a distance bound
       if(distanceBounds.getLowerBound() >= 0 && !distanceBounds.isSingleton()){
+	debugMsg("trex:analysis:dispatching", token->toString() << " must finish before " << ctoken->toString() << " can be dispatched. The temporal distance between them is:" << distanceBounds.toString());
 	debugMsg("DbCore:hasPendingPredecessors", token->toString() << " must finish first.");
 	return true;
       }
@@ -1819,9 +1829,12 @@ namespace TREX {
 
     // Finally, if the token belongs to an external timeline, and it was dispatched, we want to
     // unbuffer it.
-    std::map<int, TimelineContainer>::iterator it = m_externalTimelineTable.find(token->getKey());
-    if(it != m_externalTimelineTable.end())
-      it->second.handleRemoval(token);
+    if(token->getObject()->lastDomain().isSingleton()){
+      ObjectId object = token->getObject()->lastDomain().getSingletonValue();
+      std::map<int, TimelineContainer>::iterator it = m_externalTimelineTable.find(object->getKey());
+      if(it != m_externalTimelineTable.end())
+	it->second.handleRemoval(token);
+    }
   }
 
   void DbCore::handleCommitted(const TokenId& token){
@@ -2111,7 +2124,7 @@ namespace TREX {
     if(m_state != DbCore::INVALID)
       dispatchRecalls();
 
-    debugMsg("trex:analysis", nameString() << " is marked invalid. Hint:" << comment);
+    debugMsg("DbCore:markInvalid", nameString() << " is marked invalid. Hint:" << comment);
     m_state = DbCore::INVALID;
   }
 
@@ -2245,7 +2258,7 @@ namespace TREX {
 
 	  // If there is a gap, bridge it
 	  if(separationDistance.getUpperBound() > 0){
-	    debugMsg("trex:analysis", nameString() << token->toString() << " is not constrained to succeed " << pred->toString() <<
+	    debugMsg("trex:analysis:planning", nameString() << token->toString() << " is not constrained to succeed " << pred->toString() <<
 		     " Posting concurrency constraint to integrate the plan.");
 
 	    m_db->getConstraintEngine()->createConstraint("concurrent", makeScope(pred->end(), token->start()));
@@ -2263,4 +2276,100 @@ namespace TREX {
 
     return true;
   }
+
+  /**
+   * If we are missing an expected observation, then we want to know:
+   * The time
+   * If it is because of an expected end time - and a hole
+   * Was the expected token dispatched, and if so, when.
+   */ 
+  std::string DbCore::missingObservation(const TimelineId& timeline) const {
+    std::stringstream ss;
+
+    ss << "At tick [" << getCurrentTick() << ") - Missing Observation on " << timeline->getName().toString() << ". Analysis below:" << std::endl;
+
+    // Find the expected token
+    TokenId expectedToken;
+    TokenId predecessor;
+    const std::list<TokenId>& tokenSequence = timeline->getTokenSequence();
+    for(std::list<TokenId>::const_iterator it = tokenSequence.begin(); it != tokenSequence.end(); ++it){
+      TokenId token = *it;
+      checkError(token.isValid(), token);
+
+      if(token->start()->lastDomain().getUpperBound() == getCurrentTick()){
+	expectedToken = token;
+	break;
+      }
+
+      predecessor = token;
+    }
+
+    if(expectedToken.isId()){
+      ss << std::endl << "Expected to get an observation for " << expectedToken->toString();
+      if(inDeliberation(expectedToken))
+	ss << " which is still part of active deliberation. Check if the solver is converging as expected. Solver stats: depth[" << m_solver->getDepth() << "] step_count[" << m_solver->getStepCount() << "]";
+      ss << std::endl;
+    }
+
+    if(predecessor.isId())
+      ss << std::endl << "Continuing predecessor value " << predecessor->toString() << std::endl;
+
+    std::map<int, TimelineContainer>::const_iterator it = m_externalTimelineTable.find(timeline->getKey());
+    const TimelineContainer& tc = it->second;
+    const TokenSet& dispatched_tokens = tc.getDispatchedTokens();
+
+    if(dispatched_tokens.empty()){
+      ss << std::endl << "No dispatched tokens buffered. Perhaps the dispatch window is configured incorrectly or else we are not planning ahead sufficiently to dispatch expected values.";
+
+      if(m_lastCompleteTick == MINUS_INFINITY)
+	ss << " Planning was never completed.";
+      else
+	ss << " Note that planning was last completed at tick [" << m_lastCompleteTick << "]";
+
+      ss << std::endl << std::endl;
+    }
+    else {
+      for(TokenSet::const_iterator it = dispatched_tokens.begin(); it != dispatched_tokens.end(); ++it){
+	TokenId token = *it;
+	checkError(token.isValid(), token);
+	ss << "Dispatched " << token->toString() << " start == " << token->start()->lastDomain().toString() << " && end == " <<  token->end()->lastDomain().toString() << std::endl;
+      }
+    }
+
+    ss << std::endl << std::endl;
+
+    // Find the last observation
+    for(TokenSet::iterator it = m_observations.begin(); it != m_observations.end(); ++it){
+      TokenId observation = *it;
+      if(observation->getObject()->getSpecifiedValue() == timeline)
+	ss << "Observed " << observation->toString() << " at tick[" << observation->start()->lastDomain().toString() << "]" << std::endl;
+    }
+
+    ss << std::endl << "Database Below" << std::endl << PlanDatabaseWriter::toString(m_db);
+
+    ss << "*****************************************************" << std::endl;
+
+    return ss.str();
+  }
+
+  /**
+   * Analysis of the execution frontier to identify problems in archiving tokens
+   *
+  std::string DbCore::analyzeCandidatesForArchiving(){
+    std::stringstream ss;
+
+    // Iterate over all tokens in the database. If any are strictly in the past, then we should wonder why they are not archived
+
+    const TokenSet& all_tokens = m_db->getTokens();
+    for(TokenSet::const_iterator it = all_tokens.begin(); it != all_tokens.end(); ++it){
+      TokenId token = *it;
+      if(token->end().lastDomain().getUpperBound() < getCurrentTick() - 1){
+
+
+      }
+
+    }
+  }
+  */
+
 }

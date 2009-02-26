@@ -80,6 +80,11 @@ namespace TREX {
     bool isDispatched(const TokenId& token);
 
     /**
+     * @brief Get the set of dispatched tokens still in memory
+     */
+    const TokenSet& getDispatchedTokens() const;
+
+    /**
      * @brief Record that it has been dispatched
      */
     void markDispatched(const TokenId& token);
@@ -98,7 +103,7 @@ namespace TREX {
     const TimelineId m_timeline; /*!< Id for the timeline we buffer observations for */
     ServerId m_server;
     TICK m_lastObserved; /*!< Used to say how current the latest observation is. */
-    std::set<int> m_dispatchedTokens; /*!< The set of buffered dispatches. Used to dispatch once only. */
+    TokenSet m_dispatchedTokens; /*!< The set of buffered dispatches. Used to dispatch once only. */
   };
 
   /**
@@ -520,6 +525,7 @@ namespace TREX {
 
     /** UTILITIES FOR ANALYSIS **/
     bool timelinesAreComplete();
+    std::string missingObservation(const TimelineId& timeline) const;
 
     Assembly m_assembly; /*!< Contains the components for the EUROPA Database - can be cut down, customized */
 
