@@ -68,14 +68,18 @@ namespace TREX {
     else
       token = entity;
 
-    debugMsg("DeliberationFilter:test", "[" << sl_counter++ << "] Evaluating " << token->toString() << " with " << 
+    if(m_core.isNoId()){
+      m_core = DbCore::getInstance(token);
+    }
+
+    TREX_INFO("DeliberationFilter:test", "[" << sl_counter++ << "] Evaluating " << token->toString() << " with " << 
 	     token->start()->lastDomain().toString() << " AND " << 
 	     token->end()->lastDomain().toString());
 
     // Cheap check if token is out of scope due to being ignored
-    DbCoreId dbCore = DbCore::getInstance(token);
-    if(dbCore.isId() && !dbCore->inScope(token))
+    if(m_core.isId() && !m_core->inScope(token))
       return true;
+
 
     // Now focus on the token
     const IntervalIntDomain& startTime = token->start()->lastDomain();
@@ -83,7 +87,7 @@ namespace TREX {
 
     // If the token is necessarily in the past, exclude from deliberation. It will be handled in synchronization
     // or not at all if sufficiently in the past. Also, if it necessarily starts in the distant future, ignore it
-    if(endTime.getUpperBound() <= (dbCore.isId() ? (dbCore->getCurrentTick()) : horizon().getLowerBound()) || 
+    if(endTime.getUpperBound() <= (m_core.isId() ? (m_core->getCurrentTick()) : horizon().getLowerBound()) || 
        startTime.getLowerBound() >= horizon().getUpperBound())
       return true;
 
@@ -100,7 +104,7 @@ namespace TREX {
     if(!inScope && token->master().isId())
       inScope =  DbCore::isAction(token) || !token->getPlanDatabase()->getTemporalAdvisor()->canPrecede(token->master(), token);
 
-    debugMsg("DeliberationFilter:test", (!inScope ? "Exclude " : "Allow ") <<
+    TREX_INFO("DeliberationFilter:test", (!inScope ? "Exclude " : "Allow ") <<
 		 entity->toString() << " with token scope " << token->start()->lastDomain().toString() <<
 		 " AND " << token->end()->lastDomain().toString());
 
@@ -127,6 +131,13 @@ namespace TREX {
   IntervalIntDomain& DeliberationFilter::horizon(){
     static IntervalIntDomain sl_horizon(0, PLUS_INFINITY);
     return sl_horizon;
+  }
+
+  std::ostream& DeliberationFilter::getStream(){
+    if(m_core.isId())
+      return m_core->getStream();
+    else
+      return DebugMessage::getStream();
   }
 
   // Allocate key collection
@@ -184,9 +195,7 @@ namespace TREX {
     m_dispatchedTokens.erase(token);
   }
 
-  DbCore::Exception::Exception(const std::string& description): m_description(description) {
-    debugMsg("ALWAYS", m_description);
-  }
+  DbCore::Exception::Exception(const std::string& description): m_description(description) {}
 
   const std::string& DbCore::Exception::toString() const {return m_description;}
 
@@ -222,6 +231,8 @@ namespace TREX {
       m_state(DbCore::INACTIVE),
       m_solverCfg(findFile(extractData(configData, "solverConfig").toString())),
       m_planLog(LogManager::instance().file_name(compose(agentName, compose(getName(), "plan")).toString()).c_str()) {
+
+    DebugMessage::setStream(getStream());
 
     instancesByDb().insert(std::pair<PlanDatabaseId, DbCoreId>(m_db, getId()));
 
@@ -276,7 +287,9 @@ namespace TREX {
   }
 
    DbCore::~DbCore(){
-     debugMsg("DbCore:~DbCore", "Cleaning up " << getName().toString());
+     DebugMessage::setStream(getStream());
+
+     TREX_INFO("DbCore:~DbCore", "Cleaning up " << getName().toString());
 
      checkError(m_solver.isValid(), m_solver);
      m_solver.release();
@@ -285,18 +298,18 @@ namespace TREX {
 
      for(TokenSet::iterator it = m_goals.begin(); it != m_goals.end(); ++it){
        TokenId goal = *it;
-       debugMsg("DbCore:~DbCore", "Evaluating buffered goal " << goal->toString());
+       TREX_INFO("DbCore:~DbCore", "Evaluating buffered goal " << goal->toString());
 
        if(goal->isRejected()){
-	 debugMsg("DbCore:~DbCore", goal->toString() << " was rejected.");
+	 TREX_INFO("DbCore:~DbCore", goal->toString() << " was rejected.");
 	 Agent::instance()->notifyRejected(goal);
        }
        else if(goal->isCommitted() || (goal->isMerged() && goal->getActiveToken()->isCommitted())){
-	 debugMsg("DbCore:~DbCore", goal->toString() << " was completed.");
+	 TREX_INFO("DbCore:~DbCore", goal->toString() << " was completed.");
 	 Agent::instance()->notifyCompleted(goal);
        }
        else {
-	 debugMsg("DbCore:~DbCore", goal->toString() << " was not resolved.");
+	 TREX_INFO("DbCore:~DbCore", goal->toString() << " was not resolved.");
        }
      }
 
@@ -306,7 +319,7 @@ namespace TREX {
   }
 
   void DbCore::notify(const Observation& observation){
-    debugMsg("DbCore:notify:observation",nameString() << observation.toString() << " received at " << getCurrentTick());
+    TREX_INFO("DbCore:notify:observation",nameString() << observation.toString() << " received at " << getCurrentTick());
 
     // Get the client to work with
     DbClientId client = m_db->getClient();
@@ -352,7 +365,7 @@ namespace TREX {
    * replicated entities in the foreignKeyTable.
    */
   bool DbCore::handleRequest(const TokenId& goal){
-    debugMsg("DbCore:handleRequest", nameString() << "Request received for " << goal->toString());
+    TREX_INFO("DbCore:handleRequest", nameString() << "Request received for " << goal->toString());
 
     // Get the client to work with
     DbClientId client = m_db->getClient();
@@ -403,7 +416,7 @@ namespace TREX {
     // Finally, we migrate constraints. This leverages the foreign key mapping constructed above.
     applyConstraints(goal);
 
-    debugMsg("DbCore:handleRequest", nameString() << "Local Goal " << localGoal->toString() << " for request " << goal->toString());
+    TREX_INFO("DbCore:handleRequest", nameString() << "Local Goal " << localGoal->toString() << " for request " << goal->toString());
 
     return true;
   }
@@ -414,7 +427,7 @@ namespace TREX {
    * @see recover
    */
   void DbCore::handleRecall(const TokenId& tok){
-    debugMsg("DbCore:handleRecall", nameString() << "Recall received: " << tok->toString());
+    TREX_INFO("DbCore:handleRecall", nameString() << "Recall received: " << tok->toString());
 
     markInvalid("Recall received. Will reset internal timelines.");
 
@@ -466,7 +479,7 @@ namespace TREX {
       var->constraints(constraints);
       for(std::set<ConstraintId>::const_iterator c_it = constraints.begin(); c_it != constraints.end(); ++c_it){
 	const ConstraintId constraint = *c_it;
-	debugMsg("DbCore:applyConstraints", nameString() << "Evaluating " << constraint->toString() << " for " << goal->toString());
+	TREX_INFO("DbCore:applyConstraints", nameString() << "Evaluating " << constraint->toString() << " for " << goal->toString());
 
 	// If built in to this token ignore it
 	if(goal->isStandardConstraint(constraint) || 
@@ -489,7 +502,7 @@ namespace TREX {
 	  // If the constraint has an entity not currently in the database, skip the constraint. It can be migrated
 	  // at some later time perhaps when further tokens are posted.
 	  if(!hasEntity(foreignVar)){
-	    debugMsg("DbCore:applyConstraints", nameString() << "Excluding since " << foreignVar->toString() << " is not in the database.");
+	    TREX_INFO("DbCore:applyConstraints", nameString() << "Excluding since " << foreignVar->toString() << " is not in the database.");
 	    break;
 	  }
 
@@ -501,7 +514,7 @@ namespace TREX {
 	  // If the local variable is not part of this database then we ignore it. We should only link to variables for tokens dispatched to
 	  // this reactor.
 	  if(localVar->getConstraintEngine() != m_db->getConstraintEngine()){
-	    debugMsg("DbCore:applyConstraints", nameString() << "Excluding since " << foreignVar->toString() << " is not in the database.");
+	    TREX_INFO("DbCore:applyConstraints", nameString() << "Excluding since " << foreignVar->toString() << " is not in the database.");
 	    break;
 	  }
 
@@ -518,7 +531,7 @@ namespace TREX {
 
 	// Now if the scope size match we can migrate the constraint
 	if(localScope.size() == scope.size()){
-	  debugMsg("DbCore:applyConstraints", nameString() << "Copying from " << goal->toString() << " constraint " << constraint->toString());
+	  TREX_INFO("DbCore:applyConstraints", nameString() << "Copying from " << goal->toString() << " constraint " << constraint->toString());
 
 	  ConstraintId localConstraint = m_assembly.getConstraintEngine()->createConstraint(constraint->getName(), localScope);
 	  localConstraint->setSource(constraint);
@@ -601,7 +614,7 @@ namespace TREX {
     m_search_stepCount = 0;
 
     if(m_state == DbCore::INVALID){
-      debugMsg("DbCore:handleTickStart", nameString() << "Database is invalid. Repair required.");
+      TREX_INFO("DbCore:handleTickStart", nameString() << "Database is invalid. Repair required.");
       return;
     }
 
@@ -610,7 +623,7 @@ namespace TREX {
     if(!propagate())
       return;
     
-    debugMsg("DbCore:handleTickStart", nameString() << "START");
+    TREX_INFO("DbCore:handleTickStart", nameString() << "START");
 
     checkError(verifyEntities(), "Bad entity detected.");
 
@@ -625,36 +638,36 @@ namespace TREX {
     if(!propagate())
       return;
 
-    debugMsg("PlanWorks", nameString() << m_assembly.exportToPlanWorks());
+    TREX_INFO("PlanWorks", nameString() << m_assembly.exportToPlanWorks());
 
     // Send goals planned on server timelines
     dispatchCommands();
 
-    debugMsg("DbCore:handleTickStart", nameString() << "END: Database State Below" <<  std::endl << PlanDatabaseWriter::toString(m_db));
+    TREX_INFO("DbCore:handleTickStart", nameString() << "END: Database State Below" <<  std::endl << PlanDatabaseWriter::toString(m_db));
   }
 
   /**
    * @brief Tests if the solver can be activated.
    */
   bool DbCore::hasWork(){
-    debugMsg("DbCore:hasWork", nameString() << "Checking for deliberation activity.");
+    TREX_INFO("DbCore:hasWork", nameString() << "Checking for deliberation activity.");
     if(m_state == DbCore::INVALID)
       return false;
 
     // If it is active then we assume it has work to do. Quick check
     if(m_state == DbCore::ACTIVE){
-      debugMsg("DbCore:hasWork", nameString() << "Already active, so yes.");
+      TREX_INFO("DbCore:hasWork", nameString() << "Already active, so yes.");
       return true;
     }
 
     // A Quick check will see if the planner can be executed yet
     if(m_lastCompleteTick == (int) getCurrentTick()){
-      debugMsg("DbCore:hasWork", nameString() << "COMPLETE");
+      TREX_INFO("DbCore:hasWork", nameString() << "COMPLETE");
       return false;
     }
 
     if(Agent::instance()->getFinalTick() < (m_currentTickCycle + 1)){
-      debugMsg("DbCore:hasWork", nameString() << "Extends beyond final tick.");
+      TREX_INFO("DbCore:hasWork", nameString() << "Extends beyond final tick.");
       return false;
     }
 
@@ -662,7 +675,7 @@ namespace TREX {
   }
 
   void DbCore::resume(){
-    debugMsg("DbCore:resume",  nameString() );
+    TREX_INFO("DbCore:resume",  nameString() );
 
     // May have been pre-empted by a recall for example.
     if(m_state == DbCore::INVALID){
@@ -682,7 +695,7 @@ namespace TREX {
     if(!propagate())
       return;
 
-    debugMsg("DbCore:resume:verbose",  nameString() << std::endl << PlanDatabaseWriter::toString(m_db) );
+    TREX_INFO("DbCore:resume:verbose",  nameString() << std::endl << PlanDatabaseWriter::toString(m_db) );
 
     // We will assume we have work to do. Trust but verify
     checkError(hasWork(), "Has no work to do. Error in locking or other logic.");
@@ -691,7 +704,7 @@ namespace TREX {
     if(m_state == DbCore::INACTIVE) {
       m_state = DbCore::ACTIVE;
       m_currentTickCycle = getCurrentTick();
-      debugMsg("DbCore:resume",nameString() << "Starting cycle for tick " << m_currentTickCycle );
+      TREX_INFO("DbCore:resume",nameString() << "Starting cycle for tick " << m_currentTickCycle );
     }
 
     checkError(m_state == DbCore::ACTIVE, "Should always be in this state by now if clean up done correctly.");
@@ -701,7 +714,7 @@ namespace TREX {
     setHorizon();
     const IntervalIntDomain& horizon = DeliberationFilter::getHorizon();
 
-    debugMsg("DbCore:resume",  nameString() << "Using horizon " << horizon.toString());
+    TREX_INFO("DbCore:resume",  nameString() << "Using horizon " << horizon.toString());
 
     checkError(true || !horizon.isMember(getCurrentTick()), 
 	       "Cannot be planning at the execution frontier. Collides with synchronization.");
@@ -726,7 +739,7 @@ namespace TREX {
       if(deactivateSolver()){
 	// Restore to inactive state
 	m_state = DbCore::INACTIVE;
-	debugMsg("DbCore:resume", nameString() << "COMPLETED ");
+	TREX_INFO("DbCore:resume", nameString() << "COMPLETED ");
       }
     }
 
@@ -769,7 +782,7 @@ namespace TREX {
     static unsigned int sl_counter(0);
     sl_counter++;
 
-    debugMsg("DbCore:terminate", nameString() << "Terminating " << token->toString());
+    TREX_INFO("DbCore:terminate", nameString() << "Terminating " << token->toString());
 
     // If it is a goal, generate messages indicating its eventual fate
     if(isGoal(token)){
@@ -791,7 +804,7 @@ namespace TREX {
   void DbCore::notifyObservers(){
     checkError(m_state != DbCore::INVALID, "Should not be publishing when state is invalid");
 
-    debugMsg("DbCore:notifyObservers", nameString() <<  "START");
+    TREX_INFO("DbCore:notifyObservers", nameString() <<  "START");
 
     for(std::vector< std::pair<TimelineId, TICK> >::iterator it = m_internalTimelineTable.begin(); it != m_internalTimelineTable.end(); ++it){
       TimelineId timeline = it->first;
@@ -861,7 +874,7 @@ namespace TREX {
       }
     }
 
-    debugMsg("DbCore:notifyObservers", nameString() <<  "END");
+    TREX_INFO("DbCore:notifyObservers", nameString() <<  "END");
   }
 
   /**
@@ -880,7 +893,7 @@ namespace TREX {
     if(m_state != DbCore::INACTIVE)
       return;
 
-    debugMsg("DbCore:dispatchCommands", nameString() << "START");
+    TREX_INFO("DbCore:dispatchCommands", nameString() << "START");
 
     std::vector<TokenId> activeUncontrollableEvents;
     bool initialized(false);
@@ -895,7 +908,7 @@ namespace TREX {
       // Upper bound includes lookahead.
       TICK dispatchUB = std::min(dispatchLB + server->getLookAhead(),  Agent::instance()->getFinalTick());
 
-      debugMsg("DbCore:dispatchCommands", 
+      TREX_INFO("DbCore:dispatchCommands", 
 	       nameString() << "Evaluating tokens on " << timeline->getName().toString() <<
 	       " for dispatch in [" << dispatchLB << ", " << dispatchUB << "]");
 
@@ -922,7 +935,7 @@ namespace TREX {
 
 	checkError(token.isValid(), token);
 
-	debugMsg("DbCore:dispatchCommands", 
+	TREX_INFO("DbCore:dispatchCommands", 
 		 nameString() << "Evaluating " << token->toString() << " for dispatch window [" << dispatchLB << ", " << dispatchUB << "]");
 	
 	const IntervalIntDomain& startTime = token->start()->lastDomain();
@@ -947,7 +960,7 @@ namespace TREX {
 	// the request outright. It is rather the question of whether you can serve the request now. Absent a positive reponse, we wil retry
 	// on the next iteration
 	if(startTime.intersects(dispatchWindow)){
-	  debugMsg("DbCore:dispatchCommands", nameString() << "Dispatching " << token->toString());
+	  TREX_INFO("DbCore:dispatchCommands", nameString() << "Dispatching " << token->toString());
 	  token->getObject()->restrictBaseDomain(token->getObject()->lastDomain());
 
 	  if(server->request(token)){
@@ -960,7 +973,7 @@ namespace TREX {
       }
     }
 
-    debugMsg("DbCore:dispatchCommands", nameString() << "END");
+    TREX_INFO("DbCore:dispatchCommands", nameString() << "END");
   }
 
 
@@ -968,7 +981,7 @@ namespace TREX {
    * @brief Dispatch Recalls To Respective Servers. All tokens in the future that have been dispatched should be recalled.
    */
   void DbCore::dispatchRecalls(){
-    debugMsg("DbCore:dispatchRecalls", nameString() << "START");
+    TREX_INFO("DbCore:dispatchRecalls", nameString() << "START");
 
     for(std::map<int, TimelineContainer>::iterator it = m_externalTimelineTable.begin(); it != m_externalTimelineTable.end(); ++it){
       TimelineContainer& tc = it->second;
@@ -981,13 +994,13 @@ namespace TREX {
 	TokenId token = *t_it;
 	checkError(token.isValid(), token);
 
-	debugMsg("DbCore:dispatchRecalls", nameString() << 
+	TREX_INFO("DbCore:dispatchRecalls", nameString() << 
 		 "Evaluating " << token->toString() << " for recall. Dispatched[" << tc.isDispatched(token) << "] "
 		 "Ends:" << token->end()->baseDomain().toString());
 
 	// If the token has been dispatched and it is not finished yet ,recall it.
 	if(tc.isDispatched(token) && token->end()->baseDomain().getUpperBound() > getCurrentTick()){
-	  debugMsg("DbCore:dispatchRecalls", nameString() << "Recalling " << token->toString());
+	  TREX_INFO("DbCore:dispatchRecalls", nameString() << "Recalling " << token->toString());
 	  server->recall(token);
 	  tc.clearDispatched(token);
 	  resetDispatchTime(token);
@@ -995,7 +1008,7 @@ namespace TREX {
       }
     }
 
-    debugMsg("DbCore:dispatchRecalls", nameString() << "END");
+    TREX_INFO("DbCore:dispatchRecalls", nameString() << "END");
   }
 
   /**
@@ -1004,7 +1017,7 @@ namespace TREX {
    */
   bool DbCore::extendCurrentValue(const TimelineId& timeline){
     if(m_state == DbCore::INVALID){
-      debugMsg("DbCore:extendCurrentValue:timeline", "Invalid at start");
+      TREX_INFO("DbCore:extendCurrentValue:timeline", "Invalid at start");
       return false;
     }
 
@@ -1017,23 +1030,23 @@ namespace TREX {
     // expected operation
     if(token.isNoId() || token->end()->lastDomain().getUpperBound() ==  tick || (tick == 0 && !isObservation(token))){
 
-      condDebugMsg(token.isNoId(), "DbCore:extendCurrentValue", nameString() << "Missed expected observation. No current value.");
+      TREX_INFO_COND(token.isNoId(), "DbCore:extendCurrentValue", nameString() << "Missed expected observation. No current value.");
 		   
 
-      condDebugMsg(token.isId(), "DbCore:extendCurrentValue", nameString() << 
+      TREX_INFO_COND(token.isId(), "DbCore:extendCurrentValue", nameString() << 
 	       "Missed expected observation to terminate " << token->toString() << " ending at " << token->end()->toString());
 
       TREXLog() << nameString() <<  "Missed expected observation on " << timeline->toString() << std::endl;
 
       // Force invalid state to trigger a repair
-      debugMsg("trex:analysis:synchronization", nameString() << missingObservation(timeline));
+      TREX_INFO("trex:analysis:synchronization", nameString() << missingObservation(timeline));
 
       markInvalid(std::string("Expected an observation for ") + timeline->toString() + ". Are observations being generated?. The plan may simply be broken.");
 
       return false;
     }
 
-    debugMsg("DbCore:extendCurrentValue", nameString() << 
+    TREX_INFO("DbCore:extendCurrentValue", nameString() << 
 	     timeline->getName().toString() << " extends value " << token->toString() << " for next tick " << getCurrentTick() + 1);
 
     return extendCurrentValue(token);
@@ -1043,7 +1056,7 @@ namespace TREX {
    * @brief Handles the extension of current value for a single token.
    */
   bool DbCore::extendCurrentValue(const TokenId& token){
-    debugMsg("DbCore:extendCurrentValue:token", nameString() << "Extending " << token->toString() << " for end >= " << getCurrentTick());
+    TREX_INFO("DbCore:extendCurrentValue:token", nameString() << "Extending " << token->toString() << " for end >= " << getCurrentTick());
 
     checkError(token->start()->lastDomain().getUpperBound() <= getCurrentTick(),
 	       token->start()->lastDomain() << " and TICK " << getCurrentTick());
@@ -1066,8 +1079,8 @@ namespace TREX {
 
     if(!m_db->getConstraintEngine()->propagate()){
       TREXLog() << nameString() << "Inconsistent plan." << std::endl;
-      debugMsg("DbCore:propagate", nameString() << "Inconsistent plan.");
-      debugMsg("trex:analysis:synchronization", nameString() << m_synchronizer.propagationFailure());
+      TREX_INFO("DbCore:propagate", nameString() << "Inconsistent plan.");
+      TREX_INFO("trex:analysis:synchronization", nameString() << m_synchronizer.propagationFailure());
       markInvalid("The constraint network is inconsistent. To investigate, enable ConstraintEngine in Debug.cfg. Look for EMPTIED domain in log output to find the culprit.");
     }
     else {
@@ -1131,7 +1144,7 @@ namespace TREX {
 
       TokenId slave = *it;
 
-      debugMsg("DbCore:updateRelatedTokens", nameString() << "Evaluating slave " << slave->toString() << "[" << sl_counter++ << "]");
+      TREX_INFO("DbCore:updateRelatedTokens", nameString() << "Evaluating slave " << slave->toString() << "[" << sl_counter++ << "]");
 
       // If the slave is merged onto an active token, we can restrict the bounds of the
       // active token accordingly to persist the impact of the merge
@@ -1201,7 +1214,7 @@ namespace TREX {
    * @brief We deactivate the solver if it has failed to find a plan in time, or when it has terminated.
    */
   bool DbCore::deactivateSolver(){
-    debugMsg("DbCore:deactivateSolver", nameString());
+    TREX_INFO("DbCore:deactivateSolver", nameString());
     m_solver->clear();
 
     // Now bring our tick up to speed
@@ -1294,15 +1307,15 @@ namespace TREX {
 
       // If the goal is inactive, we can update its bounds or reject it.
       if(goalToken->isInactive()){
-	debugMsg("DbCore:updateGoals", nameString() << "Updating unplanned goal " << goalToken->toString());
+	TREX_INFO("DbCore:updateGoals", nameString() << "Updating unplanned goal " << goalToken->toString());
 
 	// If the goal is impossible based on time then reject it
 	if (latestStart < getCurrentTick()) {
-	  debugMsg("DbCore:updateGoals", nameString() << "Rejecting timed out goal " << goalToken->toString());
+	  TREX_INFO("DbCore:updateGoals", nameString() << "Rejecting timed out goal " << goalToken->toString());
 	  goalToken->reject();
 	}
 	else {
-	  debugMsg("DbCore:updateGoals", nameString() << "Pushing end for " << goalToken->toString());
+	  TREX_INFO("DbCore:updateGoals", nameString() << "Pushing end for " << goalToken->toString());
 	  //goalToken->end()->restrictBaseDomain(IntervalIntDomain(getCurrentTick() + 1, PLUS_INFINITY));
 	  goalToken->start()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
 	}
@@ -1400,7 +1413,7 @@ namespace TREX {
       const IntervalIntDomain& startTime = action->start()->lastDomain();
       const IntervalIntDomain& endTime = action->end()->lastDomain();
 
-      debugMsg("DbCore:updateActions", "Evaluating " << action->toString() << " from " << startTime.toString() << " to " << endTime.toString());
+      TREX_INFO("DbCore:updateActions", "Evaluating " << action->toString() << " from " << startTime.toString() << " to " << endTime.toString());
 
       // If the action is committed we may need to nudge its end time
       if(action->isCommitted()){
@@ -1428,7 +1441,7 @@ namespace TREX {
 	action->start()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
       else if(action->isActive()){
 	TREXLog() << nameString() << "Starting " << action->toString() << std::endl;
-	debugMsg("DbCore:updateActions", nameString() << "Starting " << action->toString());
+	TREX_INFO("DbCore:updateActions", nameString() << "Starting " << action->toString());
 
 	// Start the action in this tick and commit to it. In the event of an inconsistency we have to repair anyway
 	// and the action will be discarded.
@@ -1458,10 +1471,10 @@ namespace TREX {
       TokenId token = *it;
       checkError(token.isValid(), token);
 
-      debugMsg("DbCore:archive", nameString() << "Evaluating " << token->toString());
+      TREX_INFO("DbCore:archive", nameString() << "Evaluating " << token->toString());
 
       if(restrict(token) && updateRelatedTokens(token)){
-	debugMsg("DbCore:archive", nameString() << token->toString() << " is a candidate for termination.");
+	TREX_INFO("DbCore:archive", nameString() << token->toString() << " is a candidate for termination.");
 
 	disconnectConstraints(token);
 
@@ -1509,7 +1522,7 @@ namespace TREX {
       const TimelineContainer& tc = it->second;
       if(tc.lastObserved() < getCurrentTick())
 	if(!extendCurrentValue(tc.getTimeline())){
-	  debugMsg("DbCore:completeExternalTimelines", nameString() << "Failed to extend " << tc.getTimeline()->toString());
+	  TREX_INFO("DbCore:completeExternalTimelines", nameString() << "Failed to extend " << tc.getTimeline()->toString());
 	  return false;
 	}
     }
@@ -1679,7 +1692,7 @@ namespace TREX {
 	  return false;
       }
 
-      debugMsg("DbCore:synchronize", nameString() <<  "Repaired Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
+      TREX_INFO("DbCore:synchronize", nameString() <<  "Repaired Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
 
       // Log the new plan
       m_planLog<<'['<< getCurrentTick()<<"] Repaired plan :\n";
@@ -1694,7 +1707,7 @@ namespace TREX {
     updateGoals();
     archive();
 
-    debugMsg("DbCore:synchronize", nameString() <<  "Synchronized Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
+    TREX_INFO("DbCore:synchronize", nameString() <<  "Synchronized Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
 
     return m_state != DbCore::INVALID;;
   }
@@ -1757,7 +1770,7 @@ namespace TREX {
       // must wait until the predecessor is finished
       const IntervalIntDomain distanceBounds(m_db->getTemporalAdvisor()->getTemporalDistanceDomain(u, c, true));
 
-      debugMsg("DbCore:hasPendingPredecessors",
+      TREX_INFO("DbCore:hasPendingPredecessors",
 	       "Distance between " << u->toString() << " and " << c->toString() << " is " << distanceBounds.toString());
 
       // It is possible that the temporal network is inconsistent in which case it will give the result of an empty domain. 
@@ -1769,8 +1782,8 @@ namespace TREX {
 
       // We have a distance bound
       if(distanceBounds.getLowerBound() >= 0 && !distanceBounds.isSingleton()){
-	debugMsg("trex:analysis:dispatching", token->toString() << " must finish before " << ctoken->toString() << " can be dispatched. The temporal distance between them is:" << distanceBounds.toString());
-	debugMsg("DbCore:hasPendingPredecessors", token->toString() << " must finish first.");
+	TREX_INFO("trex:analysis:dispatching", token->toString() << " must finish before " << ctoken->toString() << " can be dispatched. The temporal distance between them is:" << distanceBounds.toString());
+	TREX_INFO("DbCore:hasPendingPredecessors", token->toString() << " must finish first.");
 	return true;
       }
     }
@@ -1855,7 +1868,7 @@ namespace TREX {
    * can be restricted because the past is monotonic.
    */
   void DbCore::commitAndRestrict(const TokenId& token){
-    debugMsg("DbCore:commitAndRestrict", nameString() << "(" << token->getKey() << ") " << token->toString());
+    TREX_INFO("DbCore:commitAndRestrict", nameString() << "(" << token->getKey() << ") " << token->toString());
 
     token->commit();
 
@@ -2088,7 +2101,7 @@ namespace TREX {
       TICK lb, ub;
       getHorizon(lb, ub);
       if(lb <= getCurrentTick()){
-	debugMsg("DbCore:isSolverTimedOut",  nameString() << "Timed out finding a plan.");
+	TREX_INFO("DbCore:isSolverTimedOut",  nameString() << "Timed out finding a plan.");
 	TREXLog() << nameString() << "Planning failed to complete in time." << std::endl;
 	markInvalid("The solver could not complete in time. You might have excessive logging, or excessive search. To investigate the latter, enable Solver:step in Debug.cfg");
 	return true;
@@ -2124,7 +2137,7 @@ namespace TREX {
     if(m_state != DbCore::INVALID)
       dispatchRecalls();
 
-    debugMsg("DbCore:markInvalid", nameString() << " is marked invalid. Hint:" << comment);
+    TREX_INFO("DbCore:markInvalid", nameString() << " is marked invalid. Hint:" << comment);
     m_state = DbCore::INVALID;
   }
 
@@ -2161,7 +2174,7 @@ namespace TREX {
 
       const AbstractDomain& endDom = token->end()->lastDomain();
       if(isExternal(token) && endDom.isMember(getCurrentTick()) && !endDom.isSingleton()){
-	debugMsg("DbCore:getActiveUncontrollableEvents", "Adding " << token->toString());
+	TREX_INFO("DbCore:getActiveUncontrollableEvents", "Adding " << token->toString());
 	results.push_back(token);
       }
     }
@@ -2181,7 +2194,7 @@ namespace TREX {
 	if((token->master().isId() && isExternal(token->master())) || 
 	   token->start()->lastDomain().getLowerBound() > Agent::instance()->getFinalTick() - 1 ||
 	   token->end()->lastDomain().getLowerBound() > Agent::instance()->getFinalTick()){
-	  debugMsg("DbCore:handleAddition", nameString() << "Excluding Action:" << token->toString());
+	  TREX_INFO("DbCore:handleAddition", nameString() << "Excluding Action:" << token->toString());
 	  inScope = false;
 	}
 	else {
@@ -2191,7 +2204,7 @@ namespace TREX {
 	  token->start()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), Agent::instance()->getFinalTick() - 1));
 	  //token->end()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), Agent::instance()->getFinalTick()));
 	  m_actions.insert(token);
-	  debugMsg("DbCore:handleAddition", nameString() << "Adding Action:" << token->toString());
+	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Action:" << token->toString());
 	}
       }
       else {
@@ -2201,7 +2214,7 @@ namespace TREX {
 	// If in scope, and rejectable it must be a goal
 	if(inScope && token->master().isNoId() && token->getState()->baseDomain().isMember(Token::REJECTED)){
 	  m_goals.insert(token);
-	  debugMsg("DbCore:handleAddition", nameString() << "Adding Goal:" << token->toString());
+	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Goal:" << token->toString());
 	  token->start()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick() - 1));
 	  token->end()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick()));
 	}
@@ -2258,7 +2271,7 @@ namespace TREX {
 
 	  // If there is a gap, bridge it
 	  if(separationDistance.getUpperBound() > 0){
-	    debugMsg("trex:analysis:planning", nameString() << token->toString() << " is not constrained to succeed " << pred->toString() <<
+	    TREX_INFO("trex:analysis:planning", nameString() << token->toString() << " is not constrained to succeed " << pred->toString() <<
 		     " Posting concurrency constraint to integrate the plan.");
 
 	    m_db->getConstraintEngine()->createConstraint("concurrent", makeScope(pred->end(), token->start()));

@@ -82,7 +82,8 @@ namespace TREX {
     m_synchUsage(RStat::zeroed), 
     m_deliberationUsage(RStat::zeroed),
     m_enableEventLogger(enableLogging),
-    m_obsLog(buildLogName(extractData(configData, "name"))) {
+    m_obsLog(buildLogName(extractData(configData, "name"))),
+    m_standardDebugStream(DebugMessage::getStream()){
 
     bool useExternalFile = (configData.Attribute("config") != NULL);
 
@@ -179,6 +180,9 @@ namespace TREX {
   }
 
   Agent::~Agent() {
+    // Reset the Debug Message Stream before deallocating any reactors
+    DebugMessage::setStream(m_standardDebugStream);
+
     s_terminated = true;
 
     // Delete all the reactors
@@ -518,4 +522,7 @@ namespace TREX {
       l->notifyCompleted(token);
     }
   }
+
+  std::ostream& Agent::getStream(){return m_standardDebugStream;}
+
 }

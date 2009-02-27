@@ -28,6 +28,11 @@ namespace TREX {
 
     const LabelStr& getAgentName() const;
 
+    /**
+     * @brief Return the stream being used for debug messages.
+     */
+    std::ostream& getStream();
+
     TICK getCurrentTick() const;
 
     /**
@@ -237,6 +242,8 @@ namespace TREX {
 
   private:
     static TICK getLookAheadFromXML(const TiXmlElement& configData);
+    static std::string debugFileName(const LabelStr& agentName, const LabelStr& reactorName);
+
     TeleoReactorId m_id;
     const LabelStr m_name;
     const LabelStr m_agentName;
@@ -248,6 +255,7 @@ namespace TREX {
     RStat m_syncUsage, m_searchUsage;
 
     bool const m_shouldLog;
+    std::ofstream m_debugStream;
 
   };
 

@@ -29,11 +29,14 @@ namespace TREX {
 
     bool test(const EntityId& entity);
 
+    std::ostream& getStream();
+
     static void update(TICK start, TICK end);
 
     static const IntervalIntDomain& getHorizon();
 
   private:
+    DbCoreId m_core;
     static IntervalIntDomain& horizon();
     static TICK currentTick();
   };

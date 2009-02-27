@@ -79,6 +79,12 @@ namespace TREX {
     return atoi(extractData(configData, "lookAhead").c_str());
   }
 
+  std::string TeleoReactor::debugFileName(const LabelStr& agentName, const LabelStr& reactorName){
+    std::string log_path = LogManager::instance().get_log_path();
+    std::string name = log_path + "/" + agentName.toString() + "_" + reactorName.toString() + ".debug";
+    return name;
+  }
+
   TeleoReactor::TeleoReactor(const LabelStr& agentName, const TiXmlElement& configData, bool logDefault)
     : m_id(this),
       m_name(extractData(configData, "name")),
@@ -88,9 +94,9 @@ namespace TREX {
       m_thisObserver(new TeleoObserver(m_id)),
       m_thisServer(new TeleoServer(m_id)),
       m_syncUsage(RStat::zeroed), m_searchUsage(RStat::zeroed),
-      m_shouldLog(string_cast<bool>(logDefault, 
-				    checked_string(configData.Attribute("log")))) {
-    debugMsg("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
+      m_shouldLog(string_cast<bool>(logDefault, checked_string(configData.Attribute("log")))),
+      m_debugStream(debugFileName(m_agentName, m_name).c_str()) {
+    TREX_INFO("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
 
     checkError(m_latency <= m_lookAhead, "Makes no sense to lookahead more than you can deliberate. Biting off more than you can chew.");
   }
@@ -104,8 +110,11 @@ namespace TREX {
       m_thisObserver(new TeleoObserver(m_id)),
       m_thisServer(new TeleoServer(m_id)),
       m_syncUsage(RStat::zeroed), m_searchUsage(RStat::zeroed),
-      m_shouldLog(log) {
-    debugMsg("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
+      m_shouldLog(log),
+      m_debugStream(debugFileName(m_agentName, m_name).c_str())
+ {
+    DebugMessage::setStream(getStream());
+    TREX_INFO("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
     checkError(m_latency <= m_lookAhead, "Makes no sense to lookahead more than you can deliberate. Biting off more than you can chew.");
   }
 
@@ -119,14 +128,16 @@ namespace TREX {
       m_thisObserver(new TeleoObserver(m_id)),
       m_thisServer(new TeleoServer(m_id)),
       m_syncUsage(RStat::zeroed), m_searchUsage(RStat::zeroed),
-      m_shouldLog(string_cast<bool>(logDefault, 
-				    checked_string(configData.Attribute("log")))) {
-    debugMsg("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
+      m_shouldLog(string_cast<bool>(logDefault, checked_string(configData.Attribute("log")))), 
+      m_debugStream(debugFileName(m_agentName, m_name).c_str()){
+    DebugMessage::setStream(getStream());
+    TREX_INFO("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
 
     checkError(m_latency <= m_lookAhead, "Makes no sense to lookahead more than you can deliberate. Biting off more than you can chew.");
   }
 
   TeleoReactor::~TeleoReactor(){
+    DebugMessage::setStream(Agent::instance()->getStream());
     m_thisObserver.release();
     m_thisServer.release();
     m_id.remove();
@@ -200,6 +211,8 @@ namespace TREX {
   }
 
   bool TeleoReactor::doSynchronize() {
+    DebugMessage::setStream(getStream());
+
     ++m_syncCount;    
     RStatLap chrono(m_syncUsage, RStat::self);
     { // To be "sure" that chrono is created before we call synchronize
@@ -208,6 +221,8 @@ namespace TREX {
   }
 
   void TeleoReactor::doResume() {
+    DebugMessage::setStream(getStream());
+
     ++m_searchCount;
     RStatLap chrono(m_searchUsage, RStat::self);
     {
@@ -218,6 +233,8 @@ namespace TREX {
   void TeleoReactor::doHandleInit(TICK initialTick, 
 				   std::map<double, ServerId> const &serversByTimeline, 
 				   ObserverId const &observer) {
+    DebugMessage::setStream(getStream());
+
     m_syncCount = 0;
     m_syncUsage.reset();
     m_searchCount = 0;
@@ -233,6 +250,8 @@ namespace TREX {
   }
 
   void TeleoReactor::doHandleTickStart() {
+    DebugMessage::setStream(getStream());
+
     m_syncCount = 0;
     m_syncUsage.reset();
     m_searchCount = 0;
@@ -249,6 +268,7 @@ namespace TREX {
    * @brief Log the request prior to delegation
    */
   bool TeleoReactor::request(const TokenId& goal){
+    DebugMessage::setStream(getStream());
     Agent::instance()->logRequest(goal);
     TREXLog() << nameString() << "Request received: " << goal->toString() << std::endl;
     return handleRequest(goal);
@@ -264,6 +284,7 @@ namespace TREX {
    */
   void TeleoReactor::recall(const TokenId& goal){
     Agent::instance()->logRecall(goal);
+    DebugMessage::setStream(getStream());
     TREXLog() << nameString() << "Recall received: " << goal->toString() << std::endl;
     handleRecall(goal);
   }
@@ -279,6 +300,10 @@ namespace TREX {
 
   TICK TeleoReactor::getLookAhead() const {
     return m_lookAhead;
+  }
+
+  std::ostream& TeleoReactor::getStream(){
+    return m_debugStream;
   }
 
   TeleoReactorId TeleoReactor::createInstance(const LabelStr& agentName, const LabelStr& component, const TiXmlElement& configData){
