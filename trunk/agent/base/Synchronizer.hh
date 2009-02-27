@@ -133,6 +133,11 @@ namespace TREX {
     void copyValue(const TokenId& source);
 
     /**
+     * @brief Accessor to debug stream for debug output
+     */
+    std::ostream& getStream();
+
+    /**
      * Utility to extract the underlying variable if this one is part of a merged token
      */
     static ConstrainedVariableId getActiveGuard(const ConstrainedVariableId& var);

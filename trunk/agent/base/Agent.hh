@@ -123,6 +123,11 @@ namespace TREX {
     int getReactorCount() const {return m_reactors.size();}
 
     /**
+     * @brief Accessor for debug stream
+     */
+    std::ostream& getStream();
+
+    /**
      * @brief Called by Reactors when the post observations. The agent will route to 0 or more reactors who track this observation timeline.
      * @param observation The observation reported.
      * @see Observer
@@ -193,6 +198,11 @@ namespace TREX {
      * @brief Unregister a listener.
      */
     void unregisterListener(const AgentListenerId& listener);
+
+    /**
+     * @brief Retrieve the latest log directory for this agent
+     */
+    const std::string& getLogDir() const;
 
     /**
      * @brief Utility to create an event log
@@ -294,6 +304,8 @@ namespace TREX {
     std::vector<Event> m_eventLog; /*!< Used for analysis and testing */
 
     ObservationLogger m_obsLog;
+
+    std::ostream& m_standardDebugStream; /*!<Stores debug stream to allow it to be reset on destruction */
 
     static bool s_terminated; /*!< Used to terminated */    
   };
