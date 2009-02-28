@@ -40,7 +40,8 @@ namespace TREX {
     TestMonitor::registerCondition(token->getKey(), token->toString(), shouldBeCompleted);
   }
 
-  TestMonitorConstraintBase::~TestMonitorConstraintBase(){}
+  TestMonitorConstraintBase::~TestMonitorConstraintBase(){
+  }
 
   CompletionMonitorConstraint::CompletionMonitorConstraint(const LabelStr& name,
 							   const LabelStr& propagatorName,
