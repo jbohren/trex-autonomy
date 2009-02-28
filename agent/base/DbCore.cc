@@ -25,6 +25,7 @@
 #include "TemporalAdvisor.hh"
 #include "Utilities.hh"
 #include "Filters.hh"
+#include "TestMonitor.hh"
 
 #include <sstream>
 #include <fstream>
@@ -84,6 +85,20 @@ namespace TREX {
     // Now focus on the token
     const IntervalIntDomain& startTime = token->start()->lastDomain();
     const IntervalIntDomain& endTime = token->end()->lastDomain();
+
+
+    // Special Treatment if it is in fact a condition (for now called a TestMonitor). Cheap check first
+    if(TestMonitor::isCondition(token->getKey())){
+      TREX_INFO("DeliberationFilter:test", "Evaluating test condition " << token->toString());
+      bool inScope = startTime.getUpperBound() <= m_core->getCurrentTick() && 
+	startTime.isSingleton() && endTime.getUpperBound() > m_core->getCurrentTick();
+
+      TREX_INFO("DeliberationFilter:test", (!inScope ? "Exclude " : "Allow ") <<
+		entity->toString() << " with token scope " << token->start()->lastDomain().toString() <<
+		" AND " << token->end()->lastDomain().toString());
+
+      return !inScope;
+    }
 
     // If the token is necessarily in the past, exclude from deliberation. It will be handled in synchronization
     // or not at all if sufficiently in the past. Also, if it necessarily starts in the distant future, ignore it
@@ -1039,7 +1054,7 @@ namespace TREX {
       TREXLog() << nameString() <<  "Missed expected observation on " << timeline->toString() << std::endl;
 
       // Force invalid state to trigger a repair
-      TREX_INFO("trex:analysis:synchronization", nameString() << missingObservation(timeline));
+      debugMsg("trex:analysis:synchronization", nameString() << missingObservation(timeline));
 
       markInvalid(std::string("Expected an observation for ") + timeline->toString() + ". Are observations being generated?. The plan may simply be broken.");
 
@@ -2216,7 +2231,10 @@ namespace TREX {
 	  m_goals.insert(token);
 	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Goal:" << token->toString());
 	  token->start()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick() - 1));
-	  token->end()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick()));
+
+	  // If not a condition, then we will not require any end time. It can be made explicit
+	  if(!TestMonitor::isCondition(token->getKey()))
+	     token->end()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick()));
 	}
       }
  
