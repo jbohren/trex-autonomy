@@ -1,5 +1,5 @@
-#ifndef H_Clock
-#define H_Clock
+#ifndef H_AgentClock
+#define H_AgentClock
 
 #include "TREXDefs.hh"
 #include "TeleoReactor.hh"
