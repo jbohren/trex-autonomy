@@ -12,7 +12,7 @@
 #include "TREXDefs.hh"
 #include "XMLUtils.hh"
 #include "TeleoReactor.hh"
-#include "Clock.hh"
+#include "AgentClock.hh"
 #include "ObservationLogger.hh"
 #include "PerformanceMonitor.hh"
 #include "RStat.hh"
