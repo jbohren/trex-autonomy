@@ -5,8 +5,8 @@ enum TokenStates {INACTIVE, ACTIVE, MERGED, REJECTED}
 
 // Declare built in constraints used for common TREX use cases
 
-constraint default(var, value) { var <: numeric && value <: numeric }
-constraint defaultOnCommit(var, value) { var <: numeric && value <: numeric }
+constraint default(var, value) { var <: value }
+constraint defaultOnCommit(var, value) { var <: value }
 constraint assertCompleted(s) { s <: TokenStates }
 constraint assertRejected(s) { s <: TokenStates }
 
@@ -60,7 +60,7 @@ class AgentTimeline extends Timeline {
     defaultPredicate = _defaultPredicate;
     persistent = _persistent;
   }
-}
+};
 
 /**
  * Base class for actions. These will never be exchanged across reactors and are generated to
@@ -68,13 +68,20 @@ class AgentTimeline extends Timeline {
  */
 class AgentActions {
 	AgentActions(){}
-}
+};
 
 class StateVariable extends AgentTimeline{
  	predicate Holds{ eq(duration,1); }
  	StateVariable(Mode _mode){super(_mode);}
 	StateVariable(Mode _mode, string _defaultPredicate){super(_mode, _defaultPredicate);}
-}
+};
+
+enum ResultStatus {
+  UNDEFINED,  // Used when the behavior becomes inactive in an undefined state, such as when rebooting
+  SUCCESS,    // Indicates the behavior terminated, accomplsihing its goals. Or so it believes!
+  ABORTED,    // Means the behavior aborted pursuit of its goal of its own volition
+  PREEMPTED   // Means the behavior terminated on command from a client.
+};
 
 /**
  * Encapsulate Behaviors that have a state of active or inactive
@@ -83,10 +90,8 @@ class Behavior extends AgentTimeline {
   int max_duration; // The maximum duration allowed in the active state. Bounds behavior times
 
   predicate Inactive{
-    bool aborted;
-    bool preempted;
-    defaultOnCommit(aborted, false);
-    defaultOnCommit(preempted, false);
+    ResultStatus status;
+    defaultOnCommit(status, UNDEFINED);
     temporalDistance(start, [1, +inf], missionEnd);
   }
 
