@@ -118,11 +118,16 @@ namespace TREX {
     static unsigned int sl_counter(0);
     sl_counter++;
 
-    if(!m_core->propagate())
-      return false;
+    if(!m_core->propagate()){
 
-    TREX_INFO("Synchronizer:resolve", m_core->nameString() << 
-		 "[" << sl_counter << "] START" << std::endl << PlanDatabaseWriter::toString(m_db));
+      TREX_INFO("trex:synchronization", m_core->nameString() << 
+		"Constraint network inconsistent after propagation. Cannot output database.");
+
+      return false;
+    }
+
+    TREX_INFO("trex:synchronization", m_core->nameString() << 
+	      "Database prior to synchronization:\n" << PlanDatabaseWriter::toString(m_db));
 
     checkError(m_core->isValidDb(), "Invalid database before synchronization.");
 
@@ -130,7 +135,8 @@ namespace TREX {
     if(resolveTokens(m_stepCount) &&
        completeInternalTimelines(m_stepCount) &&
        resolveTokens(m_stepCount)){
-      TREX_INFO("Synchronizer:resolve", m_core->nameString() << "END" << std::endl << PlanDatabaseWriter::toString(m_db));
+      TREX_INFO("trex:synchronization", m_core->nameString() << 
+		"Database after successful synchronization:\n" << PlanDatabaseWriter::toString(m_db));
       return true;
     }
 
@@ -805,44 +811,7 @@ namespace TREX {
 
 	if(var->lastDomain().isEmpty()){
 
-	  ConstraintSet constraints;
-	  TokenSet tokens;
-	  var->constraints(constraints);
-	  for(ConstraintSet::const_iterator c_it = constraints.begin(); c_it != constraints.end(); ++c_it){
-	    ConstraintId constraint = *c_it;
-	    const std::vector<ConstrainedVariableId>& scope = constraint->getScope();
-	    for(unsigned int i=0; i<scope.size(); i++){
-	      TokenId parent;
-	      if(scope[i]->parent() == EntityId::noId())
-		continue;
-	      if(RuleInstanceId::convertable(scope[i]->parent())){
-		RuleInstanceId r = (RuleInstanceId) scope[i]->parent();
-		parent = r->getToken();
-	      }
-	      else if(TokenId::convertable(scope[i]->parent()))
-		parent = (TokenId) scope[i]->parent();
-
-	      if(parent.isId())
-		tokens.insert(parent);
-	    }
-	  }
-
-	  // Now output the results
-	  ss <<  "Variable " << var->getName().toString() << "(" << var->getKey() << ") is empty." << std::endl << std::endl;
-
-	  ss << "Related Tokens: " << std::endl;
-
-	  for(TokenSet::const_iterator t_it = tokens.begin(); t_it != tokens.end(); ++t_it){
-	    TokenId token = *t_it;
-	    ss << "  " << token->toString() << std::endl;
-	  }
-
-	  ss << std::endl << "Related Constraints: " << std::endl;
-
-	  for(ConstraintSet::const_iterator c_it = constraints.begin(); c_it != constraints.end(); ++c_it){
-	    ConstraintId constraint = *c_it;
-	    ss << constraint->toString() << std::endl << std::endl ;
-	  }
+	  ss << localContextForConstrainedVariable(var);
 
 	  break;
 	}
@@ -880,6 +849,82 @@ namespace TREX {
     return ss.str();
   }
 
+  std::string Synchronizer::localContextForConstrainedVariable(const ConstrainedVariableId& var) const {
+    std::stringstream ss;
+
+    ss << std::endl << "Local context for variable " << var->getName().toString() << "(" << var->getKey() << "):" << std::endl <<
+      "Base Domain is:" << var->baseDomain().toString() << std::endl <<
+      "Derived domain is:" << var->lastDomain().toString() << std::endl << std::endl;
+
+    TokenId token = DbCore::getParentToken(var);
+    if(token.isId())
+      ss << "Variable belongs to :" << PlanDatabaseWriter::simpleTokenSummary(token);
+    else
+      ss << "Variable does not belong to any token.";
+
+    ss << std::endl << std::endl;
+
+    ConstraintSet constraints;
+    ConstrainedVariableSet variables;
+    TokenSet tokens;
+    var->constraints(constraints);
+    for(ConstraintSet::const_iterator c_it = constraints.begin(); c_it != constraints.end(); ++c_it){
+      ConstraintId constraint = *c_it;
+      const std::vector<ConstrainedVariableId>& scope = constraint->getScope();
+      for(unsigned int i=0; i<scope.size(); i++){
+	variables.insert(scope[i]);
+	TokenId parent = DbCore::getParentToken(scope[i]);
+	if(parent.isId())
+	  tokens.insert(parent);
+      }
+    }
+
+    ss << "Related Tokens: " << std::endl;
+
+    for(TokenSet::const_iterator t_it = tokens.begin(); t_it != tokens.end(); ++t_it){
+      TokenId token = *t_it;
+      ss << "  " << PlanDatabaseWriter::simpleTokenSummary(token) << std::endl;
+    }
+
+    ss << std::endl << "Related Variables:" << std::endl;
+    for(ConstrainedVariableSet::const_iterator it = variables.begin(); it != variables.end(); ++it){
+      ConstrainedVariableId v = *it;
+      ss << "  " << v->getName().toString() << "(" << v->getKey() << ")"; 
+      TokenId parent = DbCore::getParentToken(v);
+      if(parent.isId())
+	ss << " of " << PlanDatabaseWriter::simpleTokenSummary(parent);
+      ss << std::endl;
+    }
+
+    ss << std::endl << "Related Constraints: " << std::endl;
+
+    for(ConstraintSet::const_iterator c_it = constraints.begin(); c_it != constraints.end(); ++c_it){
+      ConstraintId constraint = *c_it;
+      ss << constraint->toString() << std::endl << std::endl ;
+    }
+
+    return ss.str();
+  }
+
+  std::string Synchronizer::tokenExtensionFailure(const TokenId& expectedToken) const{
+    std::stringstream ss;
+
+    ss << "Expected to have a value given by:" << expectedToken->toString() << 
+      " which starts at " << expectedToken->start()->lastDomain().toString() << " and ends at " << expectedToken->end()->lastDomain().toString() << std::endl;
+
+    // The tmepoint of interest is the start or end at the current tick
+    ConstrainedVariableId timepointOfInterest;
+
+    if(expectedToken->start()->lastDomain().isSingleton() && expectedToken->start()->lastDomain().getSingletonValue() == m_core->getCurrentTick())
+      timepointOfInterest = expectedToken->start();
+    else
+      timepointOfInterest = expectedToken->end();
+
+    // Output the local context for this timepoint"
+    ss << localContextForConstrainedVariable(timepointOfInterest);
+
+    return ss.str();
+  }
 
   /**
    * @brief Accessor to debug stream for debug output
