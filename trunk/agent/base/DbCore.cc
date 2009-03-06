@@ -73,7 +73,7 @@ namespace TREX {
       m_core = DbCore::getInstance(token);
     }
 
-    TREX_INFO("DeliberationFilter:test", "[" << sl_counter++ << "] Evaluating " << token->toString() << " with " << 
+    TREX_INFO("trex:planning", "[" << sl_counter++ << "] Evaluating " << token->toString() << " with " << 
 	     token->start()->lastDomain().toString() << " AND " << 
 	     token->end()->lastDomain().toString());
 
@@ -89,11 +89,11 @@ namespace TREX {
 
     // Special Treatment if it is in fact a condition (for now called a TestMonitor). Cheap check first
     if(TestMonitor::isCondition(token->getKey())){
-      TREX_INFO("DeliberationFilter:test", "Evaluating test condition " << token->toString());
+      TREX_INFO("trex:planning", "Evaluating test condition " << token->toString());
       bool inScope = startTime.getUpperBound() <= m_core->getCurrentTick() && 
 	startTime.isSingleton() && endTime.getUpperBound() > m_core->getCurrentTick();
 
-      TREX_INFO("DeliberationFilter:test", (!inScope ? "Exclude " : "Allow ") <<
+      TREX_INFO("trex:planning", (!inScope ? "Exclude " : "Allow ") <<
 		entity->toString() << " with token scope " << token->start()->lastDomain().toString() <<
 		" AND " << token->end()->lastDomain().toString());
 
@@ -119,7 +119,7 @@ namespace TREX {
     if(!inScope && token->master().isId())
       inScope =  DbCore::isAction(token) || !token->getPlanDatabase()->getTemporalAdvisor()->canPrecede(token->master(), token);
 
-    TREX_INFO("DeliberationFilter:test", (!inScope ? "Exclude " : "Allow ") <<
+    TREX_INFO("trex:planning", (!inScope ? "Exclude " : "Allow ") <<
 		 entity->toString() << " with token scope " << token->start()->lastDomain().toString() <<
 		 " AND " << token->end()->lastDomain().toString());
 
@@ -841,7 +841,8 @@ namespace TREX {
 	if(getCurrentTick() == 0 && token->start()->lastDomain().getUpperBound() == 0){
 	  token->start()->restrictBaseDomain(IntervalIntDomain(0, 0));
 	  if(!propagate()){
-	    TREXLog() << nameString() << "Inconsistent on propagating initial time bounds.";
+	    TREX_INFO("trex:error", "Inconsistent on propagating initial time bounds." << std::endl  << m_synchronizer.propagationFailure());
+
 	    throw new DbCore::Exception("Fatal Error");
 	  }
 	}
@@ -856,6 +857,12 @@ namespace TREX {
 	// If the token has not been committed, do so since it is in the past
 	if(!token->isCommitted())
 	  commitAndRestrict(token);
+
+
+	if(!propagate()){
+	  TREX_INFO("trex:error", "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
+	  throw new DbCore::Exception("Fatal Error");
+	}
 
 	// If the latest end time <= the current tick, skip ahead
 	if(endTime.getUpperBound() <= getCurrentTick()){
@@ -873,7 +880,7 @@ namespace TREX {
 	  token->start()->restrictBaseDomain(startBounds);
 
 	  if(!propagate()){
-	    TREXLog() << nameString() << "Inconsistent on propagating committed values after synchronization.";
+	    TREX_INFO("trex:error", "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
 	    throw new DbCore::Exception("Fatal Error");
 	  }
 
@@ -1032,7 +1039,7 @@ namespace TREX {
    */
   bool DbCore::extendCurrentValue(const TimelineId& timeline){
     if(m_state == DbCore::INVALID){
-      TREX_INFO("DbCore:extendCurrentValue:timeline", "Invalid at start");
+      TREX_INFO("trex:synchronization", nameString() << "Invalid on call to extend current value");
       return false;
     }
 
@@ -1045,16 +1052,17 @@ namespace TREX {
     // expected operation
     if(token.isNoId() || token->end()->lastDomain().getUpperBound() ==  tick || (tick == 0 && !isObservation(token))){
 
-      TREX_INFO_COND(token.isNoId(), "DbCore:extendCurrentValue", nameString() << "Missed expected observation. No current value.");
+      TREX_INFO_COND(token.isNoId(), "trex:warning:synchronization", nameString() << "Missed expected observation. No current value.");
 		   
 
-      TREX_INFO_COND(token.isId(), "DbCore:extendCurrentValue", nameString() << 
+      TREX_INFO_COND(token.isId(), "trex:warning:synchronization", nameString() << 
 	       "Missed expected observation to terminate " << token->toString() << " ending at " << token->end()->toString());
 
       TREXLog() << nameString() <<  "Missed expected observation on " << timeline->toString() << std::endl;
 
       // Force invalid state to trigger a repair
-      debugMsg("trex:analysis:synchronization", nameString() << missingObservation(timeline));
+      TREX_INFO("trex:synchronization", nameString() << missingObservation(timeline));
+      TREX_INFO_COND(token.isId(), "trex:synchronization", nameString() << m_synchronizer.tokenExtensionFailure(token));
 
       markInvalid(std::string("Expected an observation for ") + timeline->toString() + ". Are observations being generated?. The plan may simply be broken.");
 
@@ -1095,7 +1103,7 @@ namespace TREX {
     if(!m_db->getConstraintEngine()->propagate()){
       TREXLog() << nameString() << "Inconsistent plan." << std::endl;
       TREX_INFO("DbCore:propagate", nameString() << "Inconsistent plan.");
-      TREX_INFO("trex:analysis:synchronization", nameString() << m_synchronizer.propagationFailure());
+      TREX_INFO("trex:propagation", nameString() << m_synchronizer.propagationFailure());
       markInvalid("The constraint network is inconsistent. To investigate, enable ConstraintEngine in Debug.cfg. Look for EMPTIED domain in log output to find the culprit.");
     }
     else {
@@ -1653,14 +1661,14 @@ namespace TREX {
   }
 
   TokenId DbCore::getParentToken(const ConstrainedVariableId& var){
-    checkError(var->parent().isId(), var->toString());
+    if(var->parent().isId()){
+      if(TokenId::convertable(var->parent()))
+	return var->parent();
 
-    if(TokenId::convertable(var->parent()))
-      return var->parent();
-
-    if(RuleInstanceId::convertable(var->parent())){
-      RuleInstanceId r = var->parent();
-      return r->getToken();
+      if(RuleInstanceId::convertable(var->parent())){
+	RuleInstanceId r = var->parent();
+	return r->getToken();
+      }
     }
 
     return TokenId::noId();
@@ -1797,7 +1805,7 @@ namespace TREX {
 
       // We have a distance bound
       if(distanceBounds.getLowerBound() >= 0 && !distanceBounds.isSingleton()){
-	TREX_INFO("trex:analysis:dispatching", token->toString() << " must finish before " << ctoken->toString() << " can be dispatched. The temporal distance between them is:" << distanceBounds.toString());
+	TREX_INFO("trex:warning:dispatching", token->toString() << " must finish before " << ctoken->toString() << " can be dispatched. The temporal distance between them is:" << distanceBounds.toString());
 	TREX_INFO("DbCore:hasPendingPredecessors", token->toString() << " must finish first.");
 	return true;
       }
@@ -2289,7 +2297,7 @@ namespace TREX {
 
 	  // If there is a gap, bridge it
 	  if(separationDistance.getUpperBound() > 0){
-	    TREX_INFO("trex:analysis:planning", nameString() << token->toString() << " is not constrained to succeed " << pred->toString() <<
+	    TREX_INFO("trex:warning:planning", nameString() << token->toString() << " is not constrained to succeed " << pred->toString() <<
 		     " Posting concurrency constraint to integrate the plan.");
 
 	    m_db->getConstraintEngine()->createConstraint("concurrent", makeScope(pred->end(), token->start()));

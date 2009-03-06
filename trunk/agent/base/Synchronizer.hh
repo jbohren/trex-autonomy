@@ -32,6 +32,8 @@ namespace TREX {
     /** UTILITIES FOR ANALYSIS OF FAILURES **/
     std::string tokenResolutionFailure(const TokenId& tokenToResolve, const TokenId& merge_candidate) const;
     std::string propagationFailure() const;
+    std::string localContextForConstrainedVariable(const ConstrainedVariableId& var) const;
+    std::string tokenExtensionFailure(const TokenId& expectedToken) const;
 
   private:
 
