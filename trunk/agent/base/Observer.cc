@@ -30,14 +30,13 @@ namespace TREX {
 
   std::string Observation::toString() const{
     std::stringstream sstr;
-    sstr << "ON " << getObjectName().toString() << " ASSERT " << getPredicate().toString() << " WITH { ";
+    sstr << "ON " << getObjectName().toString() << " ASSERT " << getPredicate().toString() << "{ " << std::endl;
     for (unsigned int i = 0; i < countParameters(); i++){
-      if(i > 0) sstr << " AND ";
       const std::pair<LabelStr, const AbstractDomain*> nameValuePair = operator[](i);
-      sstr << nameValuePair.first.toString() << "==" << nameValuePair.second->toString();
+      sstr << "  " << nameValuePair.first.toString() << "==" << nameValuePair.second->toString() << std::endl;
     }
 
-    sstr << " }";
+    sstr << "}";
     return sstr.str();
   }
 

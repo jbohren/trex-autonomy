@@ -89,11 +89,11 @@ namespace TREX {
 
     // Special Treatment if it is in fact a condition (for now called a TestMonitor). Cheap check first
     if(TestMonitor::isCondition(token->getKey())){
-      TREX_INFO("trex:planning", "Evaluating test condition " << token->toString());
+      TREX_INFO("trex:planning:flawfiltering", "Evaluating test condition " << token->toString());
       bool inScope = startTime.getUpperBound() <= m_core->getCurrentTick() && 
 	startTime.isSingleton() && endTime.getUpperBound() > m_core->getCurrentTick();
 
-      TREX_INFO("trex:planning", (!inScope ? "Exclude " : "Allow ") <<
+      TREX_INFO("trex:planning:flawfiltering", (!inScope ? "Exclude " : "Allow ") <<
 		entity->toString() << " with token scope " << token->start()->lastDomain().toString() <<
 		" AND " << token->end()->lastDomain().toString());
 
@@ -334,7 +334,7 @@ namespace TREX {
   }
 
   void DbCore::notify(const Observation& observation){
-    TREX_INFO("DbCore:notify:observation",nameString() << observation.toString() << " received at " << getCurrentTick());
+    TREX_INFO("trex:info:trace", nameString() << observation.toString());
 
     // Get the client to work with
     DbClientId client = m_db->getClient();
@@ -637,8 +637,6 @@ namespace TREX {
     // if the database is inconsistent and the deliberative reactor will handle repair.
     if(!propagate())
       return;
-    
-    TREX_INFO("DbCore:handleTickStart", nameString() << "START");
 
     checkError(verifyEntities(), "Bad entity detected.");
 
@@ -658,7 +656,7 @@ namespace TREX {
     // Send goals planned on server timelines
     dispatchCommands();
 
-    TREX_INFO("DbCore:handleTickStart", nameString() << "END: Database State Below" <<  std::endl << PlanDatabaseWriter::toString(m_db));
+    TREX_INFO("trex:info", nameString() << "Database State Below" <<  std::endl << PlanDatabaseWriter::toString(m_db));
   }
 
   /**
@@ -1039,7 +1037,7 @@ namespace TREX {
    */
   bool DbCore::extendCurrentValue(const TimelineId& timeline){
     if(m_state == DbCore::INVALID){
-      TREX_INFO("trex:synchronization", nameString() << "Invalid on call to extend current value");
+      TREX_INFO("trex:warning:synchronization", nameString() << "Invalid on call to extend current value");
       return false;
     }
 
@@ -1061,8 +1059,8 @@ namespace TREX {
       TREXLog() << nameString() <<  "Missed expected observation on " << timeline->toString() << std::endl;
 
       // Force invalid state to trigger a repair
-      TREX_INFO("trex:synchronization", nameString() << missingObservation(timeline));
-      TREX_INFO_COND(token.isId(), "trex:synchronization", nameString() << m_synchronizer.tokenExtensionFailure(token));
+      TREX_INFO("trex:warning:synchronization", nameString() << missingObservation(timeline));
+      TREX_INFO_COND(token.isId(), "trex:warning:synchronization", nameString() << m_synchronizer.tokenExtensionFailure(token));
 
       markInvalid(std::string("Expected an observation for ") + timeline->toString() + ". Are observations being generated?. The plan may simply be broken.");
 
@@ -2124,7 +2122,7 @@ namespace TREX {
       TICK lb, ub;
       getHorizon(lb, ub);
       if(lb <= getCurrentTick()){
-	TREX_INFO("DbCore:isSolverTimedOut",  nameString() << "Timed out finding a plan.");
+	TREX_INFO("trex:warning:planning",  nameString() << "Timed out finding a plan.");
 	TREXLog() << nameString() << "Planning failed to complete in time." << std::endl;
 	markInvalid("The solver could not complete in time. You might have excessive logging, or excessive search. To investigate the latter, enable Solver:step in Debug.cfg");
 	return true;
@@ -2160,7 +2158,7 @@ namespace TREX {
     if(m_state != DbCore::INVALID)
       dispatchRecalls();
 
-    TREX_INFO("DbCore:markInvalid", nameString() << " is marked invalid. Hint:" << comment);
+    TREX_INFO("trex:warning", nameString() << " is marked invalid. Hint:" << comment);
     m_state = DbCore::INVALID;
   }
 
