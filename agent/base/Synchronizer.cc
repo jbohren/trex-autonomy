@@ -480,7 +480,7 @@ namespace TREX {
     if(mergeToken(token, merge_candidate) || insertToken(token, stepCount))
       return true;
 
-    TREX_INFO("trex:analysis:synchronization", m_core->nameString() << tokenResolutionFailure(token, merge_candidate));
+    TREX_INFO("trex:warning:synchronization", m_core->nameString() << tokenResolutionFailure(token, merge_candidate));
 
     m_core->markInvalid(std::string("Could not insert ") + token->toString() + 
 			" into the plan. The plan is not compatible with observations and must be relaxed. Enable all DbCore messages and also enable Synchronizer messages in the Debug.cfg file.");
