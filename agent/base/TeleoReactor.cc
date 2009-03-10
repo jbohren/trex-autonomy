@@ -81,7 +81,7 @@ namespace TREX {
 
   std::string TeleoReactor::debugFileName(const LabelStr& agentName, const LabelStr& reactorName){
     std::string log_path = LogManager::instance().get_log_path();
-    std::string name = log_path + "/" + agentName.toString() + "_" + reactorName.toString() + ".debug";
+    std::string name = log_path + "/" + agentName.toString() + "." + reactorName.toString() + ".debug";
     return name;
   }
 
