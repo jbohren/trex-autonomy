@@ -517,7 +517,10 @@ namespace TREX {
      */
     static void deactivateIgnoredToken(const TokenId& token);
 
-
+    /**
+     * @brief Check if a given token is matched by a current observation
+     */
+    bool observedNow(const TokenId token) const;
 
     /**
      * @brief Utilities for handling dispatch time settings for dispatched and received tokens
