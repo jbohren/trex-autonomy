@@ -1019,7 +1019,7 @@ namespace TREX {
 		 "Ends:" << token->end()->baseDomain().toString());
 
 	// If the token has been dispatched and it is not finished yet ,recall it.
-	if(tc.isDispatched(token) && token->end()->baseDomain().getUpperBound() > getCurrentTick()){
+	if(tc.isDispatched(token) && token->end()->baseDomain().getUpperBound() > getCurrentTick() && !observedNow(token)){
 	  TREX_INFO("DbCore:dispatchRecalls", nameString() << "Recalling " << token->toString());
 	  server->recall(token);
 	  tc.clearDispatched(token);
@@ -2045,6 +2045,33 @@ namespace TREX {
     // could refer to the slave. Under these conditions, we have to keep the slave around
     const RulesEngineId& re = m_assembly.getRulesEngine();
     return !re->hasPendingRuleInstances(master);
+  }
+
+  // Is there a current observation that matches the token
+  bool DbCore::observedNow(const TokenId token) const {
+
+    const std::vector<ConstrainedVariableId>& token_scope = token->getVariables();
+
+    for(TokenSet::iterator it = m_observations.begin(); it != m_observations.end(); ++it){
+      TokenId observation = *it;
+
+      // If the predicates match, evaluate all the bounds for an intersection
+      if(token->getPredicateName() == observation->getPredicateName()){
+	const std::vector<ConstrainedVariableId>& observation_scope = observation->getVariables();
+	checkError(observation_scope.size() == token_scope.size(), observation_scope.size() << " != " << token_scope.size());
+	unsigned int i = token_scope.size() - 1;
+	while (i > 0 && token_scope[i]->lastDomain().intersects(observation_scope[i]->lastDomain())){
+	  i--;
+	}
+
+	// A match if we get to zero
+	if(i == 0){
+	  return true;
+	}
+      }
+    }
+
+    return false;
   }
 
   void DbCore::disconnectConstraints(const TokenId& token){
