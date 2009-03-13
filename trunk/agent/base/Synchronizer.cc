@@ -190,7 +190,7 @@ namespace TREX {
    * @see relax
    */
   void Synchronizer::resetGoals(){
-    TREX_INFO("Synchronizer:resetGoals", m_core->nameString() << "START");
+    TREX_INFO("trex:synchronization:resetGoals", m_core->nameString() << "START");
 
     std::vector<TokenId> past; /*!< Necessarily in the past */
     std::vector<TokenId> present; /*!< Committed goals we will want to make  a relaxed copy of */
@@ -210,33 +210,33 @@ namespace TREX {
 
       const IntervalIntDomain& endTime = (goal->isMerged() ? goal->getActiveToken()->end()->baseDomain() : goal->end()->baseDomain());
 
-      TREX_INFO("Synchronizer:resetGoals", m_core->nameString() << "Evaluating " << goal->toString() << " ending in " << endTime.toString());
+      TREX_INFO("trex:synchronization:resetGoals", m_core->nameString() << "Evaluating " << goal->toString() << " ending in " << endTime.toString());
 
 
       // Case 2: The goal is a current value it will be handled when we reset remaining tokens
       if(isCurrent(goal)){
 	m_goals.erase(goal);
-	TREX_INFO("Synchronizer:resetGoals", m_core->nameString() << "Removing goal but keeping value for:" << goal->toString());
+	TREX_INFO("trex:synchronization:resetGoals", m_core->nameString() << "Removing goal but keeping value for:" << goal->toString());
 	continue;
       }
 
       // Case 1: The goal must end in the past
       if(endTime.getUpperBound() <= m_core->getCurrentTick()){
-	TREX_INFO("Synchronizer:resetGoals", m_core->nameString() << "Ends in the past");
+	TREX_INFO("trex:synchronization:resetGoals", m_core->nameString() << "Ends in the past");
 	past.push_back(goal);
 	continue;
       }
 
       // Case 3: The goal was previously rejected and cannot be started. This is also considered the past.
       if(goal->isRejected() && goal->start()->baseDomain().getUpperBound() < m_core->getCurrentTick()){
-	TREX_INFO("Synchronizer:resetGoals", m_core->nameString() << "Rejected");
+	TREX_INFO("trex:synchronization:resetGoals", m_core->nameString() << "Rejected");
 	past.push_back(goal);
 	continue;
       }
 
       // Case 4: The goal is merged with a current value. We will remove the goal as it has already been started.
       if(goal->isMerged() && isCurrent(goal->getActiveToken())){
-	TREX_INFO("Synchronizer:resetGoals", m_core->nameString() << "Merged with current value.");
+	TREX_INFO("trex:synchronization:resetGoals", m_core->nameString() << "Merged with current value.");
 	past.push_back(goal);
 	continue;
       }
@@ -253,7 +253,7 @@ namespace TREX {
 
       // Case 6: The goal cannot be planned in time
       if(goal->start()->baseDomain().getUpperBound() <= (m_core->getCurrentTick() + m_core->getLatency())){
-	TREX_INFO("Synchronizer:resetGoals", m_core->nameString() << "Might have to start before we have time to plan.");
+	TREX_INFO("trex:synchronization:resetGoals", m_core->nameString() << "Might have to start before we have time to plan.");
 	past.push_back(goal);
 	continue;
       }
@@ -267,13 +267,13 @@ namespace TREX {
 
     for(std::vector<TokenId>::const_iterator it = past.begin(); it != past.end(); ++it){
       TokenId token = *it;
-      TREX_INFO("Synchronizer:resetGoals", m_core->nameString() << "Discarding goal:" << token->toString());
+      TREX_INFO("trex:synchronization:resetGoals", m_core->nameString() << "Discarding goal:" << token->toString());
       m_core->cleanupGoal(token);
       token->discard();
     }
 
 
-    TREX_INFO("Synchronizer:resetGoals", m_core->nameString() << "END");
+    TREX_INFO("trex:synchronization:resetGoals", m_core->nameString() << "END");
   }
 
   /**
@@ -284,14 +284,14 @@ namespace TREX {
     static int sl_counter(0);
     sl_counter++;
 
-    TREX_INFO("Synchronizer:resetObservations", m_core->nameString() << "[" << sl_counter << "]START");
+    TREX_INFO("trex:synchronization:resetObservations", m_core->nameString() << "[" << sl_counter << "]START");
 
     TokenSet observations = m_observations;
     for(TokenSet::iterator it = observations.begin(); it != observations.end(); ++it){
       TokenId observation = *it;
       checkError(observation.isValid(), observation);
 
-      TREX_INFO("Synchronizer:resetObservations", m_core->nameString() << "Evaluating " << observation->toString());
+      TREX_INFO("trex:synchronization:resetObservations", m_core->nameString() << "Evaluating " << observation->toString());
 
       // If the observation contains merged tokens, they should all be cancelled.
       TokenSet mergedTokens = observation->getMergedTokens();
@@ -301,11 +301,11 @@ namespace TREX {
       }
 
       if(m_core->isCurrentObservation(observation)){
-	TREX_INFO("Synchronizer:resetObservations", m_core->nameString() << "Handling current observation " << observation->toString());
+	TREX_INFO("trex:synchronization:resetObservations", m_core->nameString() << "Handling current observation " << observation->toString());
 
 	// Relax if we can and if we must. If committed, see remaining Tokens
 	if(!observation->isCommitted() && !observation->isInactive()){
-	  TREX_INFO("Synchronizer:resetObservations", m_core->nameString() << "Relaxing " << observation->toString());
+	  TREX_INFO("trex:synchronization:resetObservations", m_core->nameString() << "Relaxing " << observation->toString());
 	  observation->cancel();
 	}
 
@@ -325,7 +325,7 @@ namespace TREX {
 	observation->discard();
     }
 
-    TREX_INFO("Synchronizer:resetObservations", m_core->nameString() << "END");
+    TREX_INFO("trex:synchronization:resetObservations", m_core->nameString() << "END");
   }
 
   /**
@@ -334,7 +334,7 @@ namespace TREX {
    * @see relax
    */
   void Synchronizer::resetRemainingTokens(bool discardCurrentValues){
-    TREX_INFO("Synchronizer:resetRemainingTokens", m_core->nameString() << 
+    TREX_INFO("trex:synchronization:resetRemainingTokens", m_core->nameString() << 
 	     "START with discarding current internal values " << (discardCurrentValues ? "enabled." : "disabled."));
 
     std::vector<TokenId> tokensToDiscard;
@@ -345,7 +345,7 @@ namespace TREX {
 
       const IntervalIntDomain& endTime = token->end()->baseDomain();
 
-      TREX_INFO("Synchronizer:resetRemainingTokens", m_core->nameString() << "Evaluating " << token->toString() << " ending in " << endTime.toString());
+      TREX_INFO("trex:synchronization:resetRemainingTokens", m_core->nameString() << "Evaluating " << token->toString() << " ending in " << endTime.toString());
 
       // Case 1: The value is current. This means it is committed, which implies it was previously found to be consistent
       // during synchronization. 
@@ -363,11 +363,11 @@ namespace TREX {
     }
 
     // Now we clean up all the tokens we plan to discard.
-    TREX_INFO("Synchronizer:resetRemainingTokens", "Discarding " << tokensToDiscard.size() << " tokens");
+    TREX_INFO("trex:synchronization:resetRemainingTokens", "Discarding " << tokensToDiscard.size() << " tokens");
 
     Entity::discardAll(tokensToDiscard);
 
-    TREX_INFO("Synchronizer:resetRemainingTokens", m_core->nameString() << "END");
+    TREX_INFO("trex:synchronization:resetRemainingTokens", m_core->nameString() << "END");
   }
 
   /**
@@ -417,7 +417,7 @@ namespace TREX {
     // and we want to prevent propagation while we are relaxing, we just commit directly
     token->commit();
 
-    TREX_INFO("Synchronizer:copyValue",m_core->nameString() << "Replaced " << source->toString() << " with " << token->toString());
+    TREX_INFO("trex:synchronization:copyValue",m_core->nameString() << "Replaced " << source->toString() << " with " << token->toString());
   }
 
   /**
