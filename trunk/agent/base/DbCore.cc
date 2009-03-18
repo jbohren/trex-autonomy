@@ -2375,8 +2375,10 @@ namespace TREX {
       ss << std::endl;
     }
 
-    if(predecessor.isId())
+    if(predecessor.isId()){
       ss << std::endl << "Continuing predecessor value " << predecessor->toString() << std::endl;
+      ss << std::endl << m_synchronizer.localContextForConstrainedVariable(predecessor->end());
+    }
 
     std::map<int, TimelineContainer>::const_iterator it = m_externalTimelineTable.find(timeline->getKey());
     const TimelineContainer& tc = it->second;
