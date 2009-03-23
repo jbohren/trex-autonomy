@@ -63,10 +63,25 @@ public:
     runTest(testSimulationWithPlannerTimeouts);
     runTest(testInconsistent);
     runTest(testOneStepAhead);
+    runTest(testFileSearch);
     return true;
   }
 
 private:
+
+  
+  static bool testFileSearch(){
+    setenv("TREX_START_DIR", "search_tests/a", 1);
+    runAgentWithSchema("st.cfg", 50, "search_test.0");
+    unsetenv("TREX_START_DIR");
+    setenv("TREX_START_DIR", "search_tests/b", 1);
+    runAgentWithSchema("st.cfg", 50, "search_test.1");
+    unsetenv("TREX_START_DIR");
+    setenv("TREX_START_DIR", "search_tests", 1);
+    runAgentWithSchema("st.cfg", 50, "search_test.2");
+    unsetenv("TREX_START_DIR");
+    return true;
+  }
 
   static bool testTestMonitor(){
     runAgentWithSchema("test_monitor.cfg", 50, "test_monitor");

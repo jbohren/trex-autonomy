@@ -67,6 +67,10 @@ if ! $(TREX_READY) {
 	orienteering/orienteering.4.orienteer.nddl
 	orienteering/orienteering.5.orienteer.nddl
 	orienteering/orienteering.5.breaker.nddl
+	search_tests/search_test.a.nddl
+	search_tests/search_test.b.nddl
+	search_tests/a/search_test.a.nddl
+	search_tests/b/search_test.b.nddl
  ;
 
  local file ;
