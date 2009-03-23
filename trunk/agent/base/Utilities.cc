@@ -121,6 +121,74 @@ namespace TREX {
       }
     }
 
+
+    //TREX_INFO("findfile", "Searching for " << fileName << ".\n");
+    //printf("Searching for %s.\n", fileName.c_str());
+
+    const char * start = getenv("TREX_START_DIR");
+
+
+    if (start) {
+      char * path2 = (char*)malloc(sizeof(char) * (strlen(start) + 2));
+      memset(path2, 0, sizeof(char) * (strlen(start) + 2));
+      memcpy((void*)path2, (const void*)start, sizeof(char) * strlen(start));
+
+
+      //TREX_INFO("findfile", "Starting search in " << path2 << ".\n");
+      //printf("Starting search in %s.\n", path2);
+
+      while(strlen(path2) != 0) {
+	//TREX_INFO("findfile", "\tIn " << path2 << ".\n");
+	//printf("\tIn %s.\n", path2);
+	std::string qualifiedFileName = path2 + std::string("/") + fileName;
+	
+	//Check if f exists.
+	std::ifstream f(qualifiedFileName.c_str());
+	if(f.good()) {
+	  f.close();
+	  return qualifiedFileName;
+	}
+	
+	//Check if we've intersected the trex path.
+	bool already_path = false;
+	for(std::vector<std::string>::const_iterator it = sl_locations.begin(); it != sl_locations.end(); ++it){
+	  if ((std::string(path2) + std::string("/")) == *it) {
+	    already_path = true;
+	    break;
+	  }
+	}
+	if (already_path) {
+	  //TREX_INFO("findfile", "Already in the path at " << path2 << ", bailing.\n");
+	  break;
+	}
+	
+	
+
+	//Delete a directory from the end, to move up a directory.
+	if (strlen(path2) <= 1) {
+	  break;
+	}
+	unsigned int i = strlen(path2) - 1;
+	if (path2[i] == '/' || path2[i] == '\\') {
+	  path2[i] = 0;
+	  i--;
+	}
+
+
+
+	do {
+	  i--;
+	  if (path2[i] == '/' || path2[i] == '\\') {
+	    path2[i] = 0;
+	    break;
+	  }
+	  path2[i] = 0;
+	} while (i != 0);
+      }
+    }
+
+
+
     std::string qualifiedFileName = "";
 
     // Search the path in order
@@ -128,8 +196,10 @@ namespace TREX {
       const std::string& path = *it;
       std::string qualifiedFileName = path + fileName;
       std::ifstream f(qualifiedFileName.c_str());
-      if(f.good())
+      if(f.good()) {
+	f.close();
 	return qualifiedFileName;
+      }
     }
 
     return fileName;
