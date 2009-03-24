@@ -1869,8 +1869,8 @@ namespace TREX {
     TREXLog() << nameString() << "Rejected " << token->toString() << std::endl;
     TREX_INFO("trex:warning", nameString() << token->toString() << " was rejected.\n\n" <<
 	      "   If this is a surprise, then you need to enable planner debug messages to investigate: \n" << 
-	      "   :Solver:step - useful for observing the backtracking search." << 
-	      "   :trex:planning - gives additional trex related information in the search in terms of flaw filtering etc.");
+	      "     :Solver:step - useful for observing the backtracking search.\n" << 
+	      "     :trex:planning - gives additional trex related information in the search in terms of flaw filtering etc.");
 
     m_tokenAgenda.erase(token);
   }
