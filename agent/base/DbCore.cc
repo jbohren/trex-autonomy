@@ -1658,20 +1658,6 @@ namespace TREX {
     return sl_table;
   }
 
-  TokenId DbCore::getParentToken(const ConstrainedVariableId& var){
-    if(var->parent().isId()){
-      if(TokenId::convertable(var->parent()))
-	return var->parent();
-
-      if(RuleInstanceId::convertable(var->parent())){
-	RuleInstanceId r = var->parent();
-	return r->getToken();
-      }
-    }
-
-    return TokenId::noId();
-  }
-
   DbCoreId DbCore::getInstance(const TokenId& token){
     if(instancesByDb().empty())
       return DbCoreId::noId();

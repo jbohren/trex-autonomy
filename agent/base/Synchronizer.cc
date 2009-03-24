@@ -6,6 +6,7 @@
 #include "PlanDatabase.hh"
 #include "Timeline.hh"
 #include "Agent.hh"
+#include "Utilities.hh"
 
 namespace TREX {
 
@@ -856,7 +857,7 @@ namespace TREX {
       "Base Domain is:" << var->baseDomain().toString() << std::endl <<
       "Derived domain is:" << var->lastDomain().toString() << std::endl << std::endl;
 
-    TokenId token = DbCore::getParentToken(var);
+    TokenId token = getParentToken(var);
     if(token.isId())
       ss << "Variable belongs to :" << PlanDatabaseWriter::simpleTokenSummary(token);
     else
@@ -873,7 +874,7 @@ namespace TREX {
       const std::vector<ConstrainedVariableId>& scope = constraint->getScope();
       for(unsigned int i=0; i<scope.size(); i++){
 	variables.insert(scope[i]);
-	TokenId parent = DbCore::getParentToken(scope[i]);
+	TokenId parent = getParentToken(scope[i]);
 	if(parent.isId())
 	  tokens.insert(parent);
       }
@@ -890,7 +891,7 @@ namespace TREX {
     for(ConstrainedVariableSet::const_iterator it = variables.begin(); it != variables.end(); ++it){
       ConstrainedVariableId v = *it;
       ss << "  " << v->getName().toString() << "(" << v->getKey() << ")"; 
-      TokenId parent = DbCore::getParentToken(v);
+      TokenId parent = getParentToken(v);
       if(parent.isId())
 	ss << " of " << PlanDatabaseWriter::simpleTokenSummary(parent);
       ss << std::endl;

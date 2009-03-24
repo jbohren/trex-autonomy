@@ -34,6 +34,11 @@ namespace TREX {
   std::vector<ConstrainedVariableId> appendStateVar(const std::vector<ConstrainedVariableId>& variables);
 
   /**
+   * @brief Utililty for accessing the parent token of a token or rule variable
+   */
+  TokenId getParentToken(const ConstrainedVariableId& var);
+
+  /**
    * @brief Binds default values for token parameters if they are not singletons.
    */
   class SetDefault : public Constraint {
