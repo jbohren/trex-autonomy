@@ -22,6 +22,21 @@ namespace TREX {
     return obj->getName();
   }
 
+
+  TokenId getParentToken(const ConstrainedVariableId& var){
+    if(var->parent().isId()){
+      if(TokenId::convertable(var->parent()))
+	return var->parent();
+
+      if(RuleInstanceId::convertable(var->parent())){
+	RuleInstanceId r = var->parent();
+	return r->getToken();
+      }
+    }
+
+    return TokenId::noId();
+  }
+
   void initTREX(){
     // TeleoReactor Factory Bindings for default components
     new TeleoReactor::ConcreteFactory<DbCore>("DeliberativeReactor");
@@ -209,7 +224,7 @@ namespace TREX {
     // It can be the case that when we are copying a constraint, for example when merging, that the state variable will already have
     // been added. Thus we check the scope and only append if we have to
     std::vector<ConstrainedVariableId> newScope(variables);
-    TokenId token = DbCore::getParentToken(variables[0]);
+    TokenId token = getParentToken(variables[0]);
     for(std::vector<ConstrainedVariableId>::const_iterator it = newScope.begin(); it != newScope.end(); ++it){
       if(*it == token->getState())
 	return newScope;
@@ -224,7 +239,7 @@ namespace TREX {
 			 const ConstraintEngineId& constraintEngine,
 			 const std::vector<ConstrainedVariableId>& variables)
     : Constraint(name, propagatorName, constraintEngine, appendStateVar(variables)),
-      m_token(DbCore::getParentToken(m_variables[0])),
+      m_token(getParentToken(m_variables[0])),
       m_param(getCurrentDomain(m_variables[0])),
       m_default(getCurrentDomain(m_variables[1])){
     checkError(m_token.isValid(), m_token);
@@ -283,7 +298,7 @@ namespace TREX {
 				 const ConstraintEngineId& constraintEngine,
 				 const std::vector<ConstrainedVariableId>& variables)
     : Constraint(name, propagatorName, constraintEngine, appendStateVar(variables)),
-      m_token(DbCore::getParentToken(m_variables[0])),
+      m_token(getParentToken(m_variables[0])),
       m_param(getCurrentDomain(m_variables[0])){
     checkError(m_token.isValid(), m_token);
     checkError(m_param.isNumeric(), toString() << " only valid for numeric variables.");

@@ -209,11 +209,6 @@ namespace TREX {
 
     void queryTimelineModes(std::list<LabelStr>& externals, std::list<LabelStr>& internals);
 
-    /**
-     * @brief Utililty for accessing the parent token of a token or rule variable
-     */
-    static TokenId getParentToken(const ConstrainedVariableId& var);
-
   private:
     /**
      * @brief Used to hook up observer for dispatch of observations and servers for dispatch of goals
