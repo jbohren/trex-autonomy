@@ -100,6 +100,7 @@ class Behavior extends AgentTimeline {
     int max_duration; // A duration bound
     int timeout; // Max time for behavior to be stuck internally
     bool timed_out; // True if max_duration == duration	
+    ResultStatus status; 
     testEQ(timed_out, duration, max_duration);
     precedes(dispatch_time, start); // This is a <= constraint
 
@@ -123,11 +124,12 @@ Behavior::Active{
   leq(duration, max_duration);
 
   // Constraint on successor state
-  meets(Inactive);
+  meets(Inactive _reserved_s);
 
  // If at the end, apply a default to the timeout flag so that it is not zero.
  // This ensures the flag is set even if a max duration bound is not imposed
  if(end){
+   eq(status, _reserved_s.status);
    defaultOnCommit(timed_out, false);
  }
 }
