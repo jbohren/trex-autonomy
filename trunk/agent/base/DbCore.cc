@@ -795,7 +795,7 @@ namespace TREX {
     static unsigned int sl_counter(0);
     sl_counter++;
 
-    TREX_INFO("DbCore:terminate", nameString() << "Terminating " << token->toString());
+    TREX_INFO("trex:info", nameString() << "Terminating " << token->toString());
 
     // If it is a goal, generate messages indicating its eventual fate
     if(isGoal(token)){
@@ -817,7 +817,7 @@ namespace TREX {
   void DbCore::notifyObservers(){
     checkError(m_state != DbCore::INVALID, "Should not be publishing when state is invalid");
 
-    TREX_INFO("DbCore:notifyObservers", nameString() <<  "START");
+    TREX_INFO("trex:debug:synchronization:notifyObservers", nameString() <<  "START");
 
     for(std::vector< std::pair<TimelineId, TICK> >::iterator it = m_internalTimelineTable.begin(); it != m_internalTimelineTable.end(); ++it){
       TimelineId timeline = it->first;
@@ -894,7 +894,7 @@ namespace TREX {
       }
     }
 
-    TREX_INFO("DbCore:notifyObservers", nameString() <<  "END");
+    TREX_INFO("trex:debug:synchronization:notifyObservers", nameString() <<  "END");
   }
 
   /**
@@ -913,7 +913,7 @@ namespace TREX {
     if(m_state != DbCore::INACTIVE)
       return;
 
-    TREX_INFO("DbCore:dispatchCommands", nameString() << "START");
+    TREX_INFO("trex:debug:dispatching:dispatchCommands", nameString() << "START");
 
     std::vector<TokenId> activeUncontrollableEvents;
     bool initialized(false);
@@ -928,7 +928,7 @@ namespace TREX {
       // Upper bound includes lookahead.
       TICK dispatchUB = std::min(dispatchLB + server->getLookAhead(),  Agent::instance()->getFinalTick());
 
-      TREX_INFO("DbCore:dispatchCommands", 
+      TREX_INFO("trex:debug:dispatching", 
 	       nameString() << "Evaluating tokens on " << timeline->getName().toString() <<
 	       " for dispatch in [" << dispatchLB << ", " << dispatchUB << "]");
 
@@ -955,7 +955,7 @@ namespace TREX {
 
 	checkError(token.isValid(), token);
 
-	TREX_INFO("DbCore:dispatchCommands", 
+	TREX_INFO("trex:debug:dispatching", 
 		 nameString() << "Evaluating " << token->toString() << " for dispatch window [" << dispatchLB << ", " << dispatchUB << "]");
 	
 	const IntervalIntDomain& startTime = token->start()->lastDomain();
@@ -980,7 +980,7 @@ namespace TREX {
 	// the request outright. It is rather the question of whether you can serve the request now. Absent a positive reponse, we wil retry
 	// on the next iteration
 	if(startTime.intersects(dispatchWindow)){
-	  TREX_INFO("DbCore:dispatchCommands", nameString() << "Dispatching " << token->toString());
+	  TREX_INFO("trex:dispatching", nameString() << "Dispatching " << token->toLongString());
 	  token->getObject()->restrictBaseDomain(token->getObject()->lastDomain());
 
 	  if(server->request(token)){
@@ -993,7 +993,7 @@ namespace TREX {
       }
     }
 
-    TREX_INFO("DbCore:dispatchCommands", nameString() << "END");
+    TREX_INFO("trex:debug:dispatching:dispatchCommands", nameString() << "END");
   }
 
 
@@ -1001,7 +1001,7 @@ namespace TREX {
    * @brief Dispatch Recalls To Respective Servers. All tokens in the future that have been dispatched should be recalled.
    */
   void DbCore::dispatchRecalls(){
-    TREX_INFO("DbCore:dispatchRecalls", nameString() << "START");
+    TREX_INFO("trex:debug:dispatching:dispatchRecalls", nameString() << "START");
 
     for(std::map<int, TimelineContainer>::iterator it = m_externalTimelineTable.begin(); it != m_externalTimelineTable.end(); ++it){
       TimelineContainer& tc = it->second;
@@ -1014,13 +1014,13 @@ namespace TREX {
 	TokenId token = *t_it;
 	checkError(token.isValid(), token);
 
-	TREX_INFO("DbCore:dispatchRecalls", nameString() << 
+	TREX_INFO("trex:debug:dispatching", nameString() << 
 		 "Evaluating " << token->toString() << " for recall. Dispatched[" << tc.isDispatched(token) << "] "
 		 "Ends:" << token->end()->baseDomain().toString());
 
 	// If the token has been dispatched and it is not finished yet ,recall it.
 	if(tc.isDispatched(token) && token->end()->baseDomain().getUpperBound() > getCurrentTick() && !observedNow(token)){
-	  TREX_INFO("DbCore:dispatchRecalls", nameString() << "Recalling " << token->toString());
+	  TREX_INFO("trex:dispatching", nameString() << "Recalling " << token->toString());
 	  server->recall(token);
 	  tc.clearDispatched(token);
 	  resetDispatchTime(token);
@@ -1028,7 +1028,7 @@ namespace TREX {
       }
     }
 
-    TREX_INFO("DbCore:dispatchRecalls", nameString() << "END");
+    TREX_INFO("trex:debug:dispatching:dispatchRecalls", nameString() << "END");
   }
 
   /**
