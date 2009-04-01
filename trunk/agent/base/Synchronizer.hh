@@ -34,7 +34,7 @@ namespace TREX {
     std::string propagationFailure() const;
     std::string localContextForConstrainedVariable(const ConstrainedVariableId& var) const;
     std::string tokenExtensionFailure(const TokenId& expectedToken) const;
-
+    std::string analysisOfBlockingToken(const TokenId& tokenToResolve) const;
   private:
 
     /**
