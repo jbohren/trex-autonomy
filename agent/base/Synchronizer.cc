@@ -844,6 +844,10 @@ namespace TREX {
     }
     else {
       ss << "No compatible tokens and no locations for insertion in database below:" << std::endl;
+
+      // Output an analysis of the blocking token, if there is one.
+      ss << analysisOfBlockingToken(tokenToResolve);
+
       ss << PlanDatabaseWriter::toString(m_db) << std::endl;
     }
 
@@ -923,6 +927,34 @@ namespace TREX {
 
     // Output the local context for this timepoint"
     ss << localContextForConstrainedVariable(timepointOfInterest);
+
+    return ss.str();
+  }
+
+  /**
+   * Search for the location in the database where this token would like to be and see which
+   * tokens are present and why there is no merge possible.
+   */
+  std::string Synchronizer::analysisOfBlockingToken(const TokenId& tokenToResolve) const {
+    std::stringstream ss;
+
+    const TokenSet& activeTokens = m_db->getActiveTokens(tokenToResolve->getPredicateName());
+    const AbstractDomain& startDom = tokenToResolve->start()->lastDomain();
+
+    for(TokenSet::const_iterator it = activeTokens.begin(); it != activeTokens.end(); ++it){
+      TokenId token = *it;
+
+      // Skip if it is this token
+      if(token == tokenToResolve)
+	continue;
+
+      // The token is blocking this candidate if it contains its start time
+      if(token->start()->lastDomain().getUpperBound() <= startDom.getLowerBound() &&
+	 token->end()->lastDomain().getLowerBound() >= startDom.getUpperBound()){
+	ss << "Found a conflict with " << token->toLongString() << std::endl;
+	break;
+      }
+    }
 
     return ss.str();
   }
