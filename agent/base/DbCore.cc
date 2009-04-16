@@ -361,7 +361,7 @@ namespace TREX {
       const LabelStr& varName = nameValuePair.first;
       const AbstractDomain& varDom = *(nameValuePair.second);
       const ConstrainedVariableId& param = token->getVariable(varName);
-      checkError(param.isValid(), token->toString() << " has no variable named " << varName.toString());
+      checkError(param.isValid(), token->toString() << " has no variable named " << varName.toString() << ". " << token->toLongString());
       restrict(param, varDom);
     }
 
@@ -2159,16 +2159,16 @@ namespace TREX {
     if(m_state != DbCore::ACTIVE || token->isCommitted())
       return false;
 
+    // If it has a master, is the master derived in deliberation
+    TokenId master = token->master();
+    if(master.isId())
+      return inDeliberation(master);
+
     // If it is a goal, or if it might start in the future, then it is in deliberation
     if(isGoal(token) || token->start()->lastDomain().getUpperBound() > getCurrentTick())
       return true;
 
-    // If it has a master, is the master derived from deliberation
-    TokenId master = token->master();
-    if(master.isId())
-      return inDeliberation(master);
-    else
-      return false;
+    return false;
   }
 
   void DbCore::markInvalid(const std::string& comment){
