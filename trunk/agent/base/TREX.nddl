@@ -67,7 +67,12 @@ class AgentTimeline extends Timeline {
  * accomplisg goals. This is a construct of a deliberative reactor
  */
 class AgentActions {
-	AgentActions(){}
+  /**
+   * This action supports a common idiom to indicate we want something to happen proactively.
+   */
+  predicate startEvent{}
+
+  AgentActions(){}
 };
 
 class StateVariable extends AgentTimeline{
