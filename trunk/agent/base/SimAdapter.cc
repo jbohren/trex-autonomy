@@ -191,11 +191,14 @@ AbstractDomain *SimAdapter::xmlAsAbstractDomain(TiXmlElement const &elem) {
 
     if( "symbol"==tag ) {
       char const *type_st = elem.Attribute("type"); 
+      StringDomain*domain = new StringDomain(val_st, type_st);
+      /*
       checkError(NULL!=type_st,
 		 "SimAdapter:xmlAsAbstractDomain : missing type for domain.");
 
       AbstractDomain *domain = getFactory(type_st).baseDomain().copy();
       domain->set(getFactory(type_st).createValue(val_st));
+      */
       return domain;
     } else {
       checkError("object"!=tag,
