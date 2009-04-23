@@ -138,7 +138,7 @@ namespace TREX {
       for(std::list<LabelStr>::const_iterator it = externals.begin(); it != externals.end(); ++it){
 	const LabelStr& timelineName = *it;
 	m_observersByTimeline.insert(std::pair<LabelStr, ObserverId>(timelineName, reactor->toObserver()));
-	debugMsg("Agent:Agent", "Adding reactor " << reactor->getName().toString() << " as observer for " << timelineName.toString());
+	debugMsg("trex:info:configuration", "Adding reactor " << reactor->getName().toString() << " as observer for " << timelineName.toString());
       }
 
       // For all the internal timelines, this reactor is a server, so add to our collection which will be used for binding
@@ -154,7 +154,7 @@ namespace TREX {
 	  m_obsLog.declTimeline(timelineName, reactor->getName().toString());
 
 	serversByTimeline.insert(std::pair<double, ServerId>(timelineName, reactor->toServer()));
-	debugMsg("Agent:Agent", "Adding reactor " << reactor->getName().toString() << " as server for " << timelineName.toString());
+	debugMsg("trex:info:configuration", "Adding reactor " << reactor->getName().toString() << " as server for " << timelineName.toString());
       }
     }
     // Reactors loaded : I can close the log header 
