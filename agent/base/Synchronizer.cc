@@ -594,6 +594,7 @@ namespace TREX {
       unsigned int stepCount = 0;
       if(!insertToken(token, stepCount)){
 	TREX_INFO("trex:debug:synchronization:insertCopiedValues", m_core->nameString() << "Failed to insert " << token->toString());
+	TREX_INFO("trex:debug:synchronization:insertCopiedValues", tokenResolutionFailure(token, TokenId::noId()));
 	m_core->markInvalid(std::string("Failed to insert ") + token->toString() + 
 			    "This is bad. After relaxing the plan and restoring necessary state, we still can't synchronize. " + 
 			    "There is probably a bug in the model. Enable PlanDatabase and DbCore messages in Debug.log");
@@ -827,10 +828,12 @@ namespace TREX {
   std::string Synchronizer::tokenResolutionFailure(const TokenId& tokenToResolve, const TokenId& merge_candidate) const {
     std::stringstream ss;
 
-    ss << "Failed to resolve " << tokenToResolve->toString() << ". Analysis results below" << std::endl << std::endl;
+    ss << "Failed to resolve " << tokenToResolve->toString() << std::endl << 
+      tokenToResolve->toLongString() << std::endl << std::endl << "Analysis results below" << std::endl << std::endl;
 
-    if(m_core->isObservation(tokenToResolve))
-      ss << tokenToResolve->toString() << " is an observation." << std::endl << std::endl;
+    if(m_core->isObservation(tokenToResolve)){
+      ss << tokenToResolve->toString() << " is an observation." << std::endl;
+    }
 
     if(tokenToResolve->master().isId()){
       const TokenId master = tokenToResolve->master();
@@ -846,11 +849,12 @@ namespace TREX {
       ss << PlanDatabaseWriter::toString(m_db) << std::endl;
     }
     else {
-      ss << "No compatible tokens and no locations for insertion in database below:" << std::endl;
+      ss << "No compatible tokens and no locations for insertion." << std::endl;
 
       // Output an analysis of the blocking token, if there is one.
       ss << analysisOfBlockingToken(tokenToResolve);
 
+      ss << std::endl << "Current Partial Plan:" << std::endl;
       ss << PlanDatabaseWriter::toString(m_db) << std::endl;
     }
 
@@ -943,6 +947,7 @@ namespace TREX {
 
     const TokenSet& activeTokens = m_db->getActiveTokens(tokenToResolve->getPredicateName());
     const AbstractDomain& startDom = tokenToResolve->start()->lastDomain();
+    const AbstractDomain& endDom = tokenToResolve->end()->lastDomain();
 
     for(TokenSet::const_iterator it = activeTokens.begin(); it != activeTokens.end(); ++it){
       TokenId token = *it;
@@ -951,10 +956,24 @@ namespace TREX {
       if(token == tokenToResolve)
 	continue;
 
-      // The token is blocking this candidate if it contains its start time
-      if(token->start()->lastDomain().getUpperBound() <= startDom.getLowerBound() &&
-	 token->end()->lastDomain().getLowerBound() >= startDom.getUpperBound()){
-	ss << "Found a conflict with " << token->toLongString() << std::endl;
+      if(!token->getObject()->lastDomain().intersects(tokenToResolve->getObject()->lastDomain()))
+	continue;
+
+      // Report the token if it overalps in time but does not allow merging
+      if(token->start()->lastDomain().intersects(startDom) && token->end()->lastDomain().intersects(endDom)){
+	ss << "Found a conflict with " << token->toLongString() << std::endl << std::endl;
+	std::vector<ConstrainedVariableId> p_a = token->parameters();
+	std::vector<ConstrainedVariableId> p_b = tokenToResolve->parameters();
+
+	for(unsigned int i = 0; i < p_a.size(); i++){
+	  ConstrainedVariableId v_a = p_a[i];
+	  ConstrainedVariableId v_b = p_b[i];
+	  if(!v_a->lastDomain().intersects(v_b->lastDomain()))
+	    ss << "    " << v_a->toLongString() << " conflicts with " << v_b->toLongString() << std::endl;
+	}
+
+	ss << std::endl;
+
 	break;
       }
     }

@@ -567,7 +567,8 @@ namespace TREX {
       TimelineContainer& tc = it->second;
       TimelineId timeline = tc.getTimeline();
       std::map<double, ServerId>::const_iterator c_it = serversByTimeline.find(timeline->getName());
-      checkError(c_it != serversByTimeline.end(), "Could not find a server for " << timeline->toString());
+      condDebugMsg(c_it == serversByTimeline.end(), "trex:error", "Could not find a server for " << timeline->toString() << ". No reactor owns this timeline.");
+      checkError(c_it != serversByTimeline.end(), "Could not find a server for " << timeline->toString() << ". No reactor owns this timeline.");
       tc.setServer(c_it->second);
     }
 
@@ -808,7 +809,7 @@ namespace TREX {
     // Terminate token. Will discard in batch later
     token->terminate();
 
-    checkError(!m_db->getConstraintEngine()->isRelaxed(), "Should be no relaxation in archiving [" << sl_counter << "]");
+    condDebugMsg(m_db->getConstraintEngine()->isRelaxed(), "trex:error", "Discovered relaxation in archiving when terminating " << token->toLongString());
   }
 
   /**
@@ -1518,7 +1519,7 @@ namespace TREX {
     purgeOrphanedKeys();
     Entity::garbageCollect();
 
-    checkError(!m_db->getConstraintEngine()->isRelaxed(), "Should be no relaxation in garbage collection");
+    condDebugMsg(m_db->getConstraintEngine()->isRelaxed(), "trex:error", "Should be no relaxation in garbage collection");
   }
 
   void DbCore::setHorizon(){
