@@ -102,61 +102,86 @@ namespace TREX {
     // This map will be populated as we read in the timeline modes for each reactor
     std::map<double, ServerId> serversByTimeline;
 
+    std::vector<TiXmlElement*> elements;
+    std::vector<TiXmlElement*> includedFiles; //Garbage to be deleted at the end.
+
     // Iterate over all TeleoReactors and allocate them
     for (TiXmlElement * child = configSrcRoot->FirstChildElement();
 	 child != NULL;
 	 child = child->NextSiblingElement()){
+      elements.push_back(child);
+    }
+    while (elements.size()) {
+      TiXmlElement * child = elements.at(0);
+      elements.erase(elements.begin());
       static const char* DEFAULT = "TeleoReactor";
 
       // Test for a TeleoReactor. Allocate if we find one
-      if(strcmp(child->Value(), "TeleoReactor") != 0){
+      if(strcmp(child->Value(), "Include") == 0){
+	std::string file = findFile(child->Attribute("name"));
+	printf("Hi, i'm including: %s\n", file.c_str());
+	TiXmlElement* iroot = EUROPA::initXml(file.c_str());
+	includedFiles.push_back(iroot);
+	for (TiXmlElement * ichild = iroot->FirstChildElement();
+	     ichild != NULL;
+	     ichild = ichild->NextSiblingElement()){
+	  elements.push_back(ichild);
+	}
+      }else if(strcmp(child->Value(), "TeleoReactor") == 0){
+	const char* component = child->Attribute("component");
+	
+	// If no component name is provided, use the default
+	if(component == NULL)
+	  component = DEFAULT;
+	
+	TeleoReactorId reactor = TeleoReactor::createInstance(m_name, component, *child);
+	
+	if(getReactor(reactor->getName()).isId()){
+	  TREXLog() << reactor->getName().toString() << " is not unique. It must be.";
+	  exit(-1);
+	}
+	
+	m_reactorsByName.insert(std::pair<double, TeleoReactorId>(reactor->getName(), reactor));
+	m_reactors.push_back(reactor);
+	
+	// Fill Data structures for observables etc so we can hookup correctly.
+	std::list<LabelStr> externals, internals;
+	reactor->queryTimelineModes(externals, internals);
+	
+	// Populate observers by timeline - external timelines are observers
+	for(std::list<LabelStr>::const_iterator it = externals.begin(); it != externals.end(); ++it){
+	  const LabelStr& timelineName = *it;
+	  m_observersByTimeline.insert(std::pair<LabelStr, ObserverId>(timelineName, reactor->toObserver()));
+	  debugMsg("trex:info:configuration", "Adding reactor " << reactor->getName().toString() << " as observer for " << timelineName.toString());
+	}
+	
+	// For all the internal timelines, this reactor is a server, so add to our collection which will be used for binding
+	for(std::list<LabelStr>::const_iterator it = internals.begin(); it != internals.end(); ++it){
+	  const LabelStr& timelineName = *it;
+	  
+	  if(serversByTimeline.find(timelineName) != serversByTimeline.end()){
+	    TREXLog() << "Configuration Error. Already have a server for " << timelineName.toString();
+	    exit(-1);
+	  }
+	  
+	  if( reactor->shouldLog() )
+	    m_obsLog.declTimeline(timelineName, reactor->getName().toString());
+	  
+	  serversByTimeline.insert(std::pair<double, ServerId>(timelineName, reactor->toServer()));
+	  debugMsg("trex:info:configuration", "Adding reactor " << reactor->getName().toString() << " as server for " << timelineName.toString());
+	}
+      }else{
 	TREXLog() <<  "Invalid XML Tag - " << child->Value();
 	exit(-1);
       }
-
-      const char* component = child->Attribute("component");
-
-      // If no component name is provided, use the default
-      if(component == NULL)
-	component = DEFAULT;
-
-      TeleoReactorId reactor = TeleoReactor::createInstance(m_name, component, *child);
-
-      if(getReactor(reactor->getName()).isId()){
-	TREXLog() << reactor->getName().toString() << " is not unique. It must be.";
-	exit(-1);
-      }
-
-      m_reactorsByName.insert(std::pair<double, TeleoReactorId>(reactor->getName(), reactor));
-      m_reactors.push_back(reactor);
-
-      // Fill Data structures for observables etc so we can hookup correctly.
-      std::list<LabelStr> externals, internals;
-      reactor->queryTimelineModes(externals, internals);
-
-      // Populate observers by timeline - external timelines are observers
-      for(std::list<LabelStr>::const_iterator it = externals.begin(); it != externals.end(); ++it){
-	const LabelStr& timelineName = *it;
-	m_observersByTimeline.insert(std::pair<LabelStr, ObserverId>(timelineName, reactor->toObserver()));
-	debugMsg("trex:info:configuration", "Adding reactor " << reactor->getName().toString() << " as observer for " << timelineName.toString());
-      }
-
-      // For all the internal timelines, this reactor is a server, so add to our collection which will be used for binding
-      for(std::list<LabelStr>::const_iterator it = internals.begin(); it != internals.end(); ++it){
-	const LabelStr& timelineName = *it;
-
-	if(serversByTimeline.find(timelineName) != serversByTimeline.end()){
-	  TREXLog() << "Configuration Error. Already have a server for " << timelineName.toString();
-	  exit(-1);
-	}
-
-	if( reactor->shouldLog() )
-	  m_obsLog.declTimeline(timelineName, reactor->getName().toString());
-
-	serversByTimeline.insert(std::pair<double, ServerId>(timelineName, reactor->toServer()));
-	debugMsg("trex:info:configuration", "Adding reactor " << reactor->getName().toString() << " as server for " << timelineName.toString());
-      }
     }
+
+    while(!includedFiles.empty()){
+      delete includedFiles[0];
+      includedFiles.erase(includedFiles.begin());
+    }
+    
+
     // Reactors loaded : I can close the log header 
     m_obsLog.endHeader(getCurrentTick());
 
