@@ -46,6 +46,14 @@ class GamePlayTests {
 public:
   static bool test(){ 
     runTest(bugFixes);
+    runTest(testRecall);
+    runTest(testSqueezeObserver);
+    runTest(testSimulation);
+    runTest(testOneDeliberatorOneAdapter);
+    runTest(testSimulationWithPlannerTimeouts);
+    runTest(testInconsistent);
+    runTest(testOneStepAhead);
+    runTest(testFileSearch);
     runTest(testRepair);
     runTest(testUndefinedSingleTimeline);
     runTest(testUndefinedDerived);
@@ -56,14 +64,6 @@ public:
     runTest(testPersistence);
     runTest(testScalability);
     runTest(testTestMonitor);
-    runTest(testSqueezeObserver);
-    runTest(testOneDeliberatorOneAdapter);
-    runTest(testSimulation);
-    runTest(testRecall);
-    runTest(testSimulationWithPlannerTimeouts);
-    runTest(testInconsistent);
-    runTest(testOneStepAhead);
-    runTest(testFileSearch);
     return true;
   }
 
@@ -88,7 +88,7 @@ private:
     return true;
   }
   static bool bugFixes(){
-    //runAgentWithSchema("bug.0.cfg", 50, "bug.0");
+    runAgentWithSchema("bug.0.cfg", 50, "bug.0");
     return true;
   }
 

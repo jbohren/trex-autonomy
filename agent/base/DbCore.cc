@@ -913,10 +913,6 @@ namespace TREX {
    */
   void DbCore::dispatchCommands(){
 
-    // Only dispatch commands when planning is quiescent
-    if(m_state != DbCore::INACTIVE)
-      return;
-
     TREX_INFO("trex:debug:dispatching:dispatchCommands", nameString() << "START");
 
     std::vector<TokenId> activeUncontrollableEvents;
@@ -949,7 +945,7 @@ namespace TREX {
 
 	// If we have already dispatched the token we can skip it. We would be better served storing this execution frontier
 	// to more efficiently dispatch. This could be done in a derivative of the Timeline designed for execution systems
-	if(token->isCommitted() || tc.isDispatched(token))
+	if(token->isCommitted() || tc.isDispatched(token) || inDeliberation(token))
 	  continue;
 
 	if (!initialized) {
@@ -2140,12 +2136,10 @@ namespace TREX {
   bool DbCore::isSolverTimedOut() {
     // Test for conflict with the planner horizon. Don't want to integrate
     // interim sub-goals into synchronization
-    return false;
-
     if(m_state == DbCore::ACTIVE){
       TICK lb, ub;
       getHorizon(lb, ub);
-      if(lb <= getCurrentTick()){
+      if(lb < getCurrentTick()){
 	TREX_INFO("trex:warning:planning",  nameString() << "Timed out finding a plan.");
 	TREXLog() << nameString() << "Planning failed to complete in time." << std::endl;
 	markInvalid("The solver could not complete in time. You might have excessive logging, or excessive search. To investigate the latter, enable Solver:step in Debug.cfg");
@@ -2165,13 +2159,8 @@ namespace TREX {
     if(m_state != DbCore::ACTIVE || token->isCommitted())
       return false;
 
-    // If it has a master, is the master derived in deliberation
-    TokenId master = token->master();
-    if(master.isId())
-      return inDeliberation(master);
-
-    // If it is a goal, or if it might start in the future, then it is in deliberation
-    if(isGoal(token) || token->start()->lastDomain().getUpperBound() > getCurrentTick())
+    // Now check the decision stack
+    if(m_solver->inDeliberation(token))
       return true;
 
     return false;
