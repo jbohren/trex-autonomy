@@ -267,8 +267,15 @@ namespace TREX {
 
     synchronize();
 
+    bool executed = false;
     // Deliberate as necessary while we have cpu available.
-    while(m_clock.getNextTick() == m_currentTick && executeReactor()) {}
+    while(m_clock.getNextTick() == m_currentTick){
+      executed = true;
+      if(!executeReactor())
+	break;
+    }
+
+    condDebugMsg(!executed, "trex:warn", "No time to plan");
 
     // Wait for next tick
     while(m_clock.getNextTick() == m_currentTick){m_clock.sleep();}
