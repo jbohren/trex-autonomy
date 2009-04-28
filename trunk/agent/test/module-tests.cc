@@ -88,7 +88,7 @@ private:
     return true;
   }
   static bool bugFixes(){
-    runAgentWithSchema("bug.0.cfg", 50, "bug.0");
+    //runAgentWithSchema("bug.0.cfg", 50, "bug.0");
     return true;
   }
 

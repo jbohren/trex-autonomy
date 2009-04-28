@@ -643,8 +643,11 @@ namespace TREX {
     if(token->isInactive())
       token->activate();
 
+    condDebugMsg(!token->getObject()->lastDomain().isSingleton(), "trex:error",  
+		 "Expecting " << token->toLongString() << " to be bound to a timeline for synchronization");
+
     checkError(token->getObject()->lastDomain().isSingleton(), 
-	       "Expecting " << token->getKey() << " to be a singleton for synchronization");
+	       "Expecting " << token->toLongString() << " to be bound to a timeline for synchronization");
 
     ObjectId object = token->getObject()->lastDomain().getSingletonValue();
 
