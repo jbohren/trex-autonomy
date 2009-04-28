@@ -431,6 +431,9 @@ namespace TREX {
     // Finally, we migrate constraints. This leverages the foreign key mapping constructed above.
     applyConstraints(goal);
 
+    // Finally, switch to indicate tyhe planner should be active
+    m_state = DbCore::ACTIVE;
+
     TREX_INFO("DbCore:handleRequest", nameString() << "Local Goal " << localGoal->toString() << " for request " << goal->toString());
 
     return true;
@@ -2137,6 +2140,8 @@ namespace TREX {
   bool DbCore::isSolverTimedOut() {
     // Test for conflict with the planner horizon. Don't want to integrate
     // interim sub-goals into synchronization
+    return false;
+
     if(m_state == DbCore::ACTIVE){
       TICK lb, ub;
       getHorizon(lb, ub);
