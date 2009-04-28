@@ -63,6 +63,11 @@ namespace TREX {
      * @note Will not force propagation.
      */
     void reset();
+    /**
+     * @brief Test if the given entity is in deliberation
+     */
+    bool inDeliberation(const EntityId& entity) const;
+
   private:
     const PlanDatabaseId m_db;
     std::vector<AbstractSolverId> m_solvers; /*! The list of solvers. */
@@ -127,6 +132,10 @@ namespace TREX {
      */
     virtual void reset() = 0;
 
+    /**
+     * @brief Test if the given entity is in deliberation
+     */
+    virtual bool inDeliberation(const EntityId& entity) const {return false;}
   protected:
     PlanDatabaseId m_db;
     LabelStr m_name;
@@ -191,6 +200,11 @@ namespace TREX {
      * @note Will not force propagation.
      */
     void reset();
+    /**
+     * @breif Will check the solver stack
+     */
+    virtual bool inDeliberation(const EntityId& entity) const;
+
   private:
     SolverId m_solver; /*! The Europa Solver */
   };

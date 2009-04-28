@@ -97,7 +97,14 @@ namespace TREX {
     }
   }
 
-
+  bool DbSolver::inDeliberation(const EntityId& entity) const{
+    for (std::vector<AbstractSolverId>::const_iterator it = m_solvers.begin(); it != m_solvers.end(); it++) {
+      AbstractSolverId solver = *it;
+      if(solver->inDeliberation(entity))
+	return true;
+    }
+    return false;
+  }
 
   AbstractSolver::AbstractSolver(const TiXmlElement& cfgXml) {
     // Extract the name of the Solver
@@ -141,6 +148,17 @@ namespace TREX {
     return m_solver->reset();
   }
     
+  bool EuropaSolverAdapter::inDeliberation(const EntityId& entity) const {
+    const DecisionStack& decision_stack = m_solver->getDecisionStack();
+    for(DecisionStack::const_iterator it = decision_stack.begin(); it != decision_stack.end(); ++it){
+      DecisionPointId decision_point = *it;
+      if(entity->getKey() == (int) decision_point->getFlawedEntityKey())
+	return true;
+    }
+
+    return false;
+  }
+
   FlawManagerSolver::FlawManagerSolver(const TiXmlElement& cfgXml) : AbstractSolver(cfgXml), m_dbListener(NULL), m_ceListener(NULL) { }
 
   FlawManagerSolver::~FlawManagerSolver() {
