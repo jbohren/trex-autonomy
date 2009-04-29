@@ -1555,7 +1555,7 @@ namespace TREX {
     // If the parameter is an object variable then we must do some conversion
     if(ObjectVarId::convertable(var)){
       const ObjectDomain& objDom = static_cast<const ObjectDomain&>(dom);
-      ObjectDomain localDom(objDom.getTypeName().c_str());
+      ObjectDomain localDom(objDom.getDataType());
       std::list<ObjectId> sourceObjects = objDom.makeObjectList();
       for(std::list<ObjectId>::const_iterator it = sourceObjects.begin(); it != sourceObjects.end(); ++it){
 	ObjectId foreignObj = *it;
@@ -1882,7 +1882,9 @@ namespace TREX {
   void DbCore::commitAndRestrict(const TokenId& token){
     TREX_INFO("DbCore:commitAndRestrict", nameString() << "(" << token->getKey() << ") " << token->toString());
 
+    // Committhe token and touch the state variable to trigger commit event based propagation
     token->commit();
+    token->getState()->touch();
 
     // Propagate constraints before binding attribute base domains.
     propagate();

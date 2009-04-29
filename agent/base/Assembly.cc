@@ -9,7 +9,7 @@
 #include "TestMonitor.hh"
 
 #include "ModuleConstraintEngine.hh"
-#include "DefaultPropagator.hh"
+#include "Propagators.hh"
 #include "ModulePlanDatabase.hh"
 #include "ModuleRulesEngine.hh"
 #include "ModuleTemporalNetwork.hh"

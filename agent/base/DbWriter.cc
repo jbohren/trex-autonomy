@@ -8,9 +8,7 @@
 #include "ConstraintEngine.hh"
 #include "ConstraintEngineDefs.hh"
 #include "ConstrainedVariable.hh"
-#include "EnumeratedDomain.hh"
-#include "IntervalDomain.hh"
-#include "IntervalIntDomain.hh"
+#include "Domains.hh"
 #include "LabelStr.hh"
 #include "Variable.hh"
 
