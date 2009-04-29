@@ -8,10 +8,8 @@
  */
 #include "EuropaXML.hh"
 
-#include "BoolDomain.hh"
-#include "IntervalIntDomain.hh"
+#include "Domains.hh"
 #include "Object.hh"
-
 #include "Utils.hh"
 
 using namespace TREX;
@@ -22,16 +20,6 @@ namespace {
     static size_t count(0);
     return ++count;	       
   }
-
-  bool is_bool(std::string const &typeName) {
-    return typeName=="bool" || typeName=="BOOL" || 
-      typeName==BoolDomain::getDefaultTypeName().toString();
-  } // ::is_bool
-
-  bool is_int(std::string const &typeName) {
-    return typeName=="int" || typeName=="INT_INTERVAL" ||
-      typeName==IntervalIntDomain::getDefaultTypeName().toString();
-  } // ::is_int
 
   std::string bool_val_to_str(double value) {
     return value?"true":"false";
@@ -61,29 +49,26 @@ namespace {
   }
 
   TiXmlElement *domain_val_to_xml(AbstractDomain const &domain, double value) {
-    LabelStr typeName = domain.getTypeName();
+    LabelStr typeName = domain.getDataType()->getName();
     TiXmlElement *elem;
-    
+    DataTypeId dt = domain.getDataType();
 
-    if( domain.isEntity() ) {
+    if( dt->isEntity() ) {
       elem = new TiXmlElement("object");
       elem->SetAttribute("value", object_val_to_str(value).c_str()); // may be replaced by domain_val_to_str
     } else {
       std::string strName = typeName.toString();
       
-      if( is_bool(strName) ) {
+      if( dt->isBool() ) {
 	elem = new TiXmlElement("value");
 	
 	elem->SetAttribute("type", "bool");
 	elem->SetAttribute("name", bool_val_to_str(value).c_str());
-      } else if( domain.isNumeric() ) {
+      } else if( dt->isNumeric()) {
 	elem = new TiXmlElement("value");
 	
 	elem->SetAttribute("type", strName.c_str());
-	if( is_int(strName) )
-	  elem->SetAttribute("name", int_val_to_str(value).c_str());
-	else
-	  elem->SetAttribute("name", double_val_to_str(value).c_str());
+	elem->SetAttribute("name", double_val_to_str(value).c_str());
       } else {
 	elem = new TiXmlElement("symbol");
 
@@ -95,24 +80,21 @@ namespace {
   } // ::domain_val_to_xml
 
   void domain_val_print_xml(FILE *out, AbstractDomain const &domain, double value) {
-    LabelStr typeName = domain.getTypeName();
     
     if( domain.isEntity() ) {
       fprintf(out, "<object value=\"%s\" />",
 	      object_val_to_str(value).c_str()); // may be replaced by domain_val_to_str
     } else {
-      std::string strName = typeName.toString();
+      std::string strName = domain.getDataType()->getName().toString();
       
-      if( is_bool(strName) ) {
+      if( domain.getDataType()->isBool() ) {
 	fprintf(out, "<value type=\"bool\" name=\"%s\" />",
 		bool_val_to_str(value).c_str());
-      } else if( domain.isNumeric() ) {
+      } else if( domain.getDataType()->isNumeric() ) {
 	fprintf(out, "<value type=\"%s\" name=\"",
 		strName.c_str());
-	if( is_int(strName) )
-	  fprintf(out, "%s\" />", int_val_to_str(value).c_str());
-	else
-	  fprintf(out, "%s\" />", double_val_to_str(value).c_str());
+	
+	fprintf(out, "%s\" />", double_val_to_str(value).c_str());
       } else 
 	fprintf(out, "<symbol type=\"%s\" value=\"%s\" />", strName.c_str(),
 		string_val_to_str(value).c_str()); // may be replaced by domain_val_to_str
@@ -125,19 +107,16 @@ namespace TREX {
   
   std::string domain_val_to_str(AbstractDomain const &domain, double value, 
 				bool symbolic) {
-    std::string typeName = domain.getTypeName().toString();
+    std::string typeName = domain.getDataType()->getName().toString();
 
-    if( is_bool(typeName) )
+    if( domain.getDataType()->isBool() )
       return bool_val_to_str(value);
-    else if( domain.isNumeric() ) {
+    else if( domain.getDataType()->isNumeric() ) {
       if( symbolic && PLUS_INFINITY==value )
 	return "+inf";
       else if( symbolic && MINUS_INFINITY==value )
 	return "-inf";
-      else if( is_int(typeName) )
-	return int_val_to_str(value);
-      else
-	return double_val_to_str(value);
+      return double_val_to_str(value);
     } else if( LabelStr::isString(domain.getUpperBound()) )
       return string_val_to_str(value);
     else 
@@ -150,7 +129,7 @@ namespace TREX {
 	return domain_val_to_xml(domain, domain.getSingletonValue());
       else if( domain.isEnumerated() ) {
 	TiXmlElement *elem = new TiXmlElement("set");
-	std::string typeName = domain.getTypeName().toString();
+	std::string typeName = domain.getDataType()->getName().toString();
 	std::list<double> values;
 	std::list<double>::const_iterator i, endi;
 	
@@ -162,8 +141,7 @@ namespace TREX {
 	return elem;
       } else if( domain.isInterval() ) {
 	TiXmlElement *elem = new TiXmlElement("interval");
-	std::string typeName = domain.getTypeName().toString();
-	
+	std::string typeName = domain.getDataType()->getName().toString();
 	elem->SetAttribute("type", typeName.c_str());
 	elem->SetAttribute("min", domain_val_to_str(domain, domain.getLowerBound()).c_str());
 	elem->SetAttribute("max", domain_val_to_str(domain, domain.getUpperBound()).c_str());
@@ -185,15 +163,15 @@ namespace TREX {
       if( !values.empty() ) {
 	std::list<double>::const_iterator i=values.begin(), endi = values.end();
 	
-	fprintf(out, "<set type=\"%s\">", domain.getTypeName().c_str());
+	fprintf(out, "<set type=\"%s\">", domain.getDataType()->getName().c_str());
 	for( ; endi!=i; ++i )
 	  domain_val_print_xml(out, domain, *i);
 	fprintf(out, "</set>");
       } else 
-	fprintf(out, "<set type=\"%s\"/>", domain.getTypeName().c_str());
+	fprintf(out, "<set type=\"%s\"/>", domain.getDataType()->getName().c_str());
     } else if( domain.isInterval() ) 
       fprintf(out, "<interval type=\"%s\" min=\"%s\" max=\"%s\"/>",
-	      domain.getTypeName().c_str(), 
+	      domain.getDataType()->getName().c_str(), 
 	      domain_val_to_str(domain, domain.getLowerBound()).c_str(),
 	      domain_val_to_str(domain, domain.getUpperBound()).c_str());
   } // TREX::print_xml<AbstractDomain>

@@ -7,11 +7,7 @@
  * @author Frederic Py <fpy@mbari.org>
  */
 #include "Utils.hh"
-#include "EnumeratedDomain.hh"
-#include "IntervalDomain.hh"
-#include "BoolDomain.hh"
-#include "StringDomain.hh"
-#include "SymbolDomain.hh"
+#include "Domains.hh"
 #include "Token.hh"
 #include "Adapter.hh"
 #include "SimAdapter.hh"
@@ -26,6 +22,7 @@ using namespace TREX;
 
 // Statics :
 
+#define GET_DATA_TYPE(dt) getPlanDatabase()->getSchema()->getCESchema()->getDataType(dt)
 
 EnumeratedDomain *SimAdapter::xmlAsEnumeratedDomain(TiXmlElement const &elem) {
   std::string typeName;
@@ -44,7 +41,7 @@ EnumeratedDomain *SimAdapter::xmlAsEnumeratedDomain(TiXmlElement const &elem) {
     checkError(!thisType.empty(), 
 	       "SimAdapter:xmlAsEnumeratedDomain error : unable to determine the type of domain.");
     if( "bool"==thisType || "BOOL"==thisType || 
-	BoolDomain::getDefaultTypeName().toString()==thisType ) {
+	BoolDT::NAME()==thisType ) {
       if( ANY==type ) {
 	type = BOOL;
 	typeName = "bool";
@@ -52,7 +49,7 @@ EnumeratedDomain *SimAdapter::xmlAsEnumeratedDomain(TiXmlElement const &elem) {
       if( BOOL==type )
 	continue;
     } else if( "int"==thisType || "INT"==thisType || "INT_INTERVAL"==thisType ||
-	       IntervalIntDomain::getDefaultTypeName().toString()==thisType ) {
+	       IntDT::NAME()==thisType ) {
       if( ANY==type ) {
 	type = INT;
 	typeName = "int";
@@ -60,7 +57,7 @@ EnumeratedDomain *SimAdapter::xmlAsEnumeratedDomain(TiXmlElement const &elem) {
       if( INT==type || SimAdapter::FLOAT==type )
 	continue;
     } else if( "float"==thisType || "FLOAT"==thisType || "REAL_INTERVAL"==thisType ||
-	       IntervalDomain::getDefaultTypeName().toString()==thisType ) {
+	       FloatDT::NAME()==thisType ) {
       if( ANY==type || INT==type ) {
 	type = SimAdapter::FLOAT;
 	typeName = "float";
@@ -68,7 +65,7 @@ EnumeratedDomain *SimAdapter::xmlAsEnumeratedDomain(TiXmlElement const &elem) {
       if( SimAdapter::FLOAT==type )
 	continue;
     } else if( "string"==thisType || "STRING"==thisType ||
-	       StringDomain::getDefaultTypeName().toString()==thisType ) {
+	       StringDT::NAME()==thisType ) {
       if( ANY==type ) {
 	type = STRING;
 	typeName = "string";
@@ -114,7 +111,7 @@ EnumeratedDomain *SimAdapter::xmlAsEnumeratedDomain(TiXmlElement const &elem) {
     case SimAdapter::INT_INTERVAL: 
     case SimAdapter::STRING: 
     case SimAdapter::SYMBOL:
-      values.push_back(getFactory(type).createValue(value_st));
+      values.push_back(m_symbolDT->createValue(value_st));
       break;
     case SimAdapter::OBJECT:
     default:
@@ -129,11 +126,11 @@ EnumeratedDomain *SimAdapter::xmlAsEnumeratedDomain(TiXmlElement const &elem) {
   case SimAdapter::INT_INTERVAL: 
   case SimAdapter::FLOAT:
   case SimAdapter::REAL_INTERVAL:
-    return new EnumeratedDomain(values, true, typeName.c_str());
+    return new EnumeratedDomain(getFactory(type), values);
   case SimAdapter::STRING:
-    return new StringDomain(values, typeName.c_str());
+    return new StringDomain(values, getFactory(type));
   case SimAdapter::SYMBOL:
-    return new SymbolDomain(values, typeName.c_str());
+    return new SymbolDomain(values, getFactory(type));
   case SimAdapter::OBJECT:
   default:
     check_error(ALWAYS_FAIL); // will never happen
@@ -145,13 +142,13 @@ IntervalDomain *SimAdapter::xmlAsIntervalDomain(TiXmlElement const &elem) {
   char const *min_st = elem.Attribute("min"); 
   char const *max_st = elem.Attribute("max");
 
-  IntervalDomain *domain = dynamic_cast<IntervalDomain *>(m_floatTypeFactory.baseDomain().copy());
+  IntervalDomain *domain = dynamic_cast<IntervalDomain *>(m_floatDT->baseDomain().copy());
   
   checkError(NULL!=domain,
 	     "SimAdapter:xmlAsIntervalDomain : type \""<< elem.Attribute("type") <<"\" is not an interval domain type.");
 
-  double min = m_floatTypeFactory.createValue(min_st);
-  double max = m_floatTypeFactory.createValue(max_st);
+  double min = m_floatDT->createValue(min_st);
+  double max = m_floatDT->createValue(max_st);
   domain->intersect(min, max);
   return domain;
 } // SimAdapter::xmlAsIntervalDomain(TiXmlElement const &)
@@ -177,8 +174,8 @@ AbstractDomain *SimAdapter::xmlAsAbstractDomain(TiXmlElement const &elem) {
     checkError(NULL!=name,
 	       "SimAdapter:xmlAsAbstractDomain : missing name for domain.");
 
-    AbstractDomain *domain = getFactory(type).baseDomain().copy();
-    double val = getFactory(type).createValue(name);
+    AbstractDomain *domain = getFactory(type)->baseDomain().copy();
+    double val = getFactory(type)->createValue(name);
     
     if(domain->isOpen() && !domain->isMember(val))
       domain->insert(val);
@@ -190,8 +187,7 @@ AbstractDomain *SimAdapter::xmlAsAbstractDomain(TiXmlElement const &elem) {
 	       "SimAdapter:xmlAsAbstractDomain : missing value for domain.");
 
     if( "symbol"==tag ) {
-      char const *type_st = elem.Attribute("type"); 
-      StringDomain*domain = new StringDomain(val_st, type_st);
+      StringDomain*domain = new StringDomain(val_st, m_stringDT);
       /*
       checkError(NULL!=type_st,
 		 "SimAdapter:xmlAsAbstractDomain : missing type for domain.");
@@ -237,11 +233,11 @@ Observation *SimAdapter::xmlAsObservation(TiXmlElement const &elem) {
 SimAdapter::SimAdapter(LabelStr const&agentName, 
 		       TiXmlElement const &configData) 
   :TeleoReactor(agentName, configData), m_lastBacktracked(-1),
-   m_floatTypeFactory("float"),
-   m_intTypeFactory("int"),
-   m_boolTypeFactory("bool"),
-   m_stringTypeFactory("string"),
-   m_symbolTypeFactory("symbol"){
+   m_floatDT(FloatDT::instance()),
+   m_intDT(IntDT::instance()),
+   m_boolDT(BoolDT::instance()),
+   m_stringDT(StringDT::instance()),
+   m_symbolDT(SymbolDT::instance()){
   std::string s = agentName.toString() + ".log";
   std::string file_name = findFile(s);
   TiXmlDocument xml_log(LogManager::use(file_name));
@@ -352,41 +348,40 @@ void SimAdapter::handleRecall(TokenId const &token) {
   debugMsg("SimAdapter:handleRecall", " Ignoring token"<<token->toString());
 }
 
-
-TypeFactory& SimAdapter::getFactory(SimAdapter::DomainType t){
+DataTypeId SimAdapter::getFactory(SimAdapter::DomainType t){
     switch( t ) {
     case SimAdapter::FLOAT:
     case SimAdapter::REAL_INTERVAL:
-      return m_floatTypeFactory;
+      return m_floatDT;
     case SimAdapter::INT_INTERVAL:
     case SimAdapter::INT: 
-      return m_intTypeFactory;
+      return m_intDT;
     case SimAdapter::BOOL: 
-      return m_boolTypeFactory;
+      return m_boolDT;
     case SimAdapter::STRING: 
-      return m_stringTypeFactory;
+      return m_stringDT;
     case SimAdapter::SYMBOL:
-      return m_symbolTypeFactory;
+      return m_symbolDT;
     default:
       break;
     }
 
    assertTrue(ALWAYS_FAIL, "No match on input type" + t);
-   return m_floatTypeFactory;
+   return m_floatDT;
 }
 
- TypeFactory& SimAdapter::getFactory(const std::string& t){
+ DataTypeId SimAdapter::getFactory(const std::string& t){
    if("float" == t || "REAL_INTERVAL" == t)
-     return m_floatTypeFactory;
+     return m_floatDT;
    if("int" == t || "INT_INTERVAL" == t)
-      return m_intTypeFactory;
+      return m_intDT;
    if("bool" == t)
-      return m_boolTypeFactory;
+      return m_boolDT;
    if("string" == t)
-      return m_stringTypeFactory;
+      return m_stringDT;
    if("symbol" == t)
-      return m_symbolTypeFactory;
+      return m_symbolDT;
 
    assertTrue(ALWAYS_FAIL, "No match on input type" + t);
-   return m_floatTypeFactory;
+   return m_floatDT;
  }

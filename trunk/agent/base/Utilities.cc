@@ -383,7 +383,7 @@ namespace TREX {
     // Now compute the entries by getting the successor elements, wrapping around
     checkError(m_position < m_basis.size(), "Element not found");
     unsigned int cardinality = (unsigned int) m_cardinality.getSingletonValue();
-    EnumeratedDomain dom(m_neighborhood.isNumeric(), m_neighborhood.getTypeName().c_str());
+    EnumeratedDomain dom(m_neighborhood.getDataType());
     for(i = 1; i <= cardinality; i++)
       dom.insert(m_basis[(m_position + i) % m_basis.size()]);
     dom.close();

@@ -12,11 +12,7 @@
 #include <set>
 
 #include "TeleoReactor.hh"
-#include "IntervalTypeFactory.hh"
-#include "IntervalIntTypeFactory.hh"
-#include "BoolTypeFactory.hh"
-#include "StringTypeFactory.hh"
-#include "SymbolTypeFactory.hh"
+#include "DataTypes.hh"
 
 namespace TREX {
   
@@ -71,11 +67,11 @@ namespace TREX {
     std::multimap<TICK, Observation *> m_log; //!< Observations extracted from log file
     std::multimap<TICK, Observation *>::iterator m_nextObs; //!< next observation to play
     int m_lastBacktracked;
-    IntervalTypeFactory m_floatTypeFactory;
-    IntervalIntTypeFactory m_intTypeFactory;
-    BoolTypeFactory m_boolTypeFactory;
-    StringTypeFactory m_stringTypeFactory;
-    SymbolTypeFactory m_symbolTypeFactory;
+    DataTypeId m_floatDT;
+    DataTypeId m_intDT;
+    DataTypeId m_boolDT;
+    DataTypeId m_stringDT;
+    DataTypeId m_symbolDT;
 
     bool hasWork() { return false; }
     void resume() {}
@@ -122,11 +118,10 @@ namespace TREX {
      */
     Observation *xmlAsObservation(TiXmlElement const &elem);
 
-    /**
-     * @brief Utilities to get a factory by type
-     */
-    TypeFactory& getFactory(DomainType t);
-    TypeFactory& getFactory(const std::string& t);
+    /** Utilities for type conversion **/
+    DataTypeId getFactory(SimAdapter::DomainType t);
+    DataTypeId getFactory(const std::string& t);
+
   }; // TREX::SimAdapter
 
 } // TREX

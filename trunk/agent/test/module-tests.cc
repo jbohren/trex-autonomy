@@ -45,7 +45,12 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
-    runTest(bugFixes);
+    runTest(testSynch); 
+    runTest(bugFixes); 
+    runTest(testDispatch);
+    runTest(testPersistence);
+    runTest(testScalability);
+    runTest(testTestMonitor);
     runTest(testRecall);
     runTest(testSqueezeObserver);
     runTest(testSimulation);
@@ -59,11 +64,6 @@ public:
     runTest(testUndefinedDerived);
     runTest(testActions); 
     runTest(OrienteeringSolver);
-    runTest(testSynch);  
-    runTest(testDispatch);
-    runTest(testPersistence);
-    runTest(testScalability);
-    runTest(testTestMonitor);
     return true;
   }
 
