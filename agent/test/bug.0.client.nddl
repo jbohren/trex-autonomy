@@ -11,6 +11,13 @@ TestActions actions = new TestActions();
 GraspObject grasper = new GraspObject(Internal);
 Position pos = new Position(External);
 
+GraspObject::Active {
+  // This should never fire, but it will test that the comparator is being set correctly
+  if(object == pos){
+    eq(1, 0);
+  }
+}
+
 close();
 
 rejectable(grasper.Active g);
