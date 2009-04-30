@@ -84,6 +84,9 @@ namespace TREX {
     // Register components
     Assembly::Schema* s = Assembly::Schema::instance();
     s->registerComponents(*this);
+
+    // Finally, set the domain comparator explicitly
+    DomainComparator::setComparator((EUROPA::Schema*) m_schema);
   }
 
   Assembly::~Assembly() 
