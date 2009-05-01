@@ -61,7 +61,10 @@ namespace TREX {
     std::vector<Agent::Event> eventLog = Agent::instance()->getEventLog();
     std::string eventLogStr = Agent::toString(eventLog);
 
-    if(!hasValidFile(problemName) || !isValid(eventLogStr, problemName)){
+    if(!hasValidFile(problemName)){
+      makeValidFile(eventLogStr, problemName);
+    }
+    else if(!isValid(eventLogStr, problemName)){
       makeInvalidFile(eventLogStr, problemName);
       std::string fname(problemName);
       fname = fname + ".error";
@@ -102,9 +105,7 @@ namespace TREX {
   }
 
   void makeValidFile(const std::string& validStr, const char* problemName){
-    std::stringstream ss;
-    ss << "GENERATED FILE. VERIFY AND CLEAN" << std::endl << validStr;
-    makeFile(ss.str(), problemName, "valid");
+    makeFile(validStr, problemName, "valid");
   }
 
   void makeInvalidFile(const std::string& validStr, const char* problemName){
