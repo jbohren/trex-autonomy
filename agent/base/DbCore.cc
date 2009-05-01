@@ -73,7 +73,7 @@ namespace TREX {
       m_core = DbCore::getInstance(token);
     }
 
-    TREX_INFO("trex:planning", "[" << sl_counter++ << "] Evaluating " << token->toString() << " with " << 
+    TREX_INFO("trex:debug:planning", "[" << sl_counter++ << "] Evaluating " << token->toString() << " with " << 
 	     token->start()->lastDomain().toString() << " AND " << 
 	     token->end()->lastDomain().toString());
 
@@ -89,20 +89,20 @@ namespace TREX {
 
     // Special Treatment if it is in fact a condition (for now called a TestMonitor). Cheap check first
     if(TestMonitor::isCondition(token->getKey())){
-      TREX_INFO("trex:planning:flawfiltering", "Evaluating test condition " << token->toString());
+      TREX_INFO("trex:debug:planning:flawfiltering", "Evaluating test condition " << token->toString());
       bool inScope = startTime.getUpperBound() <= m_core->getCurrentTick() && 
 	startTime.isSingleton() && endTime.getUpperBound() > m_core->getCurrentTick();
 
-      TREX_INFO("trex:planning:flawfiltering", (!inScope ? "Exclude " : "Allow ") <<
+      TREX_INFO("trex:debug:planning:flawfiltering", (!inScope ? "Exclude " : "Allow ") <<
 		entity->toString() << " with token scope " << token->start()->lastDomain().toString() <<
 		" AND " << token->end()->lastDomain().toString());
 
       return !inScope;
     }
 
-    // If the token is necessarily in the past, exclude from deliberation. It will be handled in synchronization
+    // If the token is possibly in the past, exclude from deliberation. It will be handled in synchronization
     // or not at all if sufficiently in the past. Also, if it necessarily starts in the distant future, ignore it
-    if(endTime.getUpperBound() <= (m_core.isId() ? (m_core->getCurrentTick()) : horizon().getLowerBound()) || 
+    if(endTime.getLowerBound() < (m_core.isId() ? (m_core->getCurrentTick()) : horizon().getLowerBound()) || 
        startTime.getLowerBound() >= horizon().getUpperBound())
       return true;
 
@@ -119,7 +119,7 @@ namespace TREX {
     if(!inScope && token->master().isId())
       inScope =  DbCore::isAction(token) || !token->getPlanDatabase()->getTemporalAdvisor()->canPrecede(token->master(), token);
 
-    TREX_INFO("trex:planning", (!inScope ? "Exclude " : "Allow ") <<
+    TREX_INFO("trex:debug:planning", (!inScope ? "Exclude " : "Allow ") <<
 		 entity->toString() << " with token scope " << token->start()->lastDomain().toString() <<
 		 " AND " << token->end()->lastDomain().toString());
 
@@ -812,7 +812,7 @@ namespace TREX {
     // Terminate token. Will discard in batch later
     token->terminate();
 
-    condDebugMsg(m_db->getConstraintEngine()->isRelaxed(), "trex:error", "Discovered relaxation in archiving when terminating " << token->toLongString());
+    condDebugMsg(m_db->getConstraintEngine()->isRelaxed(), "trex:error", nameString() << "Discovered relaxation in archiving when terminating " << token->toLongString());
   }
 
   /**
@@ -838,12 +838,14 @@ namespace TREX {
       for(std::list<TokenId>::const_iterator t_it = tokenSequence.begin(); t_it != tokenSequence.end(); ++t_it){
 	TokenId token = *t_it;
 	checkError(token.isValid(), token);
+	TREX_INFO("trex:debug:synchronization:notifyObservers", 
+		  nameString() << "Evaluating " << token->toString() << " for update.");
 
 	// If we are processing the initial tick, set the start time to be exactly 0
 	if(getCurrentTick() == 0 && token->start()->lastDomain().getUpperBound() == 0){
 	  token->start()->restrictBaseDomain(IntervalIntDomain(0, 0));
 	  if(!propagate()){
-	    TREX_INFO("trex:error", "Inconsistent on propagating initial time bounds." << std::endl  << m_synchronizer.propagationFailure());
+	    TREX_INFO("trex:error", nameString() << "Inconsistent on propagating initial time bounds." << std::endl  << m_synchronizer.propagationFailure());
 
 	    throw new DbCore::Exception("Fatal Error");
 	  }
@@ -860,9 +862,8 @@ namespace TREX {
 	if(!token->isCommitted())
 	  commitAndRestrict(token);
 
-
 	if(!propagate()){
-	  TREX_INFO("trex:error", "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
+	  TREX_INFO("trex:error", nameString() << "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
 	  throw new DbCore::Exception("Fatal Error");
 	}
 
@@ -882,7 +883,7 @@ namespace TREX {
 	  token->start()->restrictBaseDomain(startBounds);
 
 	  if(!propagate()){
-	    TREX_INFO("trex:error", "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
+	    TREX_INFO("trex:error", nameString() << "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
 	    throw new DbCore::Exception("Fatal Error");
 	  }
 
@@ -1396,11 +1397,9 @@ namespace TREX {
     for(TokenSet::iterator it = m_actions.begin(); it != m_actions.end(); ++it){
       TokenId action = *it;
       checkError(action.isValid(), action);
+      TREX_INFO("trex:debug:synchronization:commit", nameString() << "Evaluating " << action->toString());
 
-      if(!action->isActive())
-	return;
-
-      if(action->isCommitted())
+      if(!action->isActive() || action->isCommitted())
 	continue;
 
       if(action->start()->lastDomain().getUpperBound() <= getCurrentTick())
@@ -1419,8 +1418,12 @@ namespace TREX {
    * @see handleTickStart
    */
   void DbCore::updateActions(){
-    if(m_state != DbCore::INACTIVE)
+    TREX_INFO("trex:debug:synchronization:updateActions", nameString());
+
+    if(m_state != DbCore::INACTIVE){
+      TREX_INFO("trex:debug:synchronization:updateActions", nameString() << "Skipping action update as planning is active.");
       return;
+    }
 
     std::vector<TokenId> activeUncontrollableEvents;
     bool initialized(false);
@@ -1434,7 +1437,8 @@ namespace TREX {
       const IntervalIntDomain& startTime = action->start()->lastDomain();
       const IntervalIntDomain& endTime = action->end()->lastDomain();
 
-      TREX_INFO("DbCore:updateActions", "Evaluating " << action->toString() << " from " << startTime.toString() << " to " << endTime.toString());
+      TREX_INFO("trex:debug:synchronization:updateActions", 
+		"Evaluating " << action->toString() << " from " << startTime.toString() << " to " << endTime.toString());
 
       // If the action is committed we may need to nudge its end time
       if(action->isCommitted()){
@@ -1462,7 +1466,7 @@ namespace TREX {
 	action->start()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
       else if(action->isActive()){
 	TREXLog() << nameString() << "Starting " << action->toString() << std::endl;
-	TREX_INFO("DbCore:updateActions", nameString() << "Starting " << action->toString());
+	TREX_INFO("trex:debug:synchronization:updateActions", nameString() << "Starting " << action->toString());
 
 	// Start the action in this tick and commit to it. In the event of an inconsistency we have to repair anyway
 	// and the action will be discarded.
@@ -1518,7 +1522,7 @@ namespace TREX {
     purgeOrphanedKeys();
     Entity::garbageCollect();
 
-    condDebugMsg(m_db->getConstraintEngine()->isRelaxed(), "trex:error", "Should be no relaxation in garbage collection");
+    condDebugMsg(m_db->getConstraintEngine()->isRelaxed(), "trex:error", nameString() << "Should be no relaxation in garbage collection");
   }
 
   void DbCore::setHorizon(){
@@ -1870,7 +1874,7 @@ namespace TREX {
     TREX_INFO("trex:warning", nameString() << token->toString() << " was rejected.\n\n" <<
 	      "   If this is a surprise, then you need to enable planner debug messages to investigate: \n" << 
 	      "     :Solver:step - useful for observing the backtracking search.\n" << 
-	      "     :trex:planning - gives additional trex related information in the search in terms of flaw filtering etc.");
+	      "     :trex:debug:planning - gives additional trex related information in the search in terms of flaw filtering etc.");
 
     m_tokenAgenda.erase(token);
   }
@@ -1880,7 +1884,7 @@ namespace TREX {
    * can be restricted because the past is monotonic.
    */
   void DbCore::commitAndRestrict(const TokenId& token){
-    TREX_INFO("DbCore:commitAndRestrict", nameString() << "(" << token->getKey() << ") " << token->toString());
+    TREX_INFO("trex:debug:synchronization:commitAndRestrict", "Committing " << token->toString());
 
     // Committhe token and touch the state variable to trigger commit event based propagation
     token->commit();
@@ -1895,8 +1899,13 @@ namespace TREX {
     // Restrict the start to its current bounds
     if(!token->start()->baseDomain().isSingleton()) 
       token->start()->restrictBaseDomain(token->start()->lastDomain());
-
-    token->end()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
+    
+    // Restrict the end. If in the past just restrict it to current bounds. If current, then the base domain can be restricted
+    // just up till the current tick, even if the lower bound of the current domain is more restrictive.
+    if(token->end()->lastDomain().getUpperBound() < getCurrentTick())
+      token->end()->restrictBaseDomain(token->end()->lastDomain());
+    else
+      token->end()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
 
     for(std::vector<ConstrainedVariableId>::const_iterator it = token->parameters().begin(); it != token->parameters().end(); ++it){
       ConstrainedVariableId p = *it;
