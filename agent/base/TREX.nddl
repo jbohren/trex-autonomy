@@ -70,7 +70,7 @@ class AgentActions {
   /**
    * This action supports a common idiom to indicate we want something to happen proactively.
    */
-  predicate startEvent{}
+  predicate startEvent{eq(duration, 1);}
 
   AgentActions(){}
 };
