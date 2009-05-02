@@ -97,7 +97,6 @@ class Behavior extends AgentTimeline {
   predicate Inactive{
     ResultStatus status;
     defaultOnCommit(status, UNDEFINED);
-    temporalDistance(start, [1, +inf], missionEnd);
   }
 
   predicate Active{
@@ -108,9 +107,7 @@ class Behavior extends AgentTimeline {
     ResultStatus status; 
     testEQ(timed_out, duration, max_duration);
     precedes(dispatch_time, start); // This is a <= constraint
-
-    // All behaviors must deactivate before the end of the agent time window
-    precedes(end, missionEnd);
+    temporalDistance(start, [1, +inf], missionEnd);
   }
 
   Behavior(Mode _mode){
@@ -125,9 +122,6 @@ class Behavior extends AgentTimeline {
 };
 
 Behavior::Active{
-  // Parameter Constraints
-  leq(duration, max_duration);
-
   // Constraint on successor state
   meets(Inactive _reserved_s);
 
