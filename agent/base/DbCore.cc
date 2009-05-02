@@ -102,7 +102,7 @@ namespace TREX {
 
     // If the token is possibly in the past, exclude from deliberation. It will be handled in synchronization
     // or not at all if sufficiently in the past. Also, if it necessarily starts in the distant future, ignore it
-    if(endTime.getLowerBound() < (m_core.isId() ? (m_core->getCurrentTick()) : horizon().getLowerBound()) || 
+    if(endTime.getLowerBound() <= (m_core.isId() ? (m_core->getCurrentTick()) : horizon().getLowerBound()) || 
        startTime.getLowerBound() >= horizon().getUpperBound())
       return true;
 
