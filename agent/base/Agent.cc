@@ -275,7 +275,7 @@ namespace TREX {
 	break;
     }
 
-    condDebugMsg(!executed, "trex:warn", "No time to plan");
+    condDebugMsg(!executed, "trex:warning", "No time to plan");
 
     // Wait for next tick
     while(m_clock.getNextTick() == m_currentTick){m_clock.sleep();}

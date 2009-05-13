@@ -9,6 +9,11 @@ using namespace EUROPA;
 
 namespace TREX {
 
+  /**
+   * @brief Output current time as a string
+   */
+  std::string timeString();
+
   void runAgent(const char* configFile, unsigned int stepsPerTick, const char* problemName);
 
   bool hasValidFile(const char* problemName);

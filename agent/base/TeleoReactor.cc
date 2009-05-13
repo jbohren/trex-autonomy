@@ -13,6 +13,7 @@
 #include "LogManager.hh"
 #include "Token.hh"
 #include "Utils.hh"
+#include "Utilities.hh"
 
 #include <time.h>
 
@@ -160,15 +161,8 @@ namespace TREX {
   }
 
   std::string TeleoReactor::nameString() const {
-    //struct timeval tv;
-    //struct timezone tz;
-    //gettimeofday(&tv, &tz);
     std::stringstream ss;
-
     ss << "[" << getName().toString() << "][" << getCurrentTick() << "]";
-
-    // ss << "[" << tv.tv_sec << "." << tv.tv_usec << "]";
-
     return ss.str();
   }
 
@@ -212,11 +206,13 @@ namespace TREX {
 
   bool TeleoReactor::doSynchronize() {
     DebugMessage::setStream(getStream());
-
     ++m_syncCount;    
     RStatLap chrono(m_syncUsage, RStat::self);
     { // To be "sure" that chrono is created before we call synchronize
-      return synchronize();
+      TREX_INFO("trex:debug:timing", "BEFORE synchronization:" << timeString());
+      bool result = synchronize();
+      TREX_INFO("trex:debug:timing", "AFTER synchronization:" << timeString());
+      return result;
     }
   }
 
@@ -226,7 +222,9 @@ namespace TREX {
     ++m_searchCount;
     RStatLap chrono(m_searchUsage, RStat::self);
     {
+      TREX_INFO("trex:debug:timing", "BEFORE resume:" << timeString());
       resume();
+      TREX_INFO("trex:debug:timing", "AFTER resume:" << timeString());
     }
   }
 
