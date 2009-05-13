@@ -1102,8 +1102,8 @@ namespace TREX {
     if(!m_db->getConstraintEngine()->propagate()){
       TREXLog() << nameString() << "Inconsistent plan." << std::endl;
       TREX_INFO("DbCore:propagate", nameString() << "Inconsistent plan.");
-      TREX_INFO("trex:propagation", nameString() << m_synchronizer.propagationFailure());
       markInvalid("The constraint network is inconsistent. To investigate, enable ConstraintEngine in Debug.cfg. Look for EMPTIED domain in log output to find the culprit.");
+      TREX_INFO("trex:warning:propagation", nameString() << m_synchronizer.propagationFailure());
     }
     else {
       processPendingTokens();

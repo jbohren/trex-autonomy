@@ -16,6 +16,15 @@ using namespace EUROPA;
 
 namespace TREX {
 
+  std::string timeString(){
+    std::stringstream ss;
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday(&tv, &tz);
+    ss << "[" << tv.tv_sec << "." << tv.tv_usec << "]";
+    return ss.str();
+  }
+
   const LabelStr& getObjectName(const TokenId& token) {
     checkError(token->getObject()->lastDomain().isSingleton(), "Must be a singleton:" << token->getObject()->toString());
     ObjectId obj = static_cast<ObjectId>(token->getObject()->lastDomain().getSingletonValue());
