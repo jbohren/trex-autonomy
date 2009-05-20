@@ -401,9 +401,9 @@ namespace TREX {
 	       goal->start()->lastDomain().toString() << " is dispatched too late for TICK " << getCurrentTick());
 
     // The request is not valid if it cannot start until after the next planning cycle!
-    checkError(goal->start()->lastDomain().getLowerBound() <= (getCurrentTick() + getLatency() + getLookAhead()),
+    checkError(goal->start()->lastDomain().getLowerBound() <= (getCurrentTick() + getLookAhead()),
 	       goal->start()->lastDomain().toString() << " is dispatched too early for TICK " << getCurrentTick() << 
-	       ", latency " << getLatency() << ", lookAhead " << getLookAhead());
+	       ", lookAhead " << getLookAhead());
 
     localGoal->start()->restrictBaseDomain(goal->start()->lastDomain());
     localGoal->end()->restrictBaseDomain(goal->end()->lastDomain());
@@ -431,11 +431,23 @@ namespace TREX {
     // Finally, we migrate constraints. This leverages the foreign key mapping constructed above.
     applyConstraints(goal);
 
-    // Finally, switch to indicate tyhe planner should be active
+    // If the goal request is inconsistent, reject and delete it out of hand. This case is derived from test acse dispatch.2. The problem is that a
+    // goal comes with the baggage of constraints that immediately apply and may prevent synchronization. No insertions can be tolerated which
+    // intorduce inherent inconsistency
+    if(!propagate()){
+      TREX_INFO("trex:warning:handleRequest", "Goal " << localGoal->toLongString() << " causes inconsistency immediately and will be removed.");
+      terminate(localGoal);
+      // Clean terminated tokens
+      Entity::discardAll(m_terminatedTokens);
+      purgeOrphanedKeys();
+      Entity::garbageCollect();
+      return false;
+    }
+
+    // Finally, switch to indicate the planner should be active
     m_state = DbCore::ACTIVE;
 
     TREX_INFO("DbCore:handleRequest", nameString() << "Local Goal " << localGoal->toString() << " for request " << goal->toString());
-
     return true;
   }
 
@@ -905,15 +917,11 @@ namespace TREX {
   /**
    * @brief Dispatch Goals To Respective Servers.
    *
-   * The window of time for dispatching is based on server parameters:
-   * 1. Earliest Time = Current Tick + Server Latency
-   * 2. Latest Time = Earliest Time + Server LookAhead
-   *
+   * The window of time for dispatching is based on server lookahead. 
    * The intuition is that we dispatch commands to the server if they could be started in the dispatch window
    * and if they could execute for at least a 1 tick duration in that window.
    */
   void DbCore::dispatchCommands(){
-
     TREX_INFO("trex:debug:dispatching:dispatchCommands", nameString() << "START");
 
     std::vector<TokenId> activeUncontrollableEvents;
@@ -924,7 +932,7 @@ namespace TREX {
       ServerId server = tc.getServer();
 
       // The lower bound for dispatching is based on the server latency.
-      TICK dispatchLB = getCurrentTick() + server->getLatency();
+      TICK dispatchLB = getCurrentTick();
 
       // Upper bound includes lookahead.
       TICK dispatchUB = std::min(dispatchLB + server->getLookAhead(),  Agent::instance()->getFinalTick());
@@ -983,6 +991,11 @@ namespace TREX {
 	if(startTime.intersects(dispatchWindow)){
 	  TREX_INFO("trex:dispatching", nameString() << "Dispatching " << token->toLongString());
 	  token->getObject()->restrictBaseDomain(token->getObject()->lastDomain());
+
+	  if(!propagate()){
+	    TREX_INFO("trex:warning:dispatchCommands", nameString() << "Dispatching " << token->toLongString() << " failed due to an inconsistent network.");
+	    return;
+	  }
 
 	  if(server->request(token)){
 	    tc.markDispatched(token);
@@ -1533,7 +1546,7 @@ namespace TREX {
 
   void DbCore::getHorizon(TICK& horizonStart, TICK& horizonEnd) const {
     TICK finalTick = Agent::instance()->getFinalTick();
-    horizonStart =  std::min(finalTick-1, m_currentTickCycle + 1 + getLatency());
+    horizonStart =  std::min(finalTick-1, getCurrentTick() + 1);
     horizonEnd = std::min(finalTick, horizonStart + getLookAhead());
   }
 

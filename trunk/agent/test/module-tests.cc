@@ -45,25 +45,25 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
-    runTest(bugFixes); 
-    runTest(testSynch); 
-    runTest(testDispatch);
+    runTest(OrienteeringSolver);
     runTest(testPersistence);
+    runTest(testSynch); 
     runTest(testScalability);
     runTest(testTestMonitor);
-    runTest(testRecall);
-    runTest(testSqueezeObserver);
-    runTest(testSimulation);
     runTest(testOneDeliberatorOneAdapter);
     runTest(testSimulationWithPlannerTimeouts);
     runTest(testInconsistent);
     runTest(testOneStepAhead);
     runTest(testFileSearch);
     runTest(testRepair);
+    runTest(testDispatch);
+    runTest(testSqueezeObserver);
+    runTest(testSimulation);
+    runTest(bugFixes); 
+    runTest(testRecall);
     runTest(testUndefinedSingleTimeline);
     runTest(testUndefinedDerived);
     runTest(testActions); 
-    runTest(OrienteeringSolver);
     return true;
   }
 
@@ -246,12 +246,12 @@ private:
    * Tests the OrienteeringSolver..
    */
   static bool OrienteeringSolver(){
-    runAgentWithSchema("orienteering.5.cfg", 50, "orienteering.5");
     runAgentWithSchema("orienteering.0.cfg", 50, "orienteering.0");
     runAgentWithSchema("orienteering.1.cfg", 50, "orienteering.1");
     runAgentWithSchema("orienteering.2.cfg", 50, "orienteering.2");
     runAgentWithSchema("orienteering.3.cfg", 50, "orienteering.3");
     runAgentWithSchema("orienteering.4.cfg", 50, "orienteering.4");
+    runAgentWithSchema("orienteering.5.cfg", 50, "orienteering.5");
     return true;
   }
 };
