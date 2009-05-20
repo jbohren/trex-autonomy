@@ -255,7 +255,7 @@ namespace TREX {
       }
 
       // Case 6: The goal cannot be planned in time
-      if(goal->start()->baseDomain().getUpperBound() <= (m_core->getCurrentTick() + m_core->getLatency())){
+      if(goal->start()->baseDomain().getUpperBound() < m_core->getCurrentTick()){
 	TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Might have to start before we have time to plan.");
 	past.push_back(goal);
 	continue;
@@ -817,11 +817,8 @@ namespace TREX {
       for(ConstrainedVariableSet::const_iterator v_it = variables.begin(); v_it != variables.end(); ++v_it){
 	ConstrainedVariableId var = *v_it;
 
-	if(var->lastDomain().isEmpty()){
-
+	if(var->lastDomain().isEmpty() && var->lastDomain().isClosed()){
 	  ss << localContextForConstrainedVariable(var);
-
-	  break;
 	}
       }
     }
