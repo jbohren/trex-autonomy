@@ -662,8 +662,10 @@ namespace TREX {
       m_currentTickCycle = getCurrentTick();
 
     updateActions();
+    if(!propagate())
+      return;
 
-    // Propagate the database
+    updateBehaviors();
     if(!propagate())
       return;
 
@@ -759,11 +761,7 @@ namespace TREX {
     processPendingTokens();
     if(m_solver->noMoreFlaws()){
 
-      if(m_search_depth > 0){
-	m_planLog<<'['<<getCurrentTick()<<"] New plan :\n";
-	logPlan();
-      }
-
+      condDebugMsg(m_search_depth > 0, "trex:info:planning", logPlan("New Plan"));
 
       if(deactivateSolver()){
 	// Restore to inactive state
@@ -1493,6 +1491,57 @@ namespace TREX {
   }
 
   /**
+   * @brief
+   */
+  void DbCore::updateBehaviors(){
+    TREX_INFO("trex:debug:synchronization:updateBehaviors", nameString());
+
+    if(m_state != DbCore::INACTIVE){
+      TREX_INFO("trex:debug:synchronization:updateBehaviors", nameString() << "Skipping behavior update as planning is active.");
+      return;
+    }
+
+    std::vector<TokenId> activeUncontrollableEvents;
+    bool initialized(false);
+
+    const IntervalIntDomain horizon(getCurrentTick(), getCurrentTick());
+
+    // Iterate over all active behaviors. If one can be started, do it.
+    const TokenSet& behaviors = m_db->getActiveTokens("Behavior.Active");
+    for(TokenSet::iterator it = behaviors.begin(); it != behaviors.end(); ++it){
+      TokenId behavior = *it;
+      checkError(behavior.isValid(), behavior);
+      const IntervalIntDomain& startTime = behavior->start()->lastDomain();
+      const IntervalIntDomain& endTime = behavior->end()->lastDomain();
+
+      TREX_INFO("trex:debug:synchronization:updateBehaviors", 
+		"Evaluating " << behavior->toString() << " from " << startTime.toString() << " to " << endTime.toString());
+
+      if(behavior->start()->isSpecified() || !horizon.intersects(startTime) || !isInternal(behavior))
+	continue;
+
+      if(!initialized){
+	getActiveUncontrollableEvents(activeUncontrollableEvents);
+	initialized = true;
+      }
+
+      // Now either nudge the action or start it
+      if(!behavior->start()->lastDomain().isSingleton() && !hasPendingPredecessors(behavior, activeUncontrollableEvents)){
+	TREXLog() << nameString() << "Starting " << behavior->toString() << std::endl;
+	TREX_INFO("trex:debug:synchronization:updateBehaviors", nameString() << "Starting " << behavior->toString());
+
+	// Start the behavior in this tick and commit to it. In the event of an inconsistency we have to repair anyway
+	// and the behavior will be discarded.
+	behavior->start()->specify(getCurrentTick());
+
+	// If now inconsistent, this will trigger a repair during synchronization
+	if(!propagate())
+	  return;
+      }
+    }
+  }
+  
+  /**
    * @brief Clear out the crud of tokens in the past that that can not effect the present or the future
    */
   void DbCore::archive(){
@@ -1718,9 +1767,7 @@ namespace TREX {
 
       TREX_INFO("DbCore:synchronize", nameString() <<  "Repaired Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
 
-      // Log the new plan
-      m_planLog<<'['<< getCurrentTick()<<"] Repaired plan :\n";
-      logPlan();
+      debugMsg("trex:info:planning", logPlan("Repaired Plan"));
     }
 
     // These final steps must succeed or synchronization will fail. If they do not succeed
@@ -1988,7 +2035,9 @@ namespace TREX {
       logToken(*tokit);
   }
 
-  void DbCore::logPlan() {
+  std::string DbCore::logPlan(const std::string& msg) {
+    m_planLog <<'['<<getCurrentTick()<<"] " << msg << " :\n";
+
     // Internals 
     std::vector< std::pair<TimelineId, TICK> >::const_iterator 
       intit = m_internalTimelineTable.begin();
@@ -2017,7 +2066,10 @@ namespace TREX {
     
     for( ; endcext!=cextit; ++cextit )
       logTimeLine(cextit->second.getTimeline(), "external");
-    m_planLog<<std::endl;
+
+    m_planLog << std::endl;
+
+    return msg;
   }
 
   bool DbCore::verifyEntities(){

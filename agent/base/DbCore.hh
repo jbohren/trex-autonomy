@@ -373,6 +373,11 @@ namespace TREX {
     void updateActions();
 
     /**
+     * @brief Start behaviors if possible.
+     */
+    void updateBehaviors();
+
+    /**
      * @brief Utility to set the horizon based on latency, lookAhead, and current tick cycle.
      */
     void setHorizon();
@@ -589,7 +594,7 @@ namespace TREX {
 
     static bool verifyEntities();    
 
-    void logPlan();
+    std::string logPlan(const std::string& msg);
     void logTimeLine(TimelineId const &tl, std::string const &type);
     void logToken(TokenId const &tok);
     
