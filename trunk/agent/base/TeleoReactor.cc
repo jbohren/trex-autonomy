@@ -98,8 +98,6 @@ namespace TREX {
       m_shouldLog(string_cast<bool>(logDefault, checked_string(configData.Attribute("log")))),
       m_debugStream(debugFileName(m_agentName, m_name).c_str()) {
     TREX_INFO("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
-
-    checkError(m_latency <= m_lookAhead, "Makes no sense to lookahead more than you can deliberate. Biting off more than you can chew.");
   }
 
   TeleoReactor::TeleoReactor(const LabelStr& agentName, const LabelStr& name, TICK lookAhead, TICK latency, bool log)
@@ -116,7 +114,6 @@ namespace TREX {
  {
     DebugMessage::setStream(getStream());
     TREX_INFO("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
-    checkError(m_latency <= m_lookAhead, "Makes no sense to lookahead more than you can deliberate. Biting off more than you can chew.");
   }
 
 
@@ -133,8 +130,6 @@ namespace TREX {
       m_debugStream(debugFileName(m_agentName, m_name).c_str()){
     DebugMessage::setStream(getStream());
     TREX_INFO("TeleoReactor:TeleoReactor", "Allocating '" << agentName.toString() << "." << m_name.toString());
-
-    checkError(m_latency <= m_lookAhead, "Makes no sense to lookahead more than you can deliberate. Biting off more than you can chew.");
   }
 
   TeleoReactor::~TeleoReactor(){
