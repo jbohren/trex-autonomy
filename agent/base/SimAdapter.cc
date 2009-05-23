@@ -243,12 +243,8 @@ SimAdapter::SimAdapter(LabelStr const&agentName,
   TiXmlDocument xml_log(LogManager::use(file_name));
 
   TREX_INFO("trex:info", "Loading log input file \""<<file_name<<'\"');
+  ConfigurationException::configurationCheckError(xml_log.LoadFile(), nameString() + "Unable to load xml file \"" + file_name + '\"');
 
-  if(!xml_log.LoadFile()){
-    TREXLog() << nameString() << "Unable to load xml file \""<<file_name<<'\"';
-    std::cerr << nameString() << "Unable to load xml file \""<<file_name<<'\"';
-    exit(-1);
-  }
 
   Adapter::getTimelines(m_internals,  Adapter::externalConfig(configData));
 

@@ -135,13 +135,8 @@ namespace TREX {
 	  component = DEFAULT;
 	
 	TeleoReactorId reactor = TeleoReactor::createInstance(m_name, component, *child);
-	
-	if(getReactor(reactor->getName()).isId()){
-	  TREXLog() << reactor->getName().toString() << " is not unique. It must be.";
-	  std::cerr << reactor->getName().toString() << " is not unique. It must be.";
-	  exit(-1);
-	}
-	
+	ConfigurationException::configurationCheckError(!getReactor(reactor->getName()).isId(), reactor->getName().toString() + " is not unique. It must be.");
+
 	m_reactorsByName.insert(std::pair<double, TeleoReactorId>(reactor->getName(), reactor));
 	m_reactors.push_back(reactor);
 	
@@ -159,13 +154,9 @@ namespace TREX {
 	// For all the internal timelines, this reactor is a server, so add to our collection which will be used for binding
 	for(std::list<LabelStr>::const_iterator it = internals.begin(); it != internals.end(); ++it){
 	  const LabelStr& timelineName = *it;
-	  
-	  if(serversByTimeline.find(timelineName) != serversByTimeline.end()){
-	    TREXLog() << "Configuration Error. Already have a server for " << timelineName.toString();
-	    std::cerr << "Configuration Error. Already have a server for " << timelineName.toString();
-	    exit(-1);
-	  }
-	  
+	  ConfigurationException::configurationCheckError(serversByTimeline.find(timelineName) == serversByTimeline.end(),
+							  "Already have a server for: " + std::string(timelineName.c_str()) + ", it is duplicated in " + reactor->getName().toString());
+
 	  if( reactor->shouldLog() )
 	    m_obsLog.declTimeline(timelineName, reactor->getName().toString());
 	  
@@ -173,9 +164,7 @@ namespace TREX {
 	  debugMsg("trex:info:configuration", "Adding reactor " << reactor->getName().toString() << " as server for " << timelineName.toString());
 	}
       }else{
-	TREXLog() <<  "Invalid XML Tag - " << child->Value();
-	std::cerr <<  "Invalid XML Tag - " << child->Value();
-	exit(-1);
+	ConfigurationException::configurationCheckError(false, "Invalid XML Tag - " + std::string(child->Value()));
       }
     }
 
