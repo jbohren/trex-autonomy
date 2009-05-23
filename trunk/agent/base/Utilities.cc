@@ -15,6 +15,16 @@
 using namespace EUROPA;
 
 namespace TREX {
+  ConfigurationException::ConfigurationException(const std::string& description) : m_description(description) {}
+  const std::string& ConfigurationException::toString() const {
+    return m_description;
+  }
+  void ConfigurationException::configurationCheckError(bool check, const std::string& description) {
+    if (!check) {
+      debugMsg("trex:error", "Configuration Error: " << description << std::endl);
+      throw new ConfigurationException(description);
+    }
+  }
 
   std::string timeString(){
     std::stringstream ss;

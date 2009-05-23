@@ -8,6 +8,16 @@
 using namespace EUROPA;
 
 namespace TREX {
+  class ConfigurationException {
+  public:
+    ConfigurationException(const std::string& description);
+    
+    const std::string& toString() const;
+
+    static void configurationCheckError(bool check, const std::string& description);
+  private:
+    const std::string m_description;
+  };
 
   /**
    * @brief Output current time as a string
