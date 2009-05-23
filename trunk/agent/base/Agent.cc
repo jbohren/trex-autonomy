@@ -138,6 +138,7 @@ namespace TREX {
 	
 	if(getReactor(reactor->getName()).isId()){
 	  TREXLog() << reactor->getName().toString() << " is not unique. It must be.";
+	  std::cerr << reactor->getName().toString() << " is not unique. It must be.";
 	  exit(-1);
 	}
 	
@@ -161,6 +162,7 @@ namespace TREX {
 	  
 	  if(serversByTimeline.find(timelineName) != serversByTimeline.end()){
 	    TREXLog() << "Configuration Error. Already have a server for " << timelineName.toString();
+	    std::cerr << "Configuration Error. Already have a server for " << timelineName.toString();
 	    exit(-1);
 	  }
 	  
@@ -172,6 +174,7 @@ namespace TREX {
 	}
       }else{
 	TREXLog() <<  "Invalid XML Tag - " << child->Value();
+	std::cerr <<  "Invalid XML Tag - " << child->Value();
 	exit(-1);
       }
     }
