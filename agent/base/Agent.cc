@@ -267,7 +267,7 @@ namespace TREX {
       if(!executeReactor())
 	break;
 
-      if(planning_steps_left == 0 && m_clock.getNextTick() != m_currentTick)
+      if(planning_steps_left <= 0 && m_clock.getNextTick() != m_currentTick)
 	break;
     }
 
