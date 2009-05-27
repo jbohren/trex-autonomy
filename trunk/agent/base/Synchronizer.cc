@@ -57,7 +57,7 @@ namespace TREX {
 
       // If the token in question is in deliberation, continue
       if(m_core->inDeliberation(candidate)){
-	TREX_INFO("trex:debug:synchronization", candidate->toString() << " cannot be used because it is in delibertion.");
+	TREX_INFO("trex:warning:synchronization", candidate->toString() << " cannot be used because it is in delibertion.");
 	continue;
       }
 
