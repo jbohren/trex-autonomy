@@ -251,6 +251,7 @@ namespace TREX {
    * Each call to obtain the next clock tick may result in a transition to the next tick.
    */
   bool Agent::doNext(){
+    unsigned int planning_steps_left = 5;
 
     if(missionCompleted())
       return false;
@@ -259,15 +260,17 @@ namespace TREX {
 
     synchronize();
 
-    bool executed = false;
     // Deliberate as necessary while we have cpu available.
-    while(m_clock.getNextTick() == m_currentTick){
-      executed = true;
+    while(true){
+      planning_steps_left--;
+
       if(!executeReactor())
+	break;
+
+      if(planning_steps_left == 0 && m_clock.getNextTick() != m_currentTick)
 	break;
     }
 
-    condDebugMsg(!executed, "trex:warning", "No time to plan");
 
     // Wait for next tick
     while(m_clock.getNextTick() == m_currentTick){m_clock.sleep();}
