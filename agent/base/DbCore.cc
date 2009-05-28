@@ -755,6 +755,7 @@ namespace TREX {
 
     m_search_depth = std::max(m_search_depth, m_solver->getDepth());
     m_search_depth += m_solver->getStepCount();
+    TREX_INFO("trex:info:planning", "Step: depth == " << m_solver->getDepth() << " count == " << m_solver->getStepCount());
 
     // Now handle the aftermath. Dispatch is handled on a clock tick, so just update tick cycles
     // and clear the solver.
@@ -766,7 +767,7 @@ namespace TREX {
       if(deactivateSolver()){
 	// Restore to inactive state
 	m_state = DbCore::INACTIVE;
-	TREX_INFO("DbCore:resume", nameString() << "COMPLETED ");
+	TREX_INFO("trex:info:planning", nameString() << "COMPLETED ");
       }
     }
 
