@@ -85,10 +85,12 @@ namespace TREX {
   
   
   void OrienteeringSolver::clear() {
+    m_stepCount = 0;
   }
   
   
   void OrienteeringSolver::reset() {
+    m_stepCount = 0;
   }
   
   
