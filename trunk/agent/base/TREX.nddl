@@ -122,11 +122,11 @@ class Behavior extends AgentTimeline {
 };
 
 Behavior::Active{
+  meets(Inactive _reserved_s);
 
  // If at the end, apply a default to the timeout flag so that it is not zero.
  // This ensures the flag is set even if a max duration bound is not imposed
  if(end){
-   meets(Inactive _reserved_s);
    eq(status, _reserved_s.status);
    defaultOnCommit(timed_out, false);
  }
