@@ -86,11 +86,13 @@ namespace TREX {
   
   void OrienteeringSolver::clear() {
     m_stepCount = 0;
+    m_goalManager->reset();
   }
   
   
   void OrienteeringSolver::reset() {
     m_stepCount = 0;
+    m_goalManager->reset();
   }
   
   

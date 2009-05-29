@@ -132,7 +132,7 @@ namespace TREX{
 	  if(result == 1)
 	    m_watchDog = 0;
 	  
-	  debugMsg("GoalManager:search", "Switching to new solution: " << toString(m_currentSolution));
+	  debugMsg("trex:debug:planning:GoalManager", "Switching to new solution: " << toString(m_currentSolution));
 	} else {
 	  setState(STATE_DONE);
 	}
@@ -140,14 +140,35 @@ namespace TREX{
     } else {
       setState(STATE_DONE);
     }
+
     if ( m_state == STATE_DONE) {
-      debugMsg("GoalManager:search", "Returning: " << toString(m_currentSolution));
+      postConstraints();
+      condDebugMsg(m_watchDog >= m_plateau, "trex:debug:planning:GoalManager", "Reached a local minimum.");
+      debugMsg("trex:debug:planning:GoalManager", "Returning after " << m_iteration << " iterations" << toString(m_currentSolution));
     }
   }
 
 
   bool GoalManager::noMoreFlaws() {
     return m_state == STATE_DONE;
+  }
+
+  void GoalManager::reset(){
+    m_currentSolution.clear();
+    m_ommissions.clear();
+
+    // If there are any constraints, deactivate them and delete them
+    for(std::vector< std::pair<int, ConstraintId> >::const_iterator it = m_constraints.begin(); it != m_constraints.end(); ++it){
+      int key = it->first;
+      if(Entity::getEntity(key).isId()){
+	ConstraintId c = it->second;
+	checkError(c.isValid(), "Invalid constraint in goal manager. Probably not synchronizing correctly. Should have been reset.");
+	c->deactivate();
+	c->discard();
+      }
+    }
+
+    m_constraints.clear();
   }
 
   bool GoalManager::isNextToken(TokenId token) {
@@ -223,20 +244,30 @@ namespace TREX{
    */
   void GoalManager::generateInitialSolution(){
     debugMsg("GoalManager:generateInitialSolution", "Resetting solution");
-    
-    m_currentSolution.clear();
-    m_ommissions.clear();
 
     // Set the initial conditions since the problem may have moved on
     setInitialConditions();
 
     // The empty solution is the default solution
     IteratorId it = OpenConditionManager::createIterator();
+    std::map<double, TokenId> sorted_by_distance;
     while(!it->done()){
       TokenId goal = (TokenId) it->next();
       checkError(goal->master().isNoId(), goal->toString());
-      debugMsg("GoalManager:generateInitialSolution", "Adding token to system: " << goal->toString());
-      m_ommissions.insert(goal);
+      Position p = getPosition(goal);
+      double distance_to_goal = computeDistance(m_position, p);
+      sorted_by_distance.insert(std::pair<double, TokenId>(distance_to_goal, goal));
+    }
+
+    // Now insert in order
+    for(std::map<double, TokenId>::const_iterator it = sorted_by_distance.begin(); it != sorted_by_distance.end(); ++it){
+      double distance_to_goal = it->first;
+      TokenId goal = (TokenId) it->second;
+
+      debugMsg("trex:debug:planning:GoalManager", "Adding next goal to solution: " << goal->toString() << " at <" << 
+	       getPosition(goal).x << ", " <<  getPosition(goal).y << "> with distance from start == " << distance_to_goal);
+
+      m_currentSolution.push_back(goal);
     }
 
     delete (FlawIterator*) it;
@@ -265,7 +296,7 @@ namespace TREX{
     TokenId predecessor;
     unsigned int numConflicts(0);
     double pathLength = 0;
-    Position currentPosition = getCurrentPosition();
+    Position currentPosition = m_position;
 
     utility = 0;
     for(SOLUTION::const_iterator it = s.begin(); it != s.end(); ++it){
@@ -348,6 +379,7 @@ namespace TREX{
 
     // Try insertions - could skip if current solution is infeasible.
     if(feasible){
+      //std::map<double, TokenId> sorted_set;
       for(TokenSet::const_iterator it = m_ommissions.begin(); it != m_ommissions.end(); ++it){
 	TokenId t = *it;
 	for (unsigned int i = 0; i <= m_currentSolution.size(); i++){
@@ -403,7 +435,7 @@ namespace TREX{
   }
 
   void GoalManager::swap(SOLUTION& s, unsigned int a, unsigned int b){
-    debugMsg("GoalManager:swap", "Swapping [" << a << "] and [" << b << "] in " << toString(s));
+    debugMsg("trex:debug:planning:GoalManager", "Swapping [" << a << "] and [" << b << "] in " << toString(s));
     SOLUTION::iterator it = s.begin();
     SOLUTION::iterator it_a = s.begin();
     SOLUTION::iterator it_b = s.begin();
@@ -452,9 +484,9 @@ namespace TREX{
     if(compare(c, s) >= 0){
       s = c;
       delta = t;
-      debugMsg("GoalManager:update", "Promote " << toString(c) << " >>> " << toString(s));
+      debugMsg("trex:debug:planning:GoalManager", "Promote " << toString(c) << " >>> " << toString(s));
     } else {
-      debugMsg("GoalManager:update", "Not promoting " << toString(c) << " <<< " << toString(s));
+      debugMsg("trex:debug:planning:GoalManager", "Not promoting " << toString(c) << " <<< " << toString(s));
     }
   }
 
@@ -479,14 +511,17 @@ namespace TREX{
     return pr;
   }
 
-  void GoalManager::setInitialConditions(){
+  void GoalManager::setInitialConditions(){    
+
     // Start time
     const IntervalIntDomain& horizon = DeliberationFilter::getHorizon();
     m_startTime = (int) horizon.getLowerBound();
     m_timeBudget = (int) (horizon.getUpperBound() - horizon.getLowerBound());
     debugMsg("GoalManager", "Time budget: " << m_timeBudget << " (" <<
 	     horizon.getLowerBound() << ", " << horizon.getUpperBound() << ")");
+
     // Need to get the position value of the token that is spanning the current tick.
+    m_position = getCurrentPosition();
   }
 
 
@@ -584,9 +619,12 @@ namespace TREX{
 	  break;
       }
     }
+
     if (goodToken != TokenId::noId()) {
       m_position = getPosition(goodToken);
     }
+    
+    debugMsg("GoalManager:getCurrentPosition", "Using current position <" << m_position.x << ", " << m_position.y << ">");
 
     return m_position;
   }
@@ -597,6 +635,25 @@ namespace TREX{
    */
   double GoalManager::getSpeed() const {
     return 1.0;
+  }
+
+  /**
+   * @brief Impose ordering constraints on the given sequence of tokens
+   */
+  void GoalManager::postConstraints() {
+    TokenId current;
+    SOLUTION::const_iterator it = m_currentSolution.begin();
+    while(it != m_currentSolution.end()){
+      TokenId next = *it;
+      if(current.isId()){
+	ConstraintId c = getPlanDatabase()->getConstraintEngine()->createConstraint("precedes", makeScope(current->end(), next->start()));
+	m_constraints.push_back( std::pair<int, ConstraintId>(c->getKey(), c) );
+      }
+
+      // Advance
+      current = next;
+      ++it;
+    }
   }
 
   /**

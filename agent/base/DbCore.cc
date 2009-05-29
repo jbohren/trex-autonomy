@@ -762,7 +762,7 @@ namespace TREX {
     processPendingTokens();
     if(m_solver->noMoreFlaws()){
 
-      condDebugMsg(m_search_depth > 0, "trex:info:planning", logPlan("New Plan"));
+      condDebugMsg(m_solver->getStepCount() > 0, "trex:info:planning", logPlan("New Plan"));
 
       if(deactivateSolver()){
 	// Restore to inactive state

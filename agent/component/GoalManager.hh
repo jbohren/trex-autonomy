@@ -77,6 +77,12 @@ namespace TREX {
      * @brief Steps the solver.
      */
     void step();
+
+    /**
+     * @brief Resets internal state
+     */
+    void reset();
+
   private:
     /**
      * @brief Used to synch mark current goal value as dirty
@@ -154,6 +160,8 @@ namespace TREX {
 
     std::string toString(const SOLUTION& s);
 
+    void postConstraints();
+
     /** The state of the system. */
     enum State {
       STATE_DONE, STATE_PLANNING, STATE_REQUIRE_PLANNING
@@ -173,6 +181,7 @@ namespace TREX {
     State m_state;
     SOLUTION m_currentSolution;
     TokenSet m_ommissions;
+    std::vector< std::pair<int, ConstraintId> > m_constraints;
 
     // Iteration variables.
     unsigned int m_iteration, m_watchDog;
