@@ -209,31 +209,31 @@ namespace TREX {
 
     void queryTimelineModes(std::list<LabelStr>& externals, std::list<LabelStr>& internals);
 
-  private:
+  protected:
     /**
      * @brief Used to hook up observer for dispatch of observations and servers for dispatch of goals
      */
-    void handleInit(TICK initialTick, const std::map<double, ServerId>& serversByTimeline, const ObserverId& observer);
+    virtual void handleInit(TICK initialTick, const std::map<double, ServerId>& serversByTimeline, const ObserverId& observer);
 
     /**
      * @brief Must adress new tick and conduct appropriate propagation and dispatch
      */
-    void handleTickStart();
+    virtual void handleTickStart();
 
     /**
      * @brief Handle synchronization. If it fails it is a system error.
      */
-    bool synchronize();
+    virtual bool synchronize();
 
     /**
      * @brief Return true if there are flaws to resolve
      */
-    bool hasWork();
+    virtual bool hasWork();
 
     /**
      * @brief Step the reactor to resolve flaws
      */
-    void resume();
+    virtual void resume();
 
     enum State {
       INACTIVE = 0,
@@ -242,10 +242,27 @@ namespace TREX {
     };
 
 
-    bool isInvalid() const {return m_state == INVALID;}
+    virtual bool isInvalid() const {return m_state == INVALID;}
 
     void resetState() { m_state = INACTIVE;}
 
+    /**
+     * @brief Encapsulation of change to invalidate db state
+     * @param comment Provide context and hints for debugging
+     */
+    void markInvalid(const std::string& comment);
+
+    /**
+     * @brief Accessor to goal set
+     */
+    TokenSet& getGoals(){return m_goals;}
+
+    /**
+     * @brief Access the whole assembly
+     */
+    Assembly& getAssembly(){return m_assembly;}
+
+  private:
     /**
      * @brief Apply inertial value assumption to external timelines
      * @see synchronize
@@ -472,13 +489,6 @@ namespace TREX {
      * @brief Apply facts. Enforces the semantics of initial conditions for the agent
      */
     void applyFacts(const std::vector<TokenId>& facts);
-
-
-    /**
-     * @brief Encapsulation of change to invalidate db state
-     * @param comment Provide context and hints for debugging
-     */
-    void markInvalid(const std::string& comment);
 
     /**
      * @brief Process buffered goal keys that have been recalled.
