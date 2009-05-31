@@ -264,6 +264,11 @@ namespace TREX {
     ConstrainedVariableId missionEndVar = m_db->getGlobalVariable("missionEnd");
     missionEndVar->restrictBaseDomain(IntervalIntDomain(Agent::instance()->getFinalTick(), Agent::instance()->getFinalTick()));
 
+    // Initialize the 'TICK_DURATION' constant based on the clock
+    ConstrainedVariableId tickDurationVar = m_db->getGlobalVariable("TICK_DURATION");
+    double tick_duration = Agent::instance()->getClock().getSecondsPerTick();
+    tickDurationVar->restrictBaseDomain(IntervalIntDomain(tick_duration, tick_duration));
+
     // Load the solver configuration file
     TiXmlElement* solverCfg = LogManager::initXml( m_solverCfg.c_str() );
     m_solver = new DbSolver(m_db, solverCfg);

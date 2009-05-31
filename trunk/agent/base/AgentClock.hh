@@ -28,6 +28,11 @@ namespace TREX {
     virtual TICK getNextTick() = 0;
 
     /**
+     * @brief Accessor for seconds per tick
+     */
+    virtual double getSecondsPerTick() const {return 1.0;}
+
+    /**
      * @brief Helper method to provide a high-resolution sleep method
      * @see sleep(sleepDuration)
      */
@@ -127,6 +132,7 @@ namespace TREX {
 
   protected:
     double getSleepDelay() const;
+    virtual double getSecondsPerTick() const ;
 
   private:
     static void getDate(timeval &val);

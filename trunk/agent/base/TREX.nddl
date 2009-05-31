@@ -17,6 +17,11 @@ constraint assertRejected(s) { s <: TokenStates }
 class Timeline {}
 
 /**
+ * The TICK DURATION in seconds. It will be set when the deliberative reactor is loaded
+ */
+float TICK_DURATION;
+
+/**
  * This global constant will be set when a deliberative reactor is loaded
  */
 int missionEnd;
@@ -102,10 +107,11 @@ class Behavior extends AgentTimeline {
   predicate Active{
     int dispatch_time; // The time at which the goal was dispatched
     int max_duration; // A duration bound
-    int timeout; // Max time for behavior to be stuck internally
-    bool timed_out; // True if max_duration == duration	
+    float elapsed_time;
+    bool timed_out; // True if max_duration <= elapsed_time
+    mulEQ(duration, TICK_DURATION, elapsed_time);
+    testLEQ(timed_out, max_duration, elapsed_time);
     ResultStatus status; 
-    testEQ(timed_out, duration, max_duration);
     precedes(dispatch_time, start); // This is a <= constraint
     temporalDistance(start, [1, +inf], missionEnd);
   }
@@ -124,10 +130,10 @@ class Behavior extends AgentTimeline {
 Behavior::Active{
   meets(Inactive _reserved_s);
 
- // If at the end, apply a default to the timeout flag so that it is not zero.
- // This ensures the flag is set even if a max duration bound is not imposed
- if(end){
-   eq(status, _reserved_s.status);
-   defaultOnCommit(timed_out, false);
- }
+  // If at the end, apply a default to the timeout flag so that it is not zero.
+  // This ensures the flag is set even if a max duration bound is not imposed
+  if(end){
+    eq(status, _reserved_s.status);
+    defaultOnCommit(timed_out, false);
+  }
 }
