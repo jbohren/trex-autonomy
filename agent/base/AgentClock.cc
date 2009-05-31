@@ -130,6 +130,10 @@ namespace TREX {
     return m_tick;
   }
 
+  double RealTimeClock::getSecondsPerTick() const {
+    return m_secondsPerTick.tv_sec + ((double)m_secondsPerTick.tv_usec) / 1e6;
+  }
+
   double RealTimeClock::getSleepDelay() const {    
     if( m_started ) {
       double delay;

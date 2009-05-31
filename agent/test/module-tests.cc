@@ -45,6 +45,7 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
+    runTest(bugFixes); 
     runTest(testInconsistent);
     runTest(testOneStepAhead);
     runTest(testFileSearch);
@@ -52,7 +53,6 @@ public:
     runTest(testDispatch);
     //runTest(testSqueezeObserver);
     runTest(testSimulation);
-    runTest(bugFixes); 
     runTest(testRecall);
     runTest(testUndefinedSingleTimeline);
     runTest(testUndefinedDerived);
