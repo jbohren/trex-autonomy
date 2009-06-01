@@ -267,7 +267,8 @@ namespace TREX {
     // Initialize the 'TICK_DURATION' constant based on the clock
     ConstrainedVariableId tickDurationVar = m_db->getGlobalVariable("TICK_DURATION");
     double tick_duration = Agent::instance()->getClock().getSecondsPerTick();
-    tickDurationVar->restrictBaseDomain(IntervalIntDomain(tick_duration, tick_duration));
+    TREX_INFO("trex:info", "Using a tick duration of " << tick_duration << " seconds.");
+    tickDurationVar->restrictBaseDomain(IntervalDomain(tick_duration, tick_duration));
 
     // Load the solver configuration file
     TiXmlElement* solverCfg = LogManager::initXml( m_solverCfg.c_str() );
