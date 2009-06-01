@@ -109,7 +109,7 @@ class Behavior extends AgentTimeline {
     int max_duration; // A duration bound
     float elapsed_time;
     bool timed_out; // True if max_duration <= elapsed_time
-    mulEQ(duration, TICK_DURATION, elapsed_time);
+    mulEq(duration, TICK_DURATION, elapsed_time);
     testLEQ(timed_out, max_duration, elapsed_time);
     ResultStatus status; 
     precedes(dispatch_time, start); // This is a <= constraint
