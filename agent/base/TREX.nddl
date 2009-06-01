@@ -97,7 +97,6 @@ enum ResultStatus {
  * Encapsulate Behaviors that have a state of active or inactive
  */
 class Behavior extends AgentTimeline {
-  int max_duration; // The maximum duration allowed in the active state. Bounds behavior times
 
   predicate Inactive{
     ResultStatus status;
@@ -106,11 +105,7 @@ class Behavior extends AgentTimeline {
 
   predicate Active{
     int dispatch_time; // The time at which the goal was dispatched
-    int max_duration; // A duration bound
-    float elapsed_time;
-    bool timed_out; // True if max_duration <= elapsed_time
-    mulEq(duration, TICK_DURATION, elapsed_time);
-    testLEQ(timed_out, max_duration, elapsed_time);
+    float max_duration; // A duration bound
     ResultStatus status; 
     precedes(dispatch_time, start); // This is a <= constraint
     temporalDistance(start, [1, +inf], missionEnd);
@@ -118,12 +113,6 @@ class Behavior extends AgentTimeline {
 
   Behavior(Mode _mode){
     super(_mode, "Inactive", false);
-    max_duration = +inf;
-  }
-
-  Behavior(Mode _mode, int max_duration_){
-    super(_mode, "Inactive", false);
-    max_duration = max_duration_;
   }
 };
 
@@ -134,8 +123,7 @@ Behavior::Active{
   // This ensures the flag is set even if a max duration bound is not imposed
   if(end){
     eq(status, _reserved_s.status);
-    defaultOnCommit(timed_out, false);
   }
 
-  defaultOnCommit(max_duration, 9999999);
+  default(max_duration, +inff);
 }
