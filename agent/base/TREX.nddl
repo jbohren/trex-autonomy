@@ -136,4 +136,6 @@ Behavior::Active{
     eq(status, _reserved_s.status);
     defaultOnCommit(timed_out, false);
   }
+
+  defaultOnCommit(max_duration, 9999999);
 }
