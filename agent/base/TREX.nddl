@@ -125,5 +125,5 @@ Behavior::Active{
     eq(status, _reserved_s.status);
   }
 
-  default(max_duration, 999999);
+  default(max_duration, 999999.0);
 }
