@@ -179,6 +179,7 @@ private:
    * produces a new fact to replace it. Planning will be resumed to try to recover the situation but this will always fail.
    */
   static bool testPersistence(){
+    runAgentWithSchema("persistence.1.cfg", 20, "persistence.1");
     runAgentWithSchema("persistence.0.cfg", 20, "persistence.0");
     runAgentWithSchema("PersistedGoal.cfg", 20, "PersistedGoal");
     return true;

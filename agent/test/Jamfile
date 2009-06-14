@@ -28,6 +28,8 @@ if ! $(TREX_READY) {
 	Recall.B.nddl 
 	persistence.0.client.nddl 
 	persistence.0.server.nddl 
+	persistence.1.client.nddl 
+	persistence.1.server.nddl 
 	PersistedGoal.Exec.nddl 
 	Undefined.SingleTimeline.nddl
 	Undefined.Sensor.nddl 
