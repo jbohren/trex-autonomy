@@ -45,25 +45,25 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
+    runTest(testPersistence);
+    runTest(testSimulationWithPlannerTimeouts);
+    runTest(testSynch); 
+    runTest(testScalability);
+    runTest(testTestMonitor);
+    runTest(testOneDeliberatorOneAdapter);
     runTest(bugFixes); 
     runTest(testInconsistent);
     runTest(testOneStepAhead);
     runTest(testFileSearch);
     runTest(testRepair);
     runTest(testDispatch);
-    //runTest(testSqueezeObserver);
+    runTest(testSqueezeObserver);
     runTest(testSimulation);
     runTest(testRecall);
     runTest(testUndefinedSingleTimeline);
     runTest(testUndefinedDerived);
     runTest(testActions); 
     runTest(OrienteeringSolver);
-    runTest(testPersistence);
-    runTest(testSynch); 
-    runTest(testScalability);
-    runTest(testTestMonitor);
-    runTest(testOneDeliberatorOneAdapter);
-    runTest(testSimulationWithPlannerTimeouts);
     return true;
   }
 
