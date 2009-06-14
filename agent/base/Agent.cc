@@ -259,18 +259,7 @@ namespace TREX {
     synchronize();
 
     // Deliberate as necessary while we have cpu available.
-    /*
-    bool executed_reactor(false);
-    while(m_clock.getNextTick() == m_currentTick){
-      executed_reactor = true;
-      if(!executeReactor())
-	break;
-    }
-    */
-
-    while(executeReactor());
-
-    //condDebugMsg(!executed_reactor, "trex:warning", "No time to plan!");
+    while(executeReactor() && m_clock.getNextTick() == m_currentTick){}
 
     // Wait for next tick
     while(m_clock.getNextTick() == m_currentTick){m_clock.sleep();}
@@ -282,19 +271,23 @@ namespace TREX {
 
     // Advance the tick
     m_currentTick++;
-
-
     return true;
   }
 
   bool Agent::executeReactor(){
-
     TeleoReactorId reactor = nextReactor();
+
     if(reactor.isId()){
       RStatLap chrono(m_deliberationUsage, RStat::self);
       reactor->doResume();
+      // If a zero latency reactor, then do not cede control. Recursive execution  instead. This allows for more robustness
+      // to timing errors for really reactive controllers
+      if(reactor->getLatency() == 0)
+	return executeReactor();
+
       return true;
     }
+
     return false;
   }
 
