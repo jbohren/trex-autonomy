@@ -6,7 +6,7 @@
 
 #include "GamePlay.nddl"
 
-PersistenceTest_Container p = new PersistenceTest_Container(Mode.Internal);
+PersistenceTest_Container p = new PersistenceTest_Container(Mode.Internal, "Inactive");
 Valve vo = new Valve(Mode.Internal, true);
 Valve v1 = new Valve(Mode.Internal, false);
 Valve v2 = new Valve(Mode.External);

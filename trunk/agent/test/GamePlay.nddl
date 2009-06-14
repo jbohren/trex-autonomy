@@ -645,11 +645,14 @@ class PersistenceTest_Container extends AgentTimeline {
     leq(duration, 3);
   }
 
+  predicate On{}
+  predicate Off{}
+
   /**
-   * Neer persistent
+   * Never persistent
    */
-  PersistenceTest_Container(Mode _mode){
-    super(_mode, "Inactive", false);
+  PersistenceTest_Container(Mode _mode, string _defaultPredicate){
+    super(_mode, _defaultPredicate, false);
   }
 }
 
@@ -674,3 +677,18 @@ class PersistenceTest_Container extends AgentTimeline {
     met_by(Active);
   }
 
+/**
+ * The following rules apply only when the timeline is external. The idea is to force
+ * a conflict on observations from the model. Recall model should retain the original.
+ * and get rid of the current value.
+ */
+PersistenceTest_Container::On{
+  if(object.mode == External){
+    meets(Off);
+  }
+}
+PersistenceTest_Container::Off{
+  if(object.mode == External){
+    meets(On);
+  }
+}
