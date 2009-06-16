@@ -32,6 +32,7 @@ g2.priority = 2;
 g2.value = 2;
 g2.countertimeline = counterC;
 g2.fakeDuration = 30;
+leq(g2.start, 85);
 
 rejectable(ostimeline.Active g3);
 g3.x = 40.0;

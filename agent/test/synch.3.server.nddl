@@ -1,0 +1,22 @@
+#include "synch.nddl"
+
+// Will always abort
+ResetCircuitBreaker::Inactive{
+  bool should_abort;
+  testLEQ(should_abort, start, 6);
+  if(should_abort == true){
+    eq(status, ABORTED);
+  }
+  else{
+    eq(status, SUCCESS);
+  }
+}
+
+ResetCircuitBreaker::Active{
+  eq(duration, 1);
+}
+
+ResetCircuitBreaker rcb = new ResetCircuitBreaker(Internal);
+
+fact(rcb.Inactive);
+
