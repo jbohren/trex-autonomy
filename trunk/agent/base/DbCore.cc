@@ -635,6 +635,8 @@ namespace TREX {
 	m_timelines.push_back(object);
       }
     }
+
+    TREX_INFO("trex:info", m_internalTimelineTable.size() << " internal timelines. " << m_externalTimelineTable.size() << " external timelines.");
   }
 
   /**
@@ -890,7 +892,7 @@ namespace TREX {
 	  continue;
 	}
 
-	// If the start time is not a singleton it does not have to be dispatched, so we do not.
+	// If the start time is not a singleton it does not have to be published, so we do not.
 	if(startTime.getUpperBound() > getCurrentTick() && !startTime.isSingleton())
 	  continue;
 
@@ -1953,27 +1955,32 @@ namespace TREX {
   void DbCore::commitAndRestrict(const TokenId& token){
     TREX_INFO("trex:debug:synchronization:commitAndRestrict", "Committing " << token->toString());
 
-    // Committhe token and touch the state variable to trigger commit event based propagation
+    // Commit the token and touch the state variable to trigger commit event based propagation
     token->commit();
     token->getState()->touch();
 
     // Propagate constraints before binding attribute base domains.
     propagate();
 
-    if(!token->getObject()->baseDomain().isSingleton())
-      token->getObject()->restrictBaseDomain(token->getObject()->lastDomain());
+    token->getObject()->restrictBaseDomain(token->getObject()->lastDomain());
 
     // Restrict the start to its current bounds
-    if(!token->start()->baseDomain().isSingleton()) 
-      token->start()->restrictBaseDomain(token->start()->lastDomain());
+    token->start()->restrictBaseDomain(token->start()->lastDomain());
     
     // Restrict the end. If in the past just restrict it to current bounds. If current, then the base domain can be restricted
     // just up till the current tick, even if the lower bound of the current domain is more restrictive.
-    if(token->end()->lastDomain().getUpperBound() < getCurrentTick())
+    if(token->end()->lastDomain().getUpperBound() < getCurrentTick()){
       token->end()->restrictBaseDomain(token->end()->lastDomain());
+      restrictParameterBaseDomains(token);
+    }
     else
       token->end()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
+  }
 
+  /**
+   * Utility to iterate over parameters to restict base domains of each
+   */
+  void DbCore::restrictParameterBaseDomains(const TokenId& token){
     for(std::vector<ConstrainedVariableId>::const_iterator it = token->parameters().begin(); it != token->parameters().end(); ++it){
       ConstrainedVariableId p = *it;
       p->restrictBaseDomain(p->lastDomain());
@@ -2319,7 +2326,6 @@ namespace TREX {
 	  // the end of the mission. This could be problematic if we generate actions when we have no time left. This is not likely, and so the default case
 	  // will assume the restriction to mission end. Do not generate an action if you do not require it!
 	  token->start()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), Agent::instance()->getFinalTick() - 1));
-	  //token->end()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), Agent::instance()->getFinalTick()));
 	  m_actions.insert(token);
 	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Action:" << token->toString());
 	}
@@ -2333,6 +2339,9 @@ namespace TREX {
 	  m_goals.insert(token);
 	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Goal:" << token->toString());
 	  token->start()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick() - 1));
+
+	  // Restrict parameters since it is a goal.
+	  restrictParameterBaseDomains(token);
 
 	  // If not a condition, then we will not require any end time. It can be made explicit
 	  if(!TestMonitor::isCondition(token->getKey()))

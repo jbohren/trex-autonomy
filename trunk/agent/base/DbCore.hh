@@ -503,6 +503,11 @@ namespace TREX {
     void commitAndRestrict(const TokenId& token);
 
     /**
+     * @brief Utility to restrict all parameter base domains of a token
+     */
+    void restrictParameterBaseDomains(const TokenId& token);
+
+    /**
      * @brief Utility to disconnect constraints, binding connected variables prior to termination
      */
     void disconnectConstraints(const TokenId& token);

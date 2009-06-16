@@ -13,6 +13,8 @@ if ! $(TREX_READY) {
 
  # Input files for reactors in test cases
  TestInputFiles = 
+ 	synch.3.client.nddl
+ 	synch.3.server.nddl
 	LogWriting.client.nddl
 	LogWriting.server.nddl
  	test_monitor.exec.nddl
