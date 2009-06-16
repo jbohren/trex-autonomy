@@ -183,24 +183,23 @@ AbstractDomain *SimAdapter::xmlAsAbstractDomain(TiXmlElement const &elem) {
     return(domain);
   } else {
     char const *val_st = elem.Attribute("value");
+    char const *type = elem.Attribute("type"); 
+
     checkError(NULL!=val_st,
 	       "SimAdapter:xmlAsAbstractDomain : missing value for domain.");
+    checkError(NULL!=type,
+	       "SimAdapter:xmlAsAbstractDomain : missing type for domain.");
 
-    if( "symbol"==tag ) {
-      StringDomain*domain = new StringDomain(val_st, m_stringDT);
-      /*
-      checkError(NULL!=type_st,
-		 "SimAdapter:xmlAsAbstractDomain : missing type for domain.");
-
-      AbstractDomain *domain = getFactory(type_st).baseDomain().copy();
-      domain->set(getFactory(type_st).createValue(val_st));
-      */
-      return domain;
-    } else {
+    if(strcmp(type, "string") == 0){
+      return new StringDomain(val_st, m_stringDT);
+    }
+    else {
       checkError("object"!=tag,
 		 "SimAdapter:xmlAsAbstractDomain : object parsing not supported.");
+      return new SymbolDomain(LabelStr(val_st), m_symbolDT);
     }
-  }  
+  }
+
   checkError(ALWAYS_FAIL, 
 	     "SimAdapter:xmlAsAbstractDomain : unknown type");
   return NULL;

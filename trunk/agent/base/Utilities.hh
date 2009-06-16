@@ -54,6 +54,16 @@ namespace TREX {
   TokenId getParentToken(const ConstrainedVariableId& var);
 
   /**
+   * @brief Utility to convert an observation to an xml string.
+   */
+  //std::string observationToString(const Observation& obs);
+
+  /**
+   * @brief Utility convert a string to an observation
+   */
+  //Observation* observationFromXml(const TiXmlElement& elem);
+
+  /**
    * @brief Binds default values for token parameters if they are not singletons.
    */
   class SetDefault : public Constraint {

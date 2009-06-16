@@ -40,6 +40,7 @@ namespace TREX {
     return sstr.str();
   }
 
+  /*
   TiXmlElement *Observation::toXML() const {
     TiXmlElement *result = new TiXmlElement("Observation");
 
@@ -57,6 +58,7 @@ namespace TREX {
     }
     return result;
   }
+  */
 
   void Observation::printXML(FILE *out) const {
     size_t i, cnt  = countParameters();
