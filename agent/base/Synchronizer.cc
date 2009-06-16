@@ -46,6 +46,9 @@ namespace TREX {
    * @note Any token that is rejectable is not in scope.
    */
   bool Synchronizer::isUnit(const TokenId& token, TokenId& merge_candidate){
+    if(!token->getObject()->lastDomain().isSingleton())
+      return false;
+
     // Compute compatible tokens, using an exact test
     std::vector<TokenId> compatible_tokens;
     m_db->getCompatibleTokens(token, compatible_tokens, PLUS_INFINITY, true);
@@ -353,7 +356,7 @@ namespace TREX {
       // Case 1: The value is current. This means it is committed, which implies it was previously found to be consistent
       // during synchronization. 
       if(isCurrent(token)){
-	if(!discardCurrentValues || isPersistent(token))
+	if(!discardCurrentValues || m_core->isExternal(token) || isPersistent(token))
 	  copyValue(token);
 	tokensToDiscard.push_back(token);
 	continue;
