@@ -45,6 +45,7 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
+    runTest(testLogging);
     runTest(testPersistence);
     runTest(testSimulationWithPlannerTimeouts);
     runTest(testSynch); 
@@ -69,6 +70,11 @@ public:
 
 private:
 
+  static bool testLogging(){
+    runAgentWithSchema("LogWriting.cfg", 50, "LogWriting");
+    runAgentWithSchema("LogReading.cfg", 50, "LogReading");
+    return true;
+  }
   
   static bool testFileSearch(){
     setenv("TREX_START_DIR", "search_tests/a", 1);

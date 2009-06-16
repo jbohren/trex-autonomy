@@ -48,7 +48,7 @@ namespace TREX {
      *
      * @sa ObservationLogger 
      */
-    TiXmlElement *toXML() const;
+    //TiXmlElement *toXML() const;
 
     void printXML(FILE *out) const;
 

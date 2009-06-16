@@ -692,3 +692,15 @@ PersistenceTest_Container::Off{
     meets(On);
   }
 }
+
+class LogTesting extends AgentTimeline{
+  predicate Holds {
+    bool p_bool;
+    int p_int;
+    float p_float;
+    string p_string;
+    Values p_symbol;
+  }
+
+  LogTesting(Mode m){ super(m, "Holds"); }
+};
