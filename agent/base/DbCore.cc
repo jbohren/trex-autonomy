@@ -673,7 +673,10 @@ namespace TREX {
     if(!propagate())
       return;
 
-    updateBehaviors();
+    // This can be made much more efficient!
+    updateBehaviors("Behavior.Active");
+    updateBehaviors("Behavior.Inactive");
+
     if(!propagate())
       return;
 
@@ -1502,7 +1505,7 @@ namespace TREX {
   /**
    * @brief
    */
-  void DbCore::updateBehaviors(){
+  void DbCore::updateBehaviors(const LabelStr& predicate){
     TREX_INFO("trex:debug:synchronization:updateBehaviors", nameString());
 
     if(m_state != DbCore::INACTIVE){
@@ -1516,7 +1519,7 @@ namespace TREX {
     const IntervalIntDomain horizon(getCurrentTick(), getCurrentTick());
 
     // Iterate over all active behaviors. If one can be started, do it.
-    const TokenSet& behaviors = m_db->getActiveTokens("Behavior.Active");
+    const TokenSet& behaviors = m_db->getActiveTokens(predicate);
     for(TokenSet::iterator it = behaviors.begin(); it != behaviors.end(); ++it){
       TokenId behavior = *it;
       checkError(behavior.isValid(), behavior);

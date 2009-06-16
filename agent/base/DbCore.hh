@@ -392,7 +392,7 @@ namespace TREX {
     /**
      * @brief Start behaviors if possible.
      */
-    void updateBehaviors();
+    void updateBehaviors(const LabelStr& predicate);
 
     /**
      * @brief Utility to set the horizon based on latency, lookAhead, and current tick cycle.
