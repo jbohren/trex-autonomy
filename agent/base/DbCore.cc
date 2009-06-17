@@ -675,7 +675,7 @@ namespace TREX {
 
     // This can be made much more efficient!
     updateBehaviors("Behavior.Active");
-    updateBehaviors("Behavior.Inactive");
+    //updateBehaviors("Behavior.Inactive");
 
     if(!propagate())
       return;
