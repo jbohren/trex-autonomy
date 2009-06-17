@@ -48,21 +48,6 @@ namespace TREX {
     bool resolveToken(const TokenId& token, unsigned int& stepCount, const TokenId& mergeCandidate);
 
     /**
-     * @brief Fire all rules in the execution frontier
-     */
-    bool fireRules(unsigned int& stepCount);
-
-    /**
-     * @brief Fire rules for a specific token
-     */
-    bool fireRules(const TokenId& token, unsigned int& stepCount);
-
-    /**
-     * @brief Fire a rule and its children as appropriiate
-     */
-    bool fire(const RuleInstanceId& r, unsigned int& stepCount);
-
-    /**
      * @brief Merge a token if the option is there
      * @return true if it tried a merge, false if it did not
      */

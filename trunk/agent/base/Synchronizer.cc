@@ -479,9 +479,6 @@ namespace TREX {
 	if(!resolveToken(token, stepCount, merge_candidate) || !m_core->propagate())
 	  return false;
       }
-
-      if(!fireRules(m_stepCount))
-	return false;
     }
 
     return true;
@@ -496,93 +493,6 @@ namespace TREX {
     m_core->markInvalid(std::string("Could not insert ") + token->toString() + 
 			" into the plan. The plan is not compatible with observations and must be relaxed. Enable all DbCore messages and also enable Synchronizer messages in the Debug.cfg file.");
     return false;
-  }
-
-  /**
-   * 1. agent timelines
-   * 2. actions
-   */
-  bool Synchronizer::fireRules(unsigned int& stepCount){
-    static unsigned int sl_counter(0);
-    sl_counter++;
-
-    if(m_core->isInvalid())
-      return false;
-
-    // Process timeline tokens
-    for(std::vector<TimelineId>::const_iterator it = m_timelines.begin(); it != m_timelines.end(); ++it){
-      TimelineId timeline = *it;
-      const std::list<TokenId>& tokenSequence = timeline->getTokenSequence();
-      for(std::list<TokenId>::const_iterator t_it = tokenSequence.begin(); t_it != tokenSequence.end(); ++t_it){
-
-	TokenId token = *t_it;
-	checkError(token.isValid(), token);
-
-	TREX_INFO("trex:debug:synchronization:fireRules", m_core->nameString() << "[" << sl_counter << "] Checking " << token->toString() <<
-	       " Start = " << token->start()->toString() << " End = " << token->end()->toString());
-
-	// Beyond execution frontier
-	if(token->start()->lastDomain().getUpperBound() > (m_core->getCurrentTick() + 1))
-	  break;
-
-	// Before execution frontier
-	if(token->end()->lastDomain().getUpperBound() < m_core->getCurrentTick())
-	  continue;
-
-	if(!fireRules(token, stepCount))
-	  return false;
-      }
-    }
-
-    // process relevant m_actions
-    for(TokenSet::const_iterator it = m_actions.begin(); it != m_actions.end(); ++it){
-	TokenId token = *it;
-	checkError(token.isValid(), token);
-
-	TREX_INFO("trex:debug:synchronization:fireRules", m_core->nameString() << "[" << sl_counter << "] Checking " << token->toString() <<
-	       " Start = " << token->start()->toString() << " End = " << token->end()->toString());
-
-	if(!token->isActive() || !inTickHorizon(token, m_core->getCurrentTick()))
-	  continue;
-
-	if(!fireRules(token, stepCount))
-	  return false;
-    }
-
-    return true;
-  }
-
-  bool Synchronizer::fireRules(const TokenId& token, unsigned int& stepCount){
-    std::set<RuleInstanceId> ruleInstances;
-    m_core->m_assembly.getRulesEngine()->getRuleInstances(token, ruleInstances);
-    for(std::set<RuleInstanceId>::const_iterator it = ruleInstances.begin(); it != ruleInstances.end(); ++it){
-      RuleInstanceId r = *it;
-      if(!fire(r, stepCount))
-	return false;
-    }
-
-    return true;
-  }
-
-  bool Synchronizer::fire(const RuleInstanceId& r, unsigned int& stepCount){
-
-    if(!r->isExecuted() && r->test()){
-      stepCount++;
-      if(!m_core->propagate())
-	return false;
-    }
-
-    // Apply to children
-    if(r->isExecuted()){
-      const std::vector<RuleInstanceId>& childRules = r->getChildRules();
-      for(std::vector<RuleInstanceId>::const_iterator it = childRules.begin(); it != childRules.end(); ++it){
-	RuleInstanceId child = *it;
-	if(!fire(child, stepCount))
-	  return false;
-      }
-    }
-
-    return true;
   }
 
   /**
