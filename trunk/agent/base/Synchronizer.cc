@@ -356,7 +356,7 @@ namespace TREX {
       // Case 1: The value is current. This means it is committed, which implies it was previously found to be consistent
       // during synchronization. 
       if(isCurrent(token)){
-	if(!discardCurrentValues || m_core->isExternal(token) || isPersistent(token))
+	if(!discardCurrentValues || m_core->isObservation(token) || isPersistent(token))
 	  copyValue(token);
 
 	TREX_INFO("trex:debug:synchronization:resetRemainingTokens", "Scheduling discard for current value" << token->toString());
