@@ -183,6 +183,34 @@ namespace TREX {
       DbCore& m_dbCore;
     };
 
+    class PlanDescription {
+      public:
+	friend class DbCore;
+
+	struct TokenDescription {
+	  LabelStr name;
+	  double start[2], end[2];
+	};
+
+	struct TimelineDescription {
+	  LabelStr name;
+	  std::vector<TokenDescription> tokens;
+	};
+
+	void clear() {
+	  m_internalTimelines.clear();
+	  m_actions.clear();
+	  m_externalTimelines.clear();
+	}
+
+	TICK m_tick;
+	LabelStr m_reactorName;
+	std::vector<TimelineDescription>
+	  m_internalTimelines,
+	  m_actions,
+	  m_externalTimelines;
+    };
+
     friend class DbListener;
     friend class Synchronizer;
     friend class DeliberationFilter;
@@ -208,6 +236,11 @@ namespace TREX {
     void handleRecall(const TokenId& goal);
 
     void queryTimelineModes(std::list<LabelStr>& externals, std::list<LabelStr>& internals);
+
+    /**
+     * @brief Get a description of the plan at the current tick
+     */
+    void getPlanDescription(PlanDescription &planDesc) const;
 
   protected:
     /**

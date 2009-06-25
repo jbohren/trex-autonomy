@@ -21,22 +21,18 @@ namespace TREX {
   public:
     virtual ~Clock(){}
 
-
     void doStart();
 
-
-    virtual TICK getNextTick() = 0;
-
     /**
-     * @brief Accessor for seconds per tick
+     * @brief Used by Agent to get the value of the next tick for synchronization
      */
-    virtual double getSecondsPerTick() const {return 1.0;}
+    virtual TICK getNextTick() = 0;
 
     /**
      * @brief Helper method to provide a high-resolution sleep method
      * @see sleep(sleepDuration)
      */
-    void sleep() const;
+    virtual void sleep() const;
 
     /**
      * @brief Utility to implement high-resolution sleep
@@ -63,18 +59,25 @@ namespace TREX {
       return m_diff;
     }
 
+    /**
+     * @brief Accessor for seconds per tick
+     */
+    double getSecondsPerTick() const {
+      return m_secondsPerTick;
+    }
+
   protected:
     virtual double getSleepDelay() const {
-      return m_sleepSeconds;
+      return 0;
     }
     /**
      * @brief Constructor
-     * @param sleepSeconds The number of seconds to sleep within the control loop before checking for work to do or clock updates
+     * @param secondsPerTick The period of a single tick
      */
-    Clock(double sleepSeconds, bool stats = true)
-      : m_sleepSeconds(sleepSeconds), m_processStats(stats){}
-
-    const double m_sleepSeconds;
+    Clock(double secondsPerTick, bool stats = true) : 
+      m_secondsPerTick(secondsPerTick),
+      m_processStats(stats)
+    { }
 
     /**
      * @brief Called to start the clock counting
@@ -91,6 +94,8 @@ namespace TREX {
      */
     void advanceTick(TICK &tick); 
     
+    double m_secondsPerTick;
+
   private:
     bool m_processStats;
     RStat m_diff, m_cur;
@@ -101,11 +106,18 @@ namespace TREX {
    */
   class PseudoClock: public Clock {
   public:
-    PseudoClock(double sleepSeconds, unsigned int stepsPerTick, bool stats = true);
+    PseudoClock(double secondsPerTick, unsigned int stepsPerTick, bool stats = true);
 
+    /**
+     * @brief Simple clock for stepping the code on the main thread
+     */
     TICK getNextTick();
+    virtual double getSleepDelay() const;
 
   private:
+    /**
+     * @brief Enforces a stepsPerTick > 0, writes to log if <0, and sets to some non-zero value
+     */
     static TICK selectStep(unsigned int stepsPerTick);
 
     TICK m_tick;
@@ -132,7 +144,6 @@ namespace TREX {
 
   protected:
     double getSleepDelay() const;
-    virtual double getSecondsPerTick() const ;
 
   private:
     static void getDate(timeval &val);
@@ -141,11 +152,9 @@ namespace TREX {
 
     bool m_started;
     TICK m_tick;
-    double m_floatTick;
-    timeval m_secondsPerTick;
+    timeval m_tvSecondsPerTick;
     timeval m_nextTickDate;
     mutable Mutex m_lock;
-
   };
     
 }
