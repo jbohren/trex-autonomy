@@ -66,9 +66,9 @@ namespace TREX {
    * @brief Run utility to run a sample problem with a pseudo clock
    */
   void runAgent(const char* configFile, unsigned int stepsPerTick, const char* problemName){
-    // Keep the sleep seconds tiny since we want to run tests quickly. Higher values yield lower cpu utilization
-    // but also affect the likelihood of missing a tick. For testing it should be basically 0.
-    PseudoClock clock(0.0, stepsPerTick);
+    // PseudoClock uses a sleep duration of 0.0 seconds. This causes the system to run faster for testing
+    // and thus it will utilize as much CPU time as is available.
+    PseudoClock clock(1.0, stepsPerTick);
     TiXmlElement* root = initXml( findFile(configFile).c_str() );
 
     Agent::initialize(*root, clock);

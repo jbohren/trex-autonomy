@@ -9,12 +9,30 @@
 
 namespace TREX {
 
+  /**
+   * @brief Clock base
+   */
   void Clock::doStart() {
     TickLogger *clk = LogManager::instance().getTickLog(CPU_STAT_LOG);
     clk->addField("userTime", m_diff.user_time());
     clk->addField("systemTime", m_diff.system_time());
     clk->addField("maxRSS", m_cur.max_resident());
     start();
+  }
+
+  void Clock::advanceTick(TICK &tick) {
+    if( m_processStats ) {
+      try {
+	RStat tmp(m_cur);
+	m_cur.reset(RStat::self);
+	m_diff = m_cur-tmp;
+      } catch(ErrnoExcept e) {
+	
+	debugMsg("TREX", e.what() << "Disabling process statistics.");
+	m_processStats = false;
+      }
+    }
+    ++tick;
   }
 
   void Clock::sleep(double sleepDuration){
@@ -34,21 +52,6 @@ namespace TREX {
     }
   }
 
-  void Clock::advanceTick(TICK &tick) {
-    if( m_processStats ) {
-      try {
-	RStat tmp(m_cur);
-	m_cur.reset(RStat::self);
-	m_diff = m_cur-tmp;
-      } catch(ErrnoExcept e) {
-	
-	debugMsg("TREX", e.what() << "Disabling process statistics.");
-	m_processStats = false;
-      }
-    }
-    ++tick;
-  }
-
   /**
    * @brief Uses a high resolution sleep method internally
    */
@@ -65,8 +68,12 @@ namespace TREX {
     return stepsPerTick;
   }
 
-  PseudoClock::PseudoClock(double sleepSeconds, unsigned int stepsPerTick, bool stats) : 
-    Clock(sleepSeconds, stats), m_tick(0), m_internalTicks(0), m_stepsPerTick(selectStep(stepsPerTick)) {
+  PseudoClock::PseudoClock(double secondsPerTick, unsigned int stepsPerTick, bool stats) : 
+    Clock(secondsPerTick, stats),
+    m_tick(0),
+    m_internalTicks(0),
+    m_stepsPerTick(selectStep(stepsPerTick))
+  {
   }
  
   TICK PseudoClock::getNextTick() {
@@ -74,6 +81,10 @@ namespace TREX {
       Clock::advanceTick(m_tick);
     m_internalTicks++;
     return m_tick ;
+  }
+
+  double PseudoClock::getSleepDelay() const {
+    return 0;
   }
 
   /**
@@ -84,10 +95,12 @@ namespace TREX {
   }
 
   RealTimeClock::RealTimeClock(double secondsPerTick, bool stats)
-    : Clock(secondsPerTick/1000, stats),
-      m_started(false), m_tick(0), m_floatTick(secondsPerTick) {
-    m_secondsPerTick.tv_sec = static_cast<long>(std::floor(secondsPerTick));
-    m_secondsPerTick.tv_usec = static_cast<long>(std::floor((secondsPerTick-m_secondsPerTick.tv_sec)*1e6));
+    : Clock(secondsPerTick, stats),
+      m_started(false),
+      m_tick(0)
+  {
+    m_tvSecondsPerTick.tv_sec = static_cast<long>(std::floor(secondsPerTick));
+    m_tvSecondsPerTick.tv_usec = static_cast<long>(std::floor((secondsPerTick-m_tvSecondsPerTick.tv_sec)*1e6));
   }
 
   void RealTimeClock::start(){
@@ -97,8 +110,8 @@ namespace TREX {
   }
 
   void RealTimeClock::setNextTickDate(unsigned factor) {
-    m_nextTickDate.tv_usec += factor*m_secondsPerTick.tv_usec;
-    m_nextTickDate.tv_sec += factor*m_secondsPerTick.tv_sec + (m_nextTickDate.tv_usec/1000000);
+    m_nextTickDate.tv_usec += factor*m_tvSecondsPerTick.tv_usec;
+    m_nextTickDate.tv_sec += factor*m_tvSecondsPerTick.tv_sec + (m_nextTickDate.tv_usec/1000000);
     m_nextTickDate.tv_usec %= 1000000;
   }
 
@@ -121,17 +134,13 @@ namespace TREX {
       double howLate = -timeLeft();
       
       if( howLate>=0 ) {
-	int tickIncr = 1+(int) std::floor(howLate/m_floatTick);
+	int tickIncr = 1+(int) std::floor(howLate/m_secondsPerTick);
 	m_tick += tickIncr;
 	setNextTickDate(tickIncr);
 // 	TREXLog()<<"[clock]["<<m_tick<<"] "<<howLate<<" secs late."<<std::endl; 
       }
     }
     return m_tick;
-  }
-
-  double RealTimeClock::getSecondsPerTick() const {
-    return m_secondsPerTick.tv_sec + ((double)m_secondsPerTick.tv_usec) / 1e6;
   }
 
   double RealTimeClock::getSleepDelay() const {    
