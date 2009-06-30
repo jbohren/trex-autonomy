@@ -647,6 +647,38 @@ namespace TREX {
     internals.assign(m_internalLabels.begin(), m_internalLabels.end());
   }
 
+  void DbCore::fillTimelineDescription(const TimelineId tl, PlanDescription::TimelineDescription &tlDesc) const {
+    PlanDescription::TokenDescription tokDesc;
+
+    // Set the name key
+    tlDesc.name = tl->getName();
+
+    // Iterate over tokens
+    std::list<TokenId> const &tokens = tl->getTokenSequence();
+    std::list<TokenId>::const_iterator tokit = tokens.begin();
+    std::list<TokenId>::const_iterator const endtok = tokens.end();
+
+    for( ;endtok!=tokit; ++tokit ) {
+      TokenId const &tok = *tokit;
+      // Only report active tokens
+      if(!tok->isActive()) { continue; }
+
+      TempVarId tokStart = tok->start(),
+		tokEnd = tok->end();
+
+      tokDesc.start[0] = tokStart->getLowerBound();
+      tokDesc.start[1] = tokStart->getUpperBound();
+
+      tokDesc.end[0] = tokEnd->getLowerBound();
+      tokDesc.end[1] = tokEnd->getUpperBound();
+
+      tokDesc.name = tok->getPredicateName();
+
+      // Add token to timeline description
+      tlDesc.tokens.push_back(tokDesc);
+    }
+  }
+
   void DbCore::getPlanDescription(PlanDescription &planDesc) const{
 
     // Clear the plan description
@@ -659,52 +691,27 @@ namespace TREX {
     planDesc.m_reactorName = getName();
 
     // Internals 
-    std::vector< std::pair<TimelineId, TICK> >::const_iterator 
-      intit = m_internalTimelineTable.begin();
-    std::vector< std::pair<TimelineId, TICK> >::const_iterator const
-      endint = m_internalTimelineTable.end();
+    std::vector< std::pair<TimelineId, TICK> >::const_iterator intit = m_internalTimelineTable.begin();
+    std::vector< std::pair<TimelineId, TICK> >::const_iterator const endint = m_internalTimelineTable.end();
     
+    // Populate timeline description with tokens
     for( ; endint!=intit; ++intit ) {
-      TimelineId const &tl = intit->first;
-
       PlanDescription::TimelineDescription tlDesc;
-      PlanDescription::TokenDescription tokDesc;
-
-      // Set the name key
-      tlDesc.name = tl->getName();
-
-      // Iterate over tokens
-      std::list<TokenId> const &tokens = tl->getTokenSequence();
-      std::list<TokenId>::const_iterator tokit = tokens.begin();
-      std::list<TokenId>::const_iterator const endtok = tokens.end();
-
-      for( ;endtok!=tokit; ++tokit ) {
-	TokenId const &tok = *tokit;
-	// Only report active tokens
-	if(!tok->isActive()) { continue; }
-
-	TempVarId tokStart = tok->start(),
-		  tokEnd = tok->end();
-
-	tokDesc.start[0] = tokStart->getLowerBound();
-	tokDesc.start[1] = tokStart->getUpperBound();
-
-	tokDesc.end[0] = tokEnd->getLowerBound();
-	tokDesc.end[1] = tokEnd->getUpperBound();
-
-	tokDesc.name = tok->getPredicateName();
-
-	// Add token to timeline description
-	tlDesc.tokens.push_back(tokDesc);
-      }
-
-      // Add timeline description to plan description
+      fillTimelineDescription(intit->first, tlDesc);
       planDesc.m_internalTimelines.push_back(tlDesc);
     }
 
-    // Actions
-    
     // Externals
+    std::map<int, TimelineContainer>::const_iterator 
+      cextit = m_externalTimelineTable.begin();
+    std::map<int, TimelineContainer>::const_iterator const
+      endcext = m_externalTimelineTable.end();
+
+    for( ; endcext!=cextit; ++cextit ) {
+      PlanDescription::TimelineDescription tlDesc;
+      fillTimelineDescription(cextit->second.getTimeline(), tlDesc);
+      planDesc.m_externalTimelines.push_back(tlDesc);
+    }
   }
 
   void DbCore::handleTickStart(){
