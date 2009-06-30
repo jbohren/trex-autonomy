@@ -112,7 +112,39 @@ namespace TREX {
     DbClientTransactionPlayer transactionPlayer(m_planDatabase->getClient());
     transactionPlayer.play(in);
 #else
-    executeScript("nddl-xml", txSource, isFile);
+    std::ifstream f1(findFile("NDDL.cfg").c_str());
+    std::ifstream f2(findFile("temp_nddl_gen.cfg").c_str());
+    TiXmlElement* iroot = NULL;
+    if (f1.good()) {
+      iroot = EUROPA::initXml(findFile("NDDL.cfg").c_str());
+    } else if (f2.good()) {
+      iroot = EUROPA::initXml(findFile("temp_nddl_gen.cfg").c_str());
+    } else {
+      checkError(false, "Could not find 'NDDL.cfg' or 'temp_nddl_gen.cfg'");
+    }
+    if (iroot) {
+      for (TiXmlElement * ichild = iroot->FirstChildElement();
+	   ichild != NULL;
+	   ichild = ichild->NextSiblingElement()) {
+	if (std::string(ichild->Value()) == "include") {
+	  std::string path = std::string(ichild->Attribute("path"));
+	  for (unsigned int i = 0; i < path.size(); i++) {
+	    if (path[i] == ';') {
+	      path[i] = ':';
+	    }
+	  }
+	  getLanguageInterpreter("nddl")->getEngine()->getConfig()->setProperty("nddl.includePath", path);
+	}
+      }
+    }
+    try {
+      std::string ret = executeScript("nddl", txSource, isFile);
+      checkError(ret == "", "Parser failed with return: " + ret);
+    } catch(std::string ex) {
+      checkError(false, "Parser failed: " + ex);
+    } catch(...) {
+      checkError(false, "Parser failed with unknown exception.");
+    }
 #endif
 
     return m_constraintEngine->constraintConsistent();
