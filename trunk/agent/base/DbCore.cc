@@ -251,7 +251,7 @@ namespace TREX {
 
     instancesByDb().insert(std::pair<PlanDatabaseId, DbCoreId>(m_db, getId()));
 
-    const LabelStr  configFile(findFile(compose(getAgentName(), compose(getName(), "xml")).toString()));
+    const LabelStr  configFile(findFile(compose(getAgentName(), compose(getName(), "nddl")).toString()));
 
     LogManager::use(configFile.toString());
     m_assembly.playTransactions(configFile.c_str());
