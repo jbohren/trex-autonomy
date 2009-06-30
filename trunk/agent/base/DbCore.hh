@@ -14,6 +14,9 @@
 #include "LogManager.hh"
 #include "DbSolver.hh"
 
+//This define causes the new NDDL parser to get used.
+//#define USE_NDDL_PARSER
+
 using namespace EUROPA;
 using namespace EUROPA::SOLVERS;
 

@@ -112,6 +112,7 @@ namespace TREX {
     DbClientTransactionPlayer transactionPlayer(m_planDatabase->getClient());
     transactionPlayer.play(in);
 #else
+#ifdef USE_NDDL_PARSER
     std::ifstream f1(findFile("NDDL.cfg").c_str());
     std::ifstream f2(findFile("temp_nddl_gen.cfg").c_str());
     TiXmlElement* iroot = NULL;
@@ -145,6 +146,9 @@ namespace TREX {
     } catch(...) {
       checkError(false, "Parser failed with unknown exception.");
     }
+#else
+    executeScript("nddl-xml", txSource, isFile);
+#endif
 #endif
 
     return m_constraintEngine->constraintConsistent();
