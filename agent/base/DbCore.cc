@@ -3,6 +3,7 @@
  * @file DbCore implementation.
  */
 
+
 #include "DbCore.hh"
 #include "DbSolver.hh"
 #include "Agent.hh"
@@ -251,7 +252,11 @@ namespace TREX {
 
     instancesByDb().insert(std::pair<PlanDatabaseId, DbCoreId>(m_db, getId()));
 
+#ifdef USE_NDDL_PARSER
     const LabelStr  configFile(findFile(compose(getAgentName(), compose(getName(), "nddl")).toString()));
+#else
+    const LabelStr  configFile(findFile(compose(getAgentName(), compose(getName(), "xml")).toString()));
+#endif
 
     LogManager::use(configFile.toString());
     m_assembly.playTransactions(configFile.c_str());
