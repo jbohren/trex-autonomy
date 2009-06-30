@@ -645,6 +645,8 @@ namespace TREX {
     std::string logPlan(const std::string& msg);
     void logTimeLine(TimelineId const &tl, std::string const &type);
     void logToken(TokenId const &tok);
+
+    void fillTimelineDescription(const TimelineId tl, PlanDescription::TimelineDescription &tlDesc) const;
     
     static std::ostream &writeDomain(std::ostream &out,
 				     AbstractDomain const &dom,
