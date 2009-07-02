@@ -191,6 +191,7 @@ namespace TREX {
 	friend class DbCore;
 
 	struct TokenDescription {
+	  int key;
 	  LabelStr name;
 	  double start[2], end[2];
 	};
