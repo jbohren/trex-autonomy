@@ -679,6 +679,8 @@ namespace TREX {
 
       tokDesc.name = tok->getPredicateName();
 
+      tokDesc.key = tok->getKey();
+
       // Add token to timeline description
       tlDesc.tokens.push_back(tokDesc);
     }
