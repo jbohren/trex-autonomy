@@ -246,6 +246,11 @@ namespace TREX {
      */
     void getPlanDescription(PlanDescription &planDesc) const;
 
+    /**
+     * @brief Add a PlanDatabaseListener to the internal EUROPA PlanDatabase
+     */
+    void addDbListener(EUROPA::PlanDatabaseListener& listener);
+
   protected:
     /**
      * @brief Used to hook up observer for dispatch of observations and servers for dispatch of goals
