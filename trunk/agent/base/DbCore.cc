@@ -2203,10 +2203,23 @@ namespace TREX {
     if(master->isTerminated() || (getCurrentTick() > master->end()->baseDomain().getUpperBound()))
        return true;
 
-    // Now we have to check the master. The main issue here is that the master may have pending rule instances which
-    // could refer to the slave. Under these conditions, we have to keep the slave around
+    // This token cannot be terminated if there are outstanding rule instances belonging to the master that depend
+    // on this token
     const RulesEngineId& re = m_assembly.getRulesEngine();
-    return !re->hasPendingRuleInstances(master);
+    std::set<RuleInstanceId> rule_instances;
+    re->getRuleInstances(master, rule_instances);
+    for(std::set<RuleInstanceId>::const_iterator it = rule_instances.begin(); it != rule_instances.end(); ++it){
+      RuleInstanceId ri = *it;
+      const std::vector<ConstrainedVariableId>& guards = ri->getGuards();
+      for(std::vector<ConstrainedVariableId>::const_iterator g_it = guards.begin(); g_it != guards.end(); ++g_it){
+	ConstrainedVariableId guard = *g_it;
+	checkError(guard.isValid(), "Invalid guard");
+	if(guard->getParent() == token)
+	  return false;
+      }
+    }
+
+    return true;
   }
 
   // Is there a current observation that matches the token
