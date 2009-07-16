@@ -721,6 +721,10 @@ namespace TREX {
     }
   }
 
+  void DbCore::addDbListener(EUROPA::PlanDatabaseListener& listener) {
+    listener.setPlanDatabase(m_db);
+  }
+
   void DbCore::handleTickStart(){
     m_sync_stepCount = 0;
     m_search_depth = 0;
