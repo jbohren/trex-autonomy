@@ -2219,7 +2219,7 @@ namespace TREX {
       }
     }
 
-    return true;
+    return !re->hasPendingRuleInstances(master);
   }
 
   // Is there a current observation that matches the token
