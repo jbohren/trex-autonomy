@@ -2,9 +2,7 @@
 
 // Will always abort
 ResetCircuitBreaker::Inactive{
-  bool should_abort;
-  testLEQ(should_abort, start, 6);
-  if(should_abort == true){
+  if test (start <= 6){
     eq(status, ABORTED);
   }
   else{

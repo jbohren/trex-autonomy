@@ -277,11 +277,9 @@ TestActions::iterator{
   leq(duration, 2);
   eq(c.value, counter);
   if(end){
-    bool done;
-    testLEQ(done, counter, 0);
-    if(done == false){
+    if test (counter >= 0){
       any(iterator i);
-      addEq(i.counter, 1, counter);
+      enforce(i.counter + 1 == counter);
       // Force into the future so it
       temporalDistance(end, [1 2], i.start);
     }
