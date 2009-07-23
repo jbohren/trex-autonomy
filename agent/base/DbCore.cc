@@ -1870,7 +1870,7 @@ namespace TREX {
 
     TREX_INFO("DbCore:synchronize", nameString() <<  "Synchronized Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
 
-    return m_state != DbCore::INVALID;;
+    return m_state != DbCore::INVALID;
   }
 
   bool DbCore::processRecalls(){
