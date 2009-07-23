@@ -64,19 +64,12 @@ namespace TREX {
 	continue;
       }
 
-      merge_choice_count++;;
+      merge_choice_count++;
       merge_candidate = candidate;
 
-      // if the candidate could be extended, then it is effectively another option. Consider als the case where the candidate is flexible in its end
-      // time but the token in question is not. Put another way, the candidate is NECESSARILY extended if this tokens end time exlcudes the option
-      if(token->end()->lastDomain().getLowerBound() <= m_core->getCurrentTick() &&
-	 candidate->end()->lastDomain().isMember(m_core->getCurrentTick()) &&
-	 candidate->end()->lastDomain().isMember(m_core->getCurrentTick() + 1)){
-	TREX_INFO("trex:debug:synchronization", "Additional choice for merging on " << candidate->toString() <<
-		 " ending in " << candidate->end()->toString() << 
-		 " for token " << token->toString() << " with start = " << token->start()->lastDomain().toString());
-	merge_choice_count++;
-      }
+      // If we have more than one option, break out of loop since this is not a unit decision
+      if(merge_choice_count > 1)
+	break;
     }
 
     // If we have only one option to merge onto, and we have nowhere to insert the token, then we will have a unit decision
@@ -408,8 +401,8 @@ namespace TREX {
 
     if(m_core->isObservation(source)){
       // Current observations should have their values extended in case this did not happen correctly before pre-emption was required
-      //checkError(m_core->isCurrentObservation(source), "Should only be copying current observations. But copied " << source->toString());
-      //token->end()->restrictBaseDomain(IntervalIntDomain(m_core->getCurrentTick() + 1, PLUS_INFINITY));
+      checkError(m_core->isCurrentObservation(source), "Should only be copying current observations. But copied " << source->toString());
+      token->end()->restrictBaseDomain(IntervalIntDomain(m_core->getCurrentTick() + 1, PLUS_INFINITY));
       m_core->bufferObservation(token);
     }
     else if(m_core->isGoal(source)){
@@ -554,6 +547,7 @@ namespace TREX {
     // If the token is in the past, we will not insert it. Just remove it from the agenda and return OK
     if(token->end()->lastDomain().getUpperBound() == Agent::instance()->getCurrentTick()){
       m_core->m_tokenAgenda.erase(token);
+      TREX_INFO("trex:debug:synchronization:insertToken", m_core->nameString() << "Skipping insertion of " << token->toString() << " which is in the past.");
       return true;
     }
 
