@@ -25,3 +25,30 @@ CircuitBreaker::Open{
   eq(cmd.status, SUCCESS);
   meets(Closed);
 }
+
+/**
+ * Here is an example of an action that will require a sub action to end it.
+ */
+class MasterAction extends Behavior {
+  predicate Active{}
+  predicate Inactive{}
+
+  MasterAction(Mode _mode){
+    super(_mode);
+  }
+};
+
+class SlaveAction extends Behavior {
+  predicate Active{}
+  predicate Inactive{}
+
+  SlaveAction(Mode _mode){
+    super(_mode);
+  }
+};
+
+
+MasterAction::Active{
+  leq(duration, 2);
+  ends(SlaveAction.Active);
+}
