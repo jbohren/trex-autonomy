@@ -100,12 +100,10 @@ class Behavior extends AgentTimeline {
 
   predicate Inactive{
     ResultStatus status;
-    defaultOnCommit(status, UNDEFINED);
   }
 
   predicate Active{
     int dispatch_time; // The time at which the goal was dispatched
-    float max_duration; // A duration bound
     ResultStatus status; 
     precedes(dispatch_time, start); // This is a <= constraint
     temporalDistance(start, [1, +inf], missionEnd);
@@ -124,6 +122,10 @@ Behavior::Active{
   if(end){
     eq(status, _reserved_s.status);
   }
+}
 
-  default(max_duration, 999999.0);
+Behavior::Inactive{
+  if(object.mode == Internal){
+    defaultOnCommit(status, PREEMPTED);
+  }
 }
