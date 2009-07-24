@@ -27,4 +27,5 @@ if ! $(TREX_READY) {
         TextLog.cc
 	DbWriter.cc
 	;
+ ModuleMain nddl-reader : NddlReader.cc : TREX : nddl-reader ;
 }
