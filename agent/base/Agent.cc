@@ -119,7 +119,7 @@ namespace TREX {
       // Test for a TeleoReactor. Allocate if we find one
       if(strcmp(child->Value(), "Include") == 0){
 	std::string file = findFile(child->Attribute("name"));
-	printf("Hi, i'm including: %s\n", file.c_str());
+	//printf("Hi, i'm including: %s\n", file.c_str());
 	TiXmlElement* iroot = EUROPA::initXml(file.c_str());
 	includedFiles.push_back(iroot);
 	for (TiXmlElement * ichild = iroot->FirstChildElement();
