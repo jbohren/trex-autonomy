@@ -276,7 +276,7 @@ TestActions::iterator{
   starts(Counter.Holds c);
   leq(duration, 2);
   eq(c.value, counter);
-  if(end){
+  if test (isSingleton(end)){
     if test (counter >= 0){
       any(iterator i);
       enforce(i.counter + 1 == counter);
