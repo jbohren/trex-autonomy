@@ -5,6 +5,7 @@ TREX has several regression tests used to verify correct behavior. See TestHarne
 
 = Details =
 
+== Building and Executing the Tests ==
 To run the built-in TREX regression tests do the following:
  # Export the environment variables listed in DevConfig
  # Go to the test directory
@@ -26,7 +27,8 @@ Chmod1 /path/to/TREX/agent/test/agent-module-tests_g_rt
 ExecuteTarget RUN_agent-module-tests_g_rt 
 }}}
 
-To see the result of each individual test, execute:
+== Verbose Test Output ==
+To see the result of each individual test, build the tests as is done above, and then execute:
 {{{
 cd $TREX/agent/test
 ./agent-module-tests_g_rt
