@@ -1,0 +1,9 @@
+#summary This describes the regression testing pattern provided by TREX
+
+= Introduction =
+
+= Details =
+== Running Tests ==
+== Success Criteria ==
+
+= Creating New Tests =
