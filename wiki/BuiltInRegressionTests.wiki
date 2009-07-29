@@ -28,7 +28,7 @@ ExecuteTarget RUN_agent-module-tests_g_rt
 }}}
 
 == Verbose Test Output ==
-To see the result of each individual test, build the tests as is done above, and then open:
+To see the result of each individual test, build and run the tests as is done above, and then open:
 {{{
 $TREX/agent/test/RUN_agent-module-tests_g_rt.output
 }}}
