@@ -28,13 +28,12 @@ ExecuteTarget RUN_agent-module-tests_g_rt
 }}}
 
 == Verbose Test Output ==
-To see the result of each individual test, build the tests as is done above, and then execute:
+To see the result of each individual test, build the tests as is done above, and then open:
 {{{
-cd $TREX/agent/test
-./agent-module-tests_g_rt
+$TREX/agent/test/RUN_agent-module-tests_g_rt.output
 }}}
 
-If the tests succeed, the above command should produce output similar to:
+If the tests succeeded, the above file should contain output similar to:
 {{{
 GamePlayTests::test***************
 Running testSynch .... SUCCESS
