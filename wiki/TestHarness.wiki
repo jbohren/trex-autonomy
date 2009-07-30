@@ -1,8 +1,11 @@
 #summary This describes the regression testing pattern provided by TREX
-#sidebar TableOfContents
+
 
 = Introduction =
 TREX provides some utilities to do automated regression testing. This is useful in complex systems, where doing so allows bugs caused by model changes to be found before they impact a test at runtime.
+
+= Table of Contents =
+<wiki:toc max_depth="2" />
 
 = Running Tests =
 
