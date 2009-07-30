@@ -14,7 +14,7 @@ The actual mode of execution of a TREX test can vary system to system. The speci
 
 == Success Criteria ==
 A TREX test succeeds if three conditions are met:
- # *The `Agent` completes it's mission.*
+ # *The `Agent` completes its mission.*
  # *The `Agent`'s `EventLog` is identical to the stored `EventLog`.*
  # *The `TestMonitor` observes that all NDDL asserts were met.*
 
