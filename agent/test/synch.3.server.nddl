@@ -2,7 +2,7 @@
 
 // Will always abort
 ResetCircuitBreaker::Inactive{
-  if test (start <= 6){
+  if (start <= 6){
     eq(status, ABORTED);
   }
   else{

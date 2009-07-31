@@ -321,7 +321,7 @@ ValueTimeline::Holds{
   absMaxOnCommit(d);
 
   /*
-  if(end){
+  if(isSingleton(end)){
     eq(a, 1);
     eq(b, 10);
     eq(c, -10);
@@ -478,7 +478,7 @@ ScalabilityTestTimeline::Holds{
 	meets(Holds s);
 
 	// If the duration is a singleton, it must be 1. Force this in a manner that introduces a backtrack
-	if(duration){
+	if(isSingleton(duration)){
 		eq(duration, object.d);
 	}
 
@@ -493,7 +493,7 @@ ScalabilityTestTimeline::Holds{
 			// This constraint restricts the set of timeline that we iterate over by filterng the
 			// numbers in the nighborhood of the current object.
 			neighborhood(object.n, object.c, allTimelines.n);
-			if(object){
+			if(isSingleton(object)){
 
 				foreach(o in allTimelines){
 					starts(o.Holds);
@@ -665,7 +665,7 @@ class PersistenceTest_Container extends AgentTimeline {
     }
 
     // Always inconsistent. Should force a partial reset
-    if(end){
+    if(isSingleton(end)){
       eq(1, 0);
     }
   }
