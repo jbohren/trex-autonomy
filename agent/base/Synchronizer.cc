@@ -377,8 +377,17 @@ namespace TREX {
    * @brief True if a current value.
    */
   bool Synchronizer::isCurrent(const TokenId& token) {
-    return (token->isCommitted() && !token->isTerminated() && 
-	    token->end()->baseDomain().getUpperBound() >= m_core->getCurrentTick() && !m_core->isAction(token));
+    bool result = token->isCommitted() && !token->isTerminated();
+
+    // Should not be in the past. Condition varies for internal vs. external tokens
+    bool is_internal = m_core->isInternal(token);
+    result = result && ( (is_internal && token->end()->baseDomain().getUpperBound() >= m_core->getCurrentTick()) ||
+			 (!is_internal && token->end()->baseDomain().getUpperBound() > m_core->getCurrentTick()));
+
+    // Can ignore actions -  we just regenerate them
+    result = result &&  !m_core->isAction(token);
+ 
+    return result;
   }
 
   /**

@@ -391,7 +391,7 @@ namespace TREX {
    * replicated entities in the foreignKeyTable.
    */
   bool DbCore::handleRequest(const TokenId& goal){
-    TREX_INFO("DbCore:handleRequest", nameString() << "Request received for " << goal->toString());
+    TREX_INFO("DbCore:handleRequest", nameString() << "Request received for " << goal->toLongString());
 
     // Get the client to work with
     DbClientId client = m_db->getClient();
@@ -1723,8 +1723,9 @@ namespace TREX {
       localDom.close();
       var->restrictBaseDomain(localDom);
     }
-    else
+    else{
       var->restrictBaseDomain(dom);
+    }
   }
 
   /**
