@@ -29,5 +29,8 @@ Inside of TREX::DbCore::HandleTickStart(), is the call:
 {{{
 TREX_INFO("PlanWorks", nameString() << m_assembly.exportToPlanWorks());
 }}}
-
-Thus the assembly is serialized and output via the standard TREX debugging system at the beginning of each tick.
+This calls TREX::Assembly::exportToPlanWorks(), which executes:
+{{{
+getPPW()->write();
+}}}
+Which writes out the data to disk.
