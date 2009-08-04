@@ -18,25 +18,56 @@ DebugMessage::disableMatchingMsgs("","PlanWorks");
 }}}
 
 == PlanWorks Output ==
-In the context of TREX, there exist many databases, so for each one, a separate log is created.
+In the context of TREX, there exist many databases, so for each one, a separate log is created by the TREX::DbWriter.
 
 === Files ===
 
 === File Formatting ===
 ==== .constraints ====
 ==== .objects ====
-==== .ruleInstanceSlaveMap ====
+The column labels are:
+{{{
+object key
+object type
+object parent key
+db writer id
+object name
+object component keys
+object variable keys
+object token keys
+}}}
+
 ==== .ruleInstaces ====
+The column labels are:
+{{{
+rule key
+db writer id
+sequence id
+rule name
+rule token key
+slave tokens keys (comma-separated list)
+variable keys (comma-separated list)
+}}}
+
+==== .ruleInstanceSlaveMap ====
+The column labels are:
+{{{
+rule key
+slave token key
+db writer id
+}}}
+
+
 ==== .tokens ====
 This file contains all of the tokens in the system at this step.
 
-The columns are:
+The column labels are:
 {{{
 token key
 token type
 slot id
 slot index
-writer id
+db writer id
 0
 1
 token start key
