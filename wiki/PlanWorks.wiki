@@ -21,6 +21,13 @@ DebugMessage::disableMatchingMsgs("","PlanWorks");
 In the context of TREX, there exist many databases, so for each one, a separate log is created.
 === Files ===
 === File Formatting ===
+==== .constraints ====
+==== .objects ====
+==== .ruleInstanceSlaveMap ====
+==== .ruleInstaces ====
+==== .tokens ====
+==== .variables ====
+
 
 == Implementation in TREX ==
 PlanWorks utilizes a EUROPA::SOLVERS::PlanWriter::PartialPlanWriter embedded in PLASMA to create output of the partial plans for debugging.
@@ -33,4 +40,4 @@ This calls TREX::Assembly::exportToPlanWorks(), which executes:
 {{{
 getPPW()->write();
 }}}
-Which writes out the data to disk.
+Which writes out the data to disk from a TREX::DbWriter. The DbWriter fulfills the same function as the EUROPA::SOLVERS::PartialPlanWriter.
