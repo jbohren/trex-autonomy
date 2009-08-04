@@ -45,7 +45,7 @@ db writer id
 sequence id
 rule name
 rule token key
-slave tokens keys (comma-separated list)
+slave token keys (comma-separated list)
 variable keys (comma-separated list)
 }}}
 
