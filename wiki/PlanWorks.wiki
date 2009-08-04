@@ -19,13 +19,39 @@ DebugMessage::disableMatchingMsgs("","PlanWorks");
 
 == PlanWorks Output ==
 In the context of TREX, there exist many databases, so for each one, a separate log is created.
+
 === Files ===
+
 === File Formatting ===
 ==== .constraints ====
 ==== .objects ====
 ==== .ruleInstanceSlaveMap ====
 ==== .ruleInstaces ====
 ==== .tokens ====
+This file contains all of the tokens in the system at this step.
+
+The columns are:
+{{{
+token key
+token type
+slot id
+slot index
+writer id
+0
+1
+token start key
+token end key 
+token duration key
+token state key
+predicate name
+timeline key
+timeline name
+object key
+}}}
+An example line from a .tokens file:
+{{{
+27811 0 1000011 0 1249088328023 0 1 27816 27817 27814 27812 OpenDoor.Active 1303 open_door 27813 27825:27826:27833:27834:27835:27836:27837:27838:27839:27840:27841:27842:27843:27844:27845:27846:27847:27848:27849:27850:27851:27852:27853:27854:27855:27856:27857: 0
+}}}
 ==== .variables ====
 
 
