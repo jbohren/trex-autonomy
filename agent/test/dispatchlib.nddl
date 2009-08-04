@@ -49,11 +49,15 @@ EqReciverTimeline::Beta {
  */
 class SimpleTestForDispatchTime extends AgentTimeline {
 
-  predicate p{
-    int dispatch_time;
-  }
+	predicate p{
+		int dispatch_time;
+	}
+
+	SimpleTestForDispatchTime(Mode _mode){
+		super(_mode);
+	}
 }
 
 SimpleTestForDispatchTime::p{
-  neq(dispatch_time, start);
+	neq(dispatch_time, start);
 }
