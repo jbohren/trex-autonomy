@@ -47,6 +47,8 @@ predicate name
 timeline key
 timeline name
 object key
+parameter variable keys (colon-separated list)
+slot order
 }}}
 An example line from a .tokens file:
 {{{
