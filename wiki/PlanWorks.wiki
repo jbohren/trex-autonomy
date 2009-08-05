@@ -86,7 +86,9 @@ An example line from a .tokens file:
 27811 0 1000011 0 1249088328023 0 1 27816 27817 27814 27812 OpenDoor.Active 1303 open_door 27813 27825:27826:27833:27834:27835:27836:27837:27838:27839:27840:27841:27842:27843:27844:27845:27846:27847:27848:27849:27850:27851:27852:27853:27854:27855:27856:27857: 0
 }}}
 ==== .variables ====
-The rows in variables can have different values depending on what time of enum domain they have.
+The rows in variables can have different values depending on what time of domain they have.
+
+Enums:
 {{{
 timeline key
 db writed id
@@ -100,7 +102,7 @@ values
 token variable type
 }}}
 
-
+Intervals:
 {{{
 timeline key
 db writed id
@@ -114,7 +116,7 @@ upper bound
 token variable type
 }}}
 
-token variable type:
+Token variable types include:
 {{{
 STATE_VAR
 OBJECT_VAR
