@@ -23,6 +23,14 @@ In the context of TREX, there exist many databases, so for each one, a separate 
 === Files ===
 
 === File Formatting ===
+==== rules ====
+The column labels are:
+{{{
+db writer id
+rule name
+path to nddl file, line number
+}}}
+
 ==== .constraints ====
 ==== .objects ====
 The column labels are:
