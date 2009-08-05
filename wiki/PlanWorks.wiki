@@ -91,11 +91,25 @@ The rows in variables can have different values depending on what time of domain
 Enums:
 {{{
 timeline key
-db writed id
+db writer id
 token key
 variable name
 "EnumeratedDomain"
-values
+values (space-delimited)
+\N
+\N
+\N
+token variable type
+}}}
+
+States:
+{{{
+state var key
+db writer id
+token key
+state var name
+"EnumeratedDomain"
+values (space-delimited)
 \N
 \N
 \N
@@ -104,8 +118,8 @@ token variable type
 
 Intervals:
 {{{
-timeline key
-db writed id
+interval var key
+db writer id
 token key
 variable name
 "IntervalDomain"
