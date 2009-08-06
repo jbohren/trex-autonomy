@@ -150,7 +150,7 @@ RULE_VAR
 }}}
 
 == Implementation in TREX ==
-PlanWorks utilizes a EUROPA::SOLVERS::PlanWriter::PartialPlanWriter embedded in PLASMA to create output of the partial plans for debugging.
+PlanWorks utilizes a class similar to a EUROPA::SOLVERS::PlanWriter::PartialPlanWriter to create output of the partial plans for debugging.
 
 Inside of TREX::DbCore::HandleTickStart(), is the call:
 {{{
