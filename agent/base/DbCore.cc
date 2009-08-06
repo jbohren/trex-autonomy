@@ -721,6 +721,10 @@ namespace TREX {
     }
   }
 
+  void DbCore::dumpAssembly() {
+    std::string reply = m_assembly.exportToPlanWorks();
+  }
+
   void DbCore::addDbListener(EUROPA::PlanDatabaseListener& listener) {
     listener.setPlanDatabase(m_db);
   }
