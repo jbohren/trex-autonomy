@@ -158,7 +158,7 @@ namespace TREX {
     static const std::string sl_reply("DONE");
 
     checkError(m_constraintEngine->constraintConsistent(), "Should be propagated.");
-    getPPW()->write();
+    getPPW()->write(TREX::Agent::instance()->getCurrentTick());
 
     return sl_reply;
   }

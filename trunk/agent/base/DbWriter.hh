@@ -12,6 +12,8 @@
 #include "RulesEngineDefs.hh"
 #include "XMLUtils.hh"
 
+#include "Agent.hh"
+
 #include <set>
 #include <map>
 #include <vector>
@@ -31,7 +33,7 @@ namespace TREX {
 	     const RulesEngineId& reId2);
 
     virtual ~DbWriter();
-    virtual void write();
+    virtual void write(TICK tick);
     virtual void writeStatistics();
 
     void addSourcePath(const char* path);

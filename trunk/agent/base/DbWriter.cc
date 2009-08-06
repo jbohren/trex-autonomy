@@ -48,6 +48,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <sstream>
 
 #define FatalError(cond, msg...){Error(cond, msg, __FILE__, __LINE__).handleAssert();}
 #define FatalErrno(){FatalError("Condition", strerror(errno))}
@@ -70,7 +71,7 @@ namespace TREX {
     return (((long long int) currTime.tv_sec) * 1000) + (currTime.tv_usec / 1000);
   }
 
-  const std::string DEST("PW");
+  const std::string DEST("assembly_dumps");
   const char *envPPWConfigFile = "PPW_CONFIG";
   const std::string DURATION_VAR("DURATION_VAR");
   const std::string END_VAR("END_VAR");
@@ -112,7 +113,7 @@ namespace TREX {
   const std::string NINFINITY("-Infinity");
   const std::string INTEGER_SORT("INTEGER_SORT");
   const std::string REAL_SORT("REAL_SORT");
-  const std::string STEP("step");
+  const std::string STEP("tick");
   const std::string PARTIAL_PLAN_STATS("/partialPlanStats");
   const std::string SEQUENCE("/sequence");
   const std::string RULES("/rules");
@@ -171,7 +172,7 @@ namespace TREX {
 		     const PlanDatabaseId& db, const ConstraintEngineId& ce, const RulesEngineId &re)
     : m_agentName(agentName),
       m_reactorName(reactorName),
-      dest(DEST),
+      dest(TREX::LogManager::instance().file_name(DEST)),
       pdbId(db),
       ceId(ce), 
       reId(re), 
@@ -672,7 +673,7 @@ namespace TREX {
     sourcePaths.push_back(spath);
   }
 
-  void DbWriter::write(void) {
+  void DbWriter::write(TICK tick) {
 
     /*
      * init output destination files if this has not been done
@@ -700,10 +701,11 @@ namespace TREX {
 
     numTokens = numVariables = numConstraints = 0;
 
-    char stepstr[NBBY * sizeof(stepCount) * 28/93 + 4];
-    sprintf(stepstr, "%d", (int) stepCount);
+    // Generate step string
+    std::ostringstream oss;
+    oss<<STEP<<tick;
     
-    std::string stepnum(STEP + stepstr);
+    std::string stepnum = oss.str();
 
     std::string ppDest = dest + SLASH + stepnum;
     if(mkdir(ppDest.c_str(), 0777) && errno != EEXIST) {

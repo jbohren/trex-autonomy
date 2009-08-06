@@ -247,6 +247,11 @@ namespace TREX {
     void getPlanDescription(PlanDescription &planDesc) const;
 
     /**
+     * @brief Output the assembly to file at the current tick
+     */
+    void dumpAssembly();
+
+    /**
      * @brief Add a PlanDatabaseListener to the internal EUROPA PlanDatabase
      */
     void addDbListener(EUROPA::PlanDatabaseListener& listener);

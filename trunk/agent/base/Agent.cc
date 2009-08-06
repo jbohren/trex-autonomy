@@ -13,6 +13,7 @@
 #include "Object.hh"
 #include "LogManager.hh"
 #include "AgentListener.hh"
+#include "DbCore.hh"
 #include <algorithm>
 
 namespace TREX {
@@ -545,4 +546,15 @@ namespace TREX {
 
   std::ostream& Agent::getStream(){return m_standardDebugStream;}
 
+  /**
+   * Method to cause an Agent to write all it's reactors' assemlies to disk.
+   */
+  void Agent::dumpAssemblies() {
+    for(std::vector<TeleoReactorId>::const_iterator it = m_reactors.begin(); it != m_reactors.end(); ++it){
+      TeleoReactorId r = *it;
+      if(DbCoreId::convertable(r)) {
+	((DbCoreId)r)->dumpAssembly();
+      }
+    }
+  }
 }

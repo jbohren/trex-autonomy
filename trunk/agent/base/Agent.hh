@@ -240,6 +240,11 @@ namespace TREX {
     static const LabelStr& IGNORE_TIMELINE();
 
 
+    /**
+     * Method to cause an Agent to write all it's reactors assemlies to disk.
+     */
+    void dumpAssemblies();
+
   private:
 
     static LabelStr buildLogName(LabelStr const &prefix);
