@@ -537,7 +537,7 @@ OrienteeringTimeline::Inactive {
   meets(Active);
   if (object.mode == Internal) {
      bool shouldEnd;
-     testLEQ(shouldEnd, end, missionEnd);
+     testLEQ(shouldEnd, end, MISSION_END);
      if (shouldEnd == true) {
      	eq(duration, 4);
      }

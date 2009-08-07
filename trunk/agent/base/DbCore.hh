@@ -127,10 +127,10 @@ namespace TREX {
       const std::string m_description;
     };
 
-    static const LabelStr& CLOCK_VAR(){
-      static const LabelStr sl_instance("clock");
-      return sl_instance;
-    }
+    /**
+     * @brief Get the global clock variable for the database the given token is in.
+     */
+    static ConstrainedVariableId getAgentClockVariable(const PlanDatabaseId db);
 
     class DbListener: public PlanDatabaseListener {
     public:
@@ -187,32 +187,29 @@ namespace TREX {
     };
 
     class PlanDescription {
-      public:
-	friend class DbCore;
+    public:
+      friend class DbCore;
 
-	struct TokenDescription {
-	  int key;
-	  LabelStr name;
-	  double start[2], end[2];
-	};
+      struct TokenDescription {
+	int key;
+	LabelStr name;
+	double start[2], end[2];
+      };
 
-	struct TimelineDescription {
-	  LabelStr name;
-	  std::vector<TokenDescription> tokens;
-	};
+      struct TimelineDescription {
+	LabelStr name;
+	std::vector<TokenDescription> tokens;
+      };
 
-	void clear() {
-	  m_internalTimelines.clear();
-	  m_actions.clear();
-	  m_externalTimelines.clear();
-	}
+      void clear() {
+	m_internalTimelines.clear();
+	m_actions.clear();
+	m_externalTimelines.clear();
+      }
 
-	TICK m_tick;
-	LabelStr m_reactorName;
-	std::vector<TimelineDescription>
-	  m_internalTimelines,
-	  m_actions,
-	  m_externalTimelines;
+      TICK m_tick;
+      LabelStr m_reactorName;
+      std::vector<TimelineDescription> m_internalTimelines, m_actions, m_externalTimelines;
     };
 
     friend class DbListener;
@@ -256,6 +253,12 @@ namespace TREX {
      */
     void addDbListener(EUROPA::PlanDatabaseListener& listener);
 
+    /**
+     * @brief Get the value for the given tick
+     * @return if there is a value then return it. If not, return a noId
+     */
+    TokenId getValue(const TimelineId& timeline, TICK tick);
+
   protected:
     /**
      * @brief Used to hook up observer for dispatch of observations and servers for dispatch of goals
@@ -263,7 +266,7 @@ namespace TREX {
     virtual void handleInit(TICK initialTick, const std::map<double, ServerId>& serversByTimeline, const ObserverId& observer);
 
     /**
-     * @brief Must adress new tick and conduct appropriate propagation and dispatch
+     * @brief Must address new tick and conduct appropriate propagation and dispatch
      */
     virtual void handleTickStart();
 
@@ -315,12 +318,6 @@ namespace TREX {
      * @see synchronize
      */
     bool completeExternalTimelines();
-
-    /**
-     * @brief Get the value for the given tick
-     * @return if there is a value then return it. If not, return a noId
-     */
-    TokenId getValue(const TimelineId& timeline, TICK tick);
 
     /**
      * @brief Archive the database.
@@ -384,6 +381,16 @@ namespace TREX {
      * @brief Test if the given token is a current observation
      */
     bool isCurrentObservation(const TokenId& token);
+
+    /**
+     * @brief Add to agenda
+     */
+    void addToTokenAgenda(const TokenId& token);
+
+    /**
+     * @brief Remove from agenda
+     */
+    void removeFromTokenAgenda(const TokenId& token);
 
     /** Handle foreign/local keys. Can be static as there should only be one server per timeline **/
     static bool hasEntity(const EntityId& foreign);

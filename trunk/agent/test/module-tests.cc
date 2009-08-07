@@ -45,6 +45,8 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
+    runTest(testSynch);
+    runTest(testExtensions);
     runTest(OrienteeringSolver);
     runTest(testRecall);
     runTest(testRepair);
@@ -64,11 +66,16 @@ public:
     runTest(testUndefinedSingleTimeline);
     runTest(testUndefinedDerived);
     runTest(testActions);
-    runTest(testSynch);
     return true;
   }
 
 private:
+
+
+  static bool testExtensions(){
+    runAgentWithSchema("extensions.cfg", 50, "extensions");
+    return true;
+  }
 
   static bool testLogging(){
     runAgentWithSchema("LogWriting.cfg", 50, "LogWriting");
@@ -104,7 +111,7 @@ private:
   }
 
   static bool testSynch(){
-    runAgentWithSchema("synch.4.cfg", 50, "synch.4");
+    //runAgentWithSchema("synch.4.cfg", 50, "synch.4");
     runAgentWithSchema("synch.3.cfg", 50, "synch.3");
     runAgentWithSchema("synch.1.cfg", 50, "synch.1");
     runAgentWithSchema("synch.0.cfg", 50, "synch.0");

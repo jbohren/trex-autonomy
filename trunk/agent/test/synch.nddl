@@ -20,10 +20,11 @@ class ResetCircuitBreaker extends Behavior {
 /** RULES */
 
 CircuitBreaker::Open{
+  meets(Closed);
   contains_start(ResetCircuitBreaker.Active cmd);
   ends cmd;
-  eq(cmd.status, SUCCESS);
-  meets(Closed);
+  // Constrain to be successful. This will force a retry if it is not satisfied
+  isSucceded(cmd.object) == true;
 }
 
 /**

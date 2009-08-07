@@ -236,6 +236,13 @@ namespace TREX {
 
   void DbCore::DbListener::notifyTerminated(const TokenId& token){ m_dbCore.handleTerminated(token); } 
 
+  ConstrainedVariableId DbCore::getAgentClockVariable(const PlanDatabaseId db){
+    static const LabelStr VAR_AGENT_CLOCK("AGENT_CLOCK");
+    ConstrainedVariableId result = db->getGlobalVariable(VAR_AGENT_CLOCK);
+    checkError(result.isValid(), "Expect a clock variable named " << VAR_AGENT_CLOCK.toString() << " bot did not find it. Fix TREX.nddl.");
+    return result;
+  }
+
   DbCore::DbCore(const LabelStr& agentName, const TiXmlElement& configData)
     : TeleoReactor(agentName, configData),
       m_assembly(agentName, getName()),
@@ -266,7 +273,7 @@ namespace TREX {
       m_db->close();
 
     // Initialize the 'missionEnd' constant with the final tick
-    ConstrainedVariableId missionEndVar = m_db->getGlobalVariable("missionEnd");
+    ConstrainedVariableId missionEndVar = m_db->getGlobalVariable("MISSION_END");
     missionEndVar->restrictBaseDomain(IntervalIntDomain(Agent::instance()->getFinalTick(), Agent::instance()->getFinalTick()));
 
     // Initialize the 'TICK_DURATION' constant based on the clock
@@ -738,6 +745,9 @@ namespace TREX {
       TREX_INFO("DbCore:handleTickStart", nameString() << "Database is invalid. Repair required.");
       return;
     }
+
+    // Update the clock variable
+    getAgentClockVariable(m_db)->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
 
     // Since things depend on the clock there could easily be a constraint violated by a tick increment. We generate an excpetion
     // if the database is inconsistent and the deliberative reactor will handle repair.
@@ -1972,19 +1982,19 @@ namespace TREX {
   }
 
   void DbCore::handleMerge(const TokenId& token){
-    m_tokenAgenda.erase(token);
+    removeFromTokenAgenda(token);
   }
 
   void DbCore::handleSplit(const TokenId& token){
-    m_tokenAgenda.insert(token);
+    addToTokenAgenda(token);
   }
 
   void DbCore::handleActivated(const TokenId& token){
-    m_tokenAgenda.erase(token);
+    removeFromTokenAgenda(token);
   }
 
   void DbCore::handleDeactivated(const TokenId& token){
-    m_tokenAgenda.insert(token);
+    addToTokenAgenda(token);
 
     if(isAction(token))
       m_actions.erase(token);
@@ -1995,7 +2005,7 @@ namespace TREX {
     m_goals.erase(token);
     m_actions.erase(token);
     m_observations.erase(token);
-    m_tokenAgenda.erase(token);
+    removeFromTokenAgenda(token);
     m_pendingTokens.erase(token);
 
     removeEntity(token);
@@ -2031,7 +2041,7 @@ namespace TREX {
 	      "     :Solver:step - useful for observing the backtracking search.\n" << 
 	      "     :trex:debug:planning - gives additional trex related information in the search in terms of flaw filtering etc.");
 
-    m_tokenAgenda.erase(token);
+    removeFromTokenAgenda(token);
   }
 
   /**
@@ -2454,7 +2464,7 @@ namespace TREX {
       if(!inScope)
 	deactivateIgnoredToken(token);
       else
-	m_tokenAgenda.insert(token);
+	addToTokenAgenda(token);
     }
 
     m_pendingTokens.clear();
@@ -2593,6 +2603,18 @@ namespace TREX {
     ss << "*****************************************************" << std::endl;
 
     return ss.str();
+  }
+
+  void DbCore::addToTokenAgenda(const TokenId& token){
+    if(!token->isDiscarded())
+      m_tokenAgenda.insert(token);
+
+    TREX_INFO("trex:debug:tokenAgenda:addToTokenAgenda", token->toString());
+  }
+
+  void DbCore::removeFromTokenAgenda(const TokenId& token){
+    m_tokenAgenda.erase(token);
+    TREX_INFO("trex:debug:tokenAgenda:removeFromTokenAgenda", token->toString());
   }
 
   /**

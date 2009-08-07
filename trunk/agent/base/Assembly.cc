@@ -7,6 +7,7 @@
 #include "DbCore.hh"
 #include "DbSolver.hh"
 #include "TestMonitor.hh"
+#include "Functions.hh"
 
 #include "ModuleConstraintEngine.hh"
 #include "Propagators.hh"
@@ -196,7 +197,6 @@ namespace TREX {
     // Register constraints
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefaultOnCommit, "defaultOnCommit", "OnCommit");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), AbsMaxOnCommit, "absMaxOnCommit", "OnCommit");
-
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefault, "default", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefault, "bind", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), LessThanConstraint, "lt", "Default");
@@ -204,6 +204,12 @@ namespace TREX {
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), Neighborhood, "neighborhood", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::CompletionMonitorConstraint, "assertCompleted", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::RejectionMonitorConstraint, "assertRejected", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsStarted, "isStarted", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsEnded, "isEnded", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsTimedOut, "isTimedOut", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsSucceded, "isSucceded", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsAborted, "isAborted", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsPreempted, "isPreempted", "Default");
 
     // Orienteering solver component registration
 
