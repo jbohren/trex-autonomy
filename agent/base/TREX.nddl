@@ -4,7 +4,6 @@ enum TokenStates {INACTIVE, ACTIVE, MERGED, REJECTED}
 
 
 // Declare built in constraints used for common TREX use cases
-
 constraint default(var, value) { var <: value }
 constraint defaultOnCommit(var, value) { var <: value }
 constraint assertCompleted(s) { s <: TokenStates }
@@ -22,14 +21,19 @@ class Timeline {}
 float TICK_DURATION;
 
 /**
- * This global constant will be set when a deliberative reactor is loaded
+ * This MISSION_END will be set when a deliberative reactor is loaded. It is mapped to the agent horizon
  */
-int missionEnd;
+int MISSION_END;
+
+/**
+ * The AGENT_CLOCK will capture clock tick events for propagation purposes
+ */
+int AGENT_CLOCK;
 
 enum Mode {
-  External, 	// Synchronize observations.
+  External, 	// Synchronize observations and dispatch plans as goals
   Internal, 	// Publish updates at the current tick
-  Ignore	// Not synchronized at all
+  Ignore	// Not synchronized at all (can be deprecated?)
 }
 
 class AgentTimeline extends Timeline {
@@ -46,7 +50,7 @@ class AgentTimeline extends Timeline {
   /**
    * A predicate which is used to block any successor states for a timeline
    */
-  predicate Terminated{concurrent(end, missionEnd);}
+  predicate Terminated{concurrent(end, MISSION_END);}
 
   AgentTimeline(Mode _mode){
     mode = _mode;
@@ -104,9 +108,9 @@ class Behavior extends AgentTimeline {
 
   predicate Active{
     int dispatch_time; // The time at which the goal was dispatched
-    ResultStatus status; 
-    precedes(dispatch_time, start); // This is a <= constraint
-    temporalDistance(start, [1, +inf], missionEnd);
+    int max_duration; // If duration exceeds this, the token should be preempted.
+    precedes(dispatch_time, start); // This is a <= constraint, but we use explicit temporal construct instead.
+    temporalDistance(start, [1, +inf], MISSION_END);
   }
 
   Behavior(Mode _mode){
@@ -116,16 +120,8 @@ class Behavior extends AgentTimeline {
 
 Behavior::Active{
   meets(Inactive _reserved_s);
-
-  // If at the end, apply a default to the timeout flag so that it is not zero.
-  // This ensures the flag is set even if a max duration bound is not imposed
-  if(isSingleton(end)){
-    eq(status, _reserved_s.status);
-  }
 }
 
 Behavior::Inactive{
-  if(object.mode == Internal){
-    defaultOnCommit(status, PREEMPTED);
-  }
+  defaultOnCommit(status, UNDEFINED);
 }

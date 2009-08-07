@@ -594,7 +594,7 @@ namespace TREX {
     m_core->propagate();
 
     TREX_INFO_COND(m_core->isInvalid(), "trex:debug:synchronization:insertToken", m_core->nameString() << 
-		 "Inconsistent after inserting " << token->toString() << " in " << std::endl << PlanDatabaseWriter::toString(m_db));
+		   "Inconsistent after inserting " << token->toString());
 
     const TokenSet& slaves = token->slaves();
 
