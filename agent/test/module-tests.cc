@@ -73,6 +73,7 @@ private:
 
 
   static bool testExtensions(){
+    runAgentWithSchema("extensions.2.cfg", 50, "extensions.2");
     runAgentWithSchema("extensions.1.cfg", 50, "extensions.1");
     runAgentWithSchema("extensions.0.cfg", 50, "extensions.0");
     return true;

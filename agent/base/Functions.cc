@@ -12,16 +12,29 @@
 using namespace EUROPA;
 
 namespace TREX {
-  /*!< RESULT status codes */
-  const LabelStr ExecutionFunction::SUCCESS("SUCCESS");
-  const LabelStr ExecutionFunction::PREEMPTED("PREEMPTED");
-  const LabelStr ExecutionFunction::ABORTED("ABORTED");
+  /*!< Useful constants */
+  const LabelStr ExecutionConstraint::SUCCESS("SUCCESS");
+  const LabelStr ExecutionConstraint::PREEMPTED("PREEMPTED");
+  const LabelStr ExecutionConstraint::ABORTED("ABORTED");
+  const LabelStr ExecutionConstraint::BEHAVIOR_ACTIVE("Behavior.Active");
+  const LabelStr ExecutionConstraint::BEHAVIOR_INACTIVE("Behavior.Inactive");
+  const LabelStr ExecutionConstraint::PARAM_MAX_DURATION("max_duration");
+  const LabelStr ExecutionConstraint::PARAM_STATUS("status");
+  const LabelStr ExecutionConstraint::EQUALS("equals");
+  const LabelStr ExecutionConstraint::CONTAINS("contains");
+  const LabelStr ExecutionConstraint::ENDS("ends");
+
+  ExecutionConstraint::ExecutionConstraint(const LabelStr& name,
+				       const LabelStr& propagatorName,
+				       const ConstraintEngineId& constraintEngine,
+				       const std::vector<ConstrainedVariableId>& variables)
+    : Constraint(name, propagatorName, constraintEngine, variables) {}
 
   ExecutionFunction::ExecutionFunction(const LabelStr& name,
 				       const LabelStr& propagatorName,
 				       const ConstraintEngineId& constraintEngine,
 				       const std::vector<ConstrainedVariableId>& variables)
-    : Constraint(name, propagatorName, constraintEngine, makeScope(variables)),
+    : ExecutionConstraint(name, propagatorName, constraintEngine, makeScope(variables)),
       m_result(static_cast<BoolDomain&>(getCurrentDomain(getScope()[0]))),
       m_clock(static_cast<IntervalIntDomain&>(getCurrentDomain(getScope()[1]))),
       m_start(static_cast<IntervalIntDomain&>(getCurrentDomain(getScope()[2]))),
@@ -37,9 +50,6 @@ namespace TREX {
     // are being migrated for example
     if(variables.size() > 2)
       return variables;
-
-    static const LabelStr BEHAVIOR_ACTIVE("Behavior.Active");
-    static const LabelStr PARAM_MAX_DURATION("max_duration");
 
     ConstrainedVariableId result_var = variables[0];
     ConstrainedVariableId token_var = variables[1];
@@ -80,18 +90,18 @@ namespace TREX {
   bool ExecutionFunction::hasStatus(){
     if(m_status == EMPTY_LABEL()){
 
-      static const LabelStr PARAM_STATUS("status");
-      static const LabelStr RELATION_MEETS("meets");
-      static const LabelStr BEHAVIOR_INACTIVE("Inactive");
-
       // Obtain the successor token.
       TimelineId timeline = m_token->getObject()->lastDomain().getSingletonValue();
       DbCoreId db_core = DbCore::getInstance(m_token);
       TokenId successor_token = db_core->getValue(timeline, m_end.getUpperBound());
 
       if(successor_token.isId()){
-	checkError(successor_token->getUnqualifiedPredicateName() == BEHAVIOR_INACTIVE, "Token is out of place. " << successor_token->toLongString());
+
+	checkError(successor_token->getPlanDatabase()->getSchema()->isA(successor_token->getPredicateName(), BEHAVIOR_INACTIVE), 
+		   "Token is out of place. " << successor_token->toLongString());
+
 	const AbstractDomain& successor_status = getCurrentDomain(successor_token->getVariable(PARAM_STATUS, false));
+
 	if(successor_status.isSingleton())
 	  m_status = successor_status.getSingletonValue();
       }
@@ -194,4 +204,86 @@ namespace TREX {
     : IsStatus(name, propagatorName, constraintEngine, variables){} 
 
   bool IsPreempted::checkStatus() {return isStatus(PREEMPTED); }
+
+  MasterSlaveRelation::MasterSlaveRelation(const LabelStr& name,
+				       const LabelStr& propagatorName,
+				       const ConstraintEngineId& constraintEngine,
+				       const std::vector<ConstrainedVariableId>& variables)
+    : ExecutionConstraint(name, propagatorName, constraintEngine, makeScope(variables)),
+      m_token(getParentToken(variables[0])){
+    checkError(m_token->getPlanDatabase()->getSchema()->isA(m_token->getPredicateName(), BEHAVIOR_ACTIVE),
+	       "This constraint must be an active behavior token. " << m_token->toString());
+
+    debugMsg("trex:extensions:MasterSlaveRelation", m_token->toString());
+  }
+
+  /**
+   * The variable belongs to a token. Pull that token and build relationships from there
+   */
+  std::vector<ConstrainedVariableId> MasterSlaveRelation::makeScope(const std::vector<ConstrainedVariableId>& variables){
+    checkError(variables.size() == 1 || variables.size() >= 7, 
+	       "There will be either 1 variable or 8 variables. For the latter, we must be copying a constraint." << variables.size());
+
+    // If the variable set is greater than 1 then we have already constructed the scope.
+    if(variables.size() > 1)
+      return variables;
+
+    TokenId token = getParentToken(variables[0]);
+    TokenId master = token->master();
+    // Now build the new scope if we have a master
+    if(master.isId()){
+      std::vector<ConstrainedVariableId> new_scope;
+      new_scope.push_back(token->start());
+      new_scope.push_back(token->end());
+      new_scope.push_back(token->duration());
+      new_scope.push_back(token->getVariable(PARAM_MAX_DURATION, false));
+      
+      new_scope.push_back(master->start());
+      new_scope.push_back(master->end());
+      new_scope.push_back(master->duration());
+      
+      // Only obtain max duration if parent is also a behavior
+      if(master->getPlanDatabase()->getSchema()->isA(master->getPredicateName(), BEHAVIOR_ACTIVE))
+	new_scope.push_back(master->getVariable(PARAM_MAX_DURATION, false));
+
+      return new_scope;
+    }
+
+    return variables;    
+  }
+    
+  /**
+   * The implementation assumes that the master token projects a latest end time desired, based on the master
+   * end time and the master max duration bound.
+   */
+  void MasterSlaveRelation::handleExecute(){
+    if(getScope().size() >= 7){
+
+      const LabelStr& relation =  m_token->getRelation();
+
+      debugMsg("trex:extensions:MasterSlaveRelation:handleExecute", 
+	       "Evaluating relation <" << relation.toString() << "> between master " << m_token->getMaster()->toString() << 
+	       " and slave " << m_token->toString());
+
+      if(relation == EQUALS || relation == CONTAINS || relation == ENDS){
+	const IntervalIntDomain& start = static_cast<const IntervalIntDomain&>(getCurrentDomain(getScope()[0]));
+	const IntervalIntDomain& end =  static_cast<const IntervalIntDomain&>(getCurrentDomain(getScope()[1]));
+	IntervalIntDomain& max_duration =  static_cast<IntervalIntDomain&>(getCurrentDomain(getScope()[3]));
+
+	const IntervalIntDomain& master_start =  static_cast<const IntervalIntDomain&>(getCurrentDomain(getScope()[4])); 
+	const IntervalIntDomain& master_end =  static_cast<const IntervalIntDomain&>(getCurrentDomain(getScope()[5]));
+	const IntervalIntDomain& master_duration =  static_cast<const IntervalIntDomain&>(getCurrentDomain(getScope()[6])); 
+
+	int master_max_duration = master_duration.getUpperBound();
+	// If we have a parent that is a behavior, we have the parents max duration parameter
+	if(getScope().size() == 8)
+	  master_max_duration = (int) getCurrentDomain(getScope()[7]).getUpperBound();
+
+	int latest_end_time = std::min(master_start.getUpperBound() + master_max_duration, end.getUpperBound());
+	latest_end_time = std::min(latest_end_time, (int) master_end.getUpperBound());
+	int max_duration_ub = latest_end_time - start.getLowerBound();
+	max_duration.intersect(MINUS_INFINITY, max_duration_ub);
+      }
+    }
+  }
 }

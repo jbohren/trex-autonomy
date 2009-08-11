@@ -3,7 +3,9 @@
  */
 #include "TREX.nddl"
 
-
+/**
+ * This class is used to generate a useful trace of behavior state transitions
+ */
 class StatusTimeline extends AgentTimeline {
   predicate Succeded{}
   predicate Preempted{}
@@ -11,11 +13,27 @@ class StatusTimeline extends AgentTimeline {
   StatusTimeline(){ super(Internal); }
 };
 
+/**
+ * The behavior that interacts with a status timeline
+ */
 class TestBehavior extends Behavior {
   TestBehavior() { super(Internal); }
 };
 
+/**
+ * This class will generate slaves on the testBehavior of different kinds, where we are thus testing that the
+ * built in trex_behavior constraint is correctly applied
+ */
+class MasterBehavior extends Behavior{
+  predicate Active{
+    int test_case_id; // Used to branch on what to do
+  }
+  MasterBehavior() { super(Internal); }
+};
 
+/**
+ * The iterator is used to test execution extension functions
+ */
 class Iterator extends AgentTimeline {
   predicate Holds{
     bool active;
@@ -64,6 +82,10 @@ TestBehavior::Active{
 TestBehavior::Inactive{
   met_by(Active p);
 
+  if(p.duration > p.max_duration){
+    eq(status, PREEMPTED);
+  }
+
   if(status == SUCCESS){
     isSucceded(p.object) == true;
     isPreempted(p.object) == false;
@@ -97,6 +119,7 @@ TestBehavior::Inactive{
 StatusTimeline status_timeline = new StatusTimeline();
 TestBehavior test_behavior = new TestBehavior();
 Iterator iterator = new Iterator();
+MasterBehavior master_behavior = new MasterBehavior();
 
 close();
 
@@ -104,3 +127,4 @@ fact(status_timeline.undefined);
 fact(test_behavior.Inactive);
 fact(iterator.Holds h);
 h.active = false;
+fact(master_behavior.Inactive);
