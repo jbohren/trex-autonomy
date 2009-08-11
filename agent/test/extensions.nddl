@@ -1,0 +1,106 @@
+/**
+ * Model for testing trex extensions for execution
+ */
+#include "TREX.nddl"
+
+
+class StatusTimeline extends AgentTimeline {
+  predicate Succeded{}
+  predicate Preempted{}
+  predicate Aborted{}
+  StatusTimeline(){ super(Internal); }
+};
+
+class TestBehavior extends Behavior {
+  TestBehavior() { super(Internal); }
+};
+
+
+class Iterator extends AgentTimeline {
+  predicate Holds{
+    bool active;
+  }
+
+  Iterator() { super(Internal, "Holds", true); }
+};
+
+Iterator::Holds {
+  met_by(Holds p);
+  defaultOnCommit(active, p.active);
+
+  meets(Holds s);
+
+  if(active == true){
+    duration == 1;
+    contained_by(TestBehavior.Active cmd);
+    if(isTimedOut(cmd.object)){
+      s.active ==false;
+    }
+  }
+  else{
+    starts_during(TestBehavior.Inactive cmd_inactive);
+    eq(cmd_inactive.status, PREEMPTED);
+  }
+}
+
+
+TestBehavior::Active{
+  // This should be legal
+  isEnded(this.object) == isStarted(this.object);
+
+  if(isSucceded(this.object)){
+    meets(StatusTimeline.Succeded);
+  }
+
+  if(isPreempted(this.object)){
+    meets(StatusTimeline.Preempted);
+  }
+
+  if(isAborted(this.object)){
+    meets(StatusTimeline.Aborted);
+  }
+}
+
+TestBehavior::Inactive{
+  met_by(Active p);
+
+  if(status == SUCCESS){
+    isSucceded(p.object) == true;
+    isPreempted(p.object) == false;
+    isAborted(p.object) == false;
+  }
+
+  if(status == PREEMPTED){
+    isSucceded(p.object) == false;
+    isPreempted(p.object) == true;
+    isAborted(p.object) == false;
+  }
+
+  if(status == ABORTED){
+    isSucceded(p.object) == false;
+    isPreempted(p.object) == false;
+    isAborted(p.object) == true;
+  }
+
+  // Force a failure if it starts to early
+  if(isEnded(p.object)){
+    if(status == SUCCESS){
+      if(start < 25){
+	if(start > 20){
+	  true == false;
+	}
+      }
+    }
+  }
+}
+
+StatusTimeline status_timeline = new StatusTimeline();
+TestBehavior test_behavior = new TestBehavior();
+Iterator iterator = new Iterator();
+
+close();
+
+fact(status_timeline.undefined);
+fact(test_behavior.Inactive);
+fact(iterator.Holds h);
+h.active = false;
