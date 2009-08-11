@@ -61,7 +61,7 @@ namespace TREX {
 
 
   protected:
-    void handleExecute();
+    virtual void handleExecute();
   };
 
   /**
@@ -76,7 +76,7 @@ namespace TREX {
 
 
   protected:
-    void handleExecute();
+    virtual void handleExecute();
   };
 
 
@@ -90,7 +90,10 @@ namespace TREX {
 	       const ConstraintEngineId& constraintEngine,
 	       const std::vector<ConstrainedVariableId>& variables);
   protected:
-    void handleExecute();
+    virtual void handleExecute();
+    virtual void setSource(const ConstraintId& source_constraint);
+  private:
+    bool m_fired;
   };
 
   /**
@@ -103,7 +106,7 @@ namespace TREX {
 	     const ConstraintEngineId& constraintEngine,
 	     const std::vector<ConstrainedVariableId>& variables);
   protected:
-    void handleExecute();
+    virtual void handleExecute();
     virtual bool checkStatus() = 0;
   };
 

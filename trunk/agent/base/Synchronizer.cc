@@ -352,7 +352,7 @@ namespace TREX {
 	if(!discardCurrentValues || m_core->isObservation(token) || isPersistent(token))
 	  copyValue(token);
 
-	TREX_INFO("trex:debug:synchronization:resetRemainingTokens", "Scheduling discard for current value" << token->toString());
+	TREX_INFO("trex:debug:synchronization:resetRemainingTokens", "Scheduling discard for current value " << token->toString());
 	tokensToDiscard.push_back(token);
 	continue;
       }

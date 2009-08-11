@@ -141,7 +141,7 @@ namespace TREX {
     }
     try {
       std::string ret = executeScript("nddl", txSource, isFile);
-      assertTrue(ret == "", "Parser failed with return: " + ret);
+      assertTrue(ret == "", "Parser failed in " + std::string(txSource) + " with return: " + ret);
     } catch(std::string ex) {
       assertTrue(false, "Parser failed: " + ex);
     } catch(...) {
