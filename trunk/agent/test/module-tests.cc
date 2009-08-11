@@ -45,8 +45,8 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
-    runTest(testSynch);
     runTest(testExtensions);
+    runTest(testSynch);
     runTest(OrienteeringSolver);
     runTest(testRecall);
     runTest(testRepair);
@@ -73,7 +73,8 @@ private:
 
 
   static bool testExtensions(){
-    runAgentWithSchema("extensions.cfg", 50, "extensions");
+    runAgentWithSchema("extensions.1.cfg", 50, "extensions.1");
+    runAgentWithSchema("extensions.0.cfg", 50, "extensions.0");
     return true;
   }
 
