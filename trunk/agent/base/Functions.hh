@@ -15,7 +15,31 @@ namespace TREX {
    * @brief A base class for execution extension functions for querying token execution state. Assumes that
    * the first argument is a bool and the second argument is a variable of a token.
    */
-  class ExecutionFunction : public Constraint {
+  class ExecutionConstraint : public Constraint {
+  public:
+    ExecutionConstraint(const LabelStr& name,
+			const LabelStr& propagatorName,
+			const ConstraintEngineId& constraintEngine,
+			const std::vector<ConstrainedVariableId>& variables);
+
+  protected:
+    static const LabelStr SUCCESS;
+    static const LabelStr PREEMPTED;
+    static const LabelStr ABORTED;
+    static const LabelStr BEHAVIOR_ACTIVE;
+    static const LabelStr BEHAVIOR_INACTIVE;
+    static const LabelStr PARAM_MAX_DURATION;
+    static const LabelStr PARAM_STATUS;
+    static const LabelStr EQUALS;
+    static const LabelStr CONTAINS;
+    static const LabelStr ENDS;
+  };
+
+  /**
+   * @brief A base class for execution extension functions for querying token execution state. Assumes that
+   * the first argument is a bool and the second argument is a variable of a token.
+   */
+  class ExecutionFunction : public ExecutionConstraint {
   public:
     ExecutionFunction(const LabelStr& name,
 		      const LabelStr& propagatorName,
@@ -42,10 +66,6 @@ namespace TREX {
     const IntervalIntDomain& m_max_duration; // The token end time
     TokenId m_token; // The parent token
     LabelStr m_status; // The status, once computed, will be cached here. This avoid issues of relaxations and garbage collection
-
-    static const LabelStr SUCCESS;
-    static const LabelStr PREEMPTED;
-    static const LabelStr ABORTED;
   };
 
 
@@ -147,6 +167,30 @@ namespace TREX {
 	      const std::vector<ConstrainedVariableId>& variables);
   protected:
     virtual bool checkStatus();
+  };
+
+
+  /**
+   * @brief A constraint to relate a master token to its slave. The constraint is defined on the
+   * slave. There are relevant relationships for cases where the master is a Behavior, and cases
+   * where it is not.
+   */
+  class MasterSlaveRelation : public ExecutionConstraint {
+  public:
+    MasterSlaveRelation(const LabelStr& name,
+			const LabelStr& propagatorName,
+			const ConstraintEngineId& constraintEngine,
+			const std::vector<ConstrainedVariableId>& variables);
+
+  private:
+    virtual void handleExecute();
+
+    /**
+     * @brief Utility to construct the constraint scope correctly, including accessing the clock variable
+     */
+    static std::vector<ConstrainedVariableId> makeScope(const std::vector<ConstrainedVariableId>& variables);
+
+    TokenId m_token;
   };
 }
 #endif

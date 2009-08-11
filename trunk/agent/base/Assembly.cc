@@ -210,6 +210,7 @@ namespace TREX {
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsSucceded, "isSucceded", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsAborted, "isAborted", "Default");
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsPreempted, "isPreempted", "Default");
+    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::MasterSlaveRelation, "trex_behavior", "Default");
 
     // Orienteering solver component registration
 

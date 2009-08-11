@@ -79,13 +79,13 @@ class AgentActions {
   /**
    * This action supports a common idiom to indicate we want something to happen proactively.
    */
-  predicate startEvent{eq(duration, 1);}
+  predicate startEvent{ eq(duration, 1); }
 
   AgentActions(){}
 };
 
 class StateVariable extends AgentTimeline{
- 	predicate Holds{ eq(duration,1); }
+ 	predicate Holds{ eq(duration, 1); }
  	StateVariable(Mode _mode){super(_mode);}
 	StateVariable(Mode _mode, string _defaultPredicate){super(_mode, _defaultPredicate);}
 };
@@ -110,7 +110,8 @@ class Behavior extends AgentTimeline {
     int dispatch_time; // The time at which the goal was dispatched
     int max_duration; // If duration exceeds this, the token should be preempted.
     precedes(dispatch_time, start); // This is a <= constraint, but we use explicit temporal construct instead.
-    temporalDistance(start, [1, +inf], MISSION_END);
+    temporalDistance(start, [1, +inf], MISSION_END); // Behaviors must start before the mission ends
+    trex_behavior(object); // Maintains connection between this token and its parent, if also a behavior. Use this to propagate max duration bounds.
   }
 
   Behavior(Mode _mode){
