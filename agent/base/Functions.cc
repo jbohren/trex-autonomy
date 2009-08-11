@@ -66,11 +66,11 @@ namespace TREX {
   }
 
   bool ExecutionFunction::isStarted() const{
-    return m_start.getUpperBound() <= m_clock.getLowerBound();
+    return m_token->isActive() && m_start.isSingleton() && m_start.getUpperBound() <= m_clock.getLowerBound();
   }
 
   bool ExecutionFunction::isEnded(){
-    return m_token->isCommitted() && m_end.getUpperBound() <= m_clock.getLowerBound() && hasStatus();
+    return m_token->isCommitted() && m_end.isSingleton() && m_end.getUpperBound() <= m_clock.getLowerBound() && hasStatus();
   }
 
   bool ExecutionFunction::isStatus(const LabelStr& status) {
@@ -127,25 +127,29 @@ namespace TREX {
 			 const LabelStr& propagatorName,
 			 const ConstraintEngineId& constraintEngine,
 			 const std::vector<ConstrainedVariableId>& variables)
-    : ExecutionFunction(name, propagatorName, constraintEngine, variables){} 
+    : ExecutionFunction(name, propagatorName, constraintEngine, variables), m_fired(false){} 
 
+  /**
+   * @brief We only do evaluation once the token has started. We immediately commit to the result based on the bounds.
+   */
   void IsTimedOut::handleExecute(){
-    // if it has started then we can test the bounds to see if it is necessarily restricted to be timed out
-    if(isStarted()){
+    if(!isStarted())
+      return;
+
+    if(!m_fired){
+      m_fired = true;
       if( (m_end.getLowerBound() - m_start.getUpperBound()) > m_max_duration.getUpperBound())
 	 m_result.set(1);
-
-      if(m_result.isEmpty())
-	return;
-    }
-
-    // If ended we can evaluate the possibility that it certainly has not timed out
-    if(isEnded()){
-      if(m_end.getUpperBound() - m_start.getLowerBound() < m_max_duration.getUpperBound())
+      else
 	m_result.set(0);
     }
   }
 
+  void IsTimedOut::setSource(const ConstraintId& source_constraint){
+    IsTimedOut* c = (IsTimedOut*) source_constraint;
+    checkError(c != NULL, "Invalid cast from source constraint " << source_constraint->toString());
+    m_fired = c->m_fired;
+  }
 
   IsStatus::IsStatus(const LabelStr& name,
 			 const LabelStr& propagatorName,
