@@ -71,7 +71,7 @@ namespace TREX {
     PseudoClock clock(1.0, stepsPerTick);
     TiXmlElement* root = initXml( findFile(configFile).c_str() );
 
-    Agent::initialize(*root, clock);
+    Agent::initialize(*root, clock, 0, true);
 
     while(!Agent::instance()->missionCompleted()){
       Agent::instance()->doNext();

@@ -50,6 +50,6 @@ class SlaveAction extends Behavior {
 
 
 MasterAction::Active{
-  leq(duration, 2);
+  duration <= 2;
   ends(SlaveAction.Active);
 }

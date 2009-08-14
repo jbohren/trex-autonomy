@@ -55,7 +55,7 @@ namespace TREX {
     /**
      * @brief The Agent is a singleton per process.
      */
-    static AgentId initialize(const TiXmlElement& configData, Clock& clock, TICK timeLimit = 0);
+    static AgentId initialize(const TiXmlElement& configData, Clock& clock, TICK timeLimit = 0, bool enableEventLog = false);
 
     /**
      * @brief Accessor for the singleton instance
