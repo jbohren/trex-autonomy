@@ -121,6 +121,8 @@ class Behavior extends AgentTimeline {
 
 Behavior::Active{
   meets(Inactive _reserved_s);
+  // This is generic where behaviors are contained
+  max_duration <= end - start;
 }
 
 Behavior::Inactive{
