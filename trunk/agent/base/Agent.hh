@@ -205,9 +205,11 @@ namespace TREX {
     const std::string& getLogDir() const;
 
     /**
-     * @brief Utility to create an event log
+     * @brief Utility to stringify an event log.
+     * @param eventLog the vecotr of events of interest
+     * @param use_tick true if you want tick values to be output. False if we just want the ordering.
      */
-    static std::string toString(const  std::vector<Event>& eventLog);
+    static std::string toString(const  std::vector<Event>& eventLog, bool use_tick = true);
 
     /**
      * @brief Constant for Timeline base class

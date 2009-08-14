@@ -64,7 +64,7 @@ namespace TREX {
     const IntervalIntDomain& m_start; // The token start time
     const IntervalIntDomain& m_end; // The token end time
     const IntervalIntDomain& m_max_duration; // The token end time
-    TokenId m_token; // The parent token
+    TokenId m_token; // The token
     LabelStr m_status; // The status, once computed, will be cached here. This avoid issues of relaxations and garbage collection
   };
 
@@ -169,7 +169,6 @@ namespace TREX {
     virtual bool checkStatus();
   };
 
-
   /**
    * @brief A constraint to relate a master token to its slave. The constraint is defined on the
    * slave. There are relevant relationships for cases where the master is a Behavior, and cases
@@ -183,6 +182,7 @@ namespace TREX {
 			const std::vector<ConstrainedVariableId>& variables);
 
   private:
+
     virtual void handleExecute();
 
     /**
@@ -191,6 +191,7 @@ namespace TREX {
     static std::vector<ConstrainedVariableId> makeScope(const std::vector<ConstrainedVariableId>& variables);
 
     TokenId m_token;
+    const LabelStr m_relation;
   };
 }
 #endif
