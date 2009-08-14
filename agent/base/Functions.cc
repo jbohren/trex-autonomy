@@ -210,7 +210,8 @@ namespace TREX {
 				       const ConstraintEngineId& constraintEngine,
 				       const std::vector<ConstrainedVariableId>& variables)
     : ExecutionConstraint(name, propagatorName, constraintEngine, makeScope(variables)),
-      m_token(getParentToken(variables[0])){
+      m_token(getParentToken(variables[0])),
+      m_relation(m_token->getRelation()){
     checkError(m_token->getPlanDatabase()->getSchema()->isA(m_token->getPredicateName(), BEHAVIOR_ACTIVE),
 	       "This constraint must be an active behavior token. " << m_token->toString());
 
@@ -259,13 +260,11 @@ namespace TREX {
   void MasterSlaveRelation::handleExecute(){
     if(getScope().size() >= 7){
 
-      const LabelStr& relation =  m_token->getRelation();
+      condDebugMsg(m_token->master().isId(), "trex:extensions:MasterSlaveRelation:handleExecute", 
+	       "Evaluating relation <" << m_relation.toString() << "> between master " << 
+		   m_token->getMaster()->toString() << " and slave " << m_token->toString());
 
-      debugMsg("trex:extensions:MasterSlaveRelation:handleExecute", 
-	       "Evaluating relation <" << relation.toString() << "> between master " << m_token->getMaster()->toString() << 
-	       " and slave " << m_token->toString());
-
-      if(relation == EQUALS || relation == CONTAINS || relation == ENDS){
+      if(m_relation == EQUALS || m_relation == CONTAINS || m_relation == ENDS){
 	const IntervalIntDomain& start = static_cast<const IntervalIntDomain&>(getCurrentDomain(getScope()[0]));
 	const IntervalIntDomain& end =  static_cast<const IntervalIntDomain&>(getCurrentDomain(getScope()[1]));
 	IntervalIntDomain& max_duration =  static_cast<IntervalIntDomain&>(getCurrentDomain(getScope()[3]));

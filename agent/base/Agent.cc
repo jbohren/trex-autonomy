@@ -458,7 +458,7 @@ namespace TREX {
     }
   }
 
-  std::string Agent::toString(const  std::vector<Event>& eventLog){
+  std::string Agent::toString(const  std::vector<Event>& eventLog, bool use_tick){
     std::stringstream ss;
     for(unsigned int i = 0;i<eventLog.size(); i++){
       std::string evType;
@@ -470,7 +470,10 @@ namespace TREX {
       else
 	evType = "RECALL";
 
-      ss << eventLog[i].m_tick << " " << evType << " " << eventLog[i].m_objectName.toString() << " " << eventLog[i].m_predicateName.toString() << std::endl;
+      if(use_tick)
+	ss << eventLog[i].m_tick << " ";
+
+      ss << evType << " " << eventLog[i].m_objectName.toString() << " " << eventLog[i].m_predicateName.toString() << std::endl;
     }
 
     return ss.str();
