@@ -48,9 +48,9 @@ namespace TREX {
     AgentId m_agent;
   };
 
-  AgentId Agent::initialize(const TiXmlElement& configData, Clock& clock, TICK timeLimit){
+  AgentId Agent::initialize(const TiXmlElement& configData, Clock& clock, TICK timeLimit, bool enableEventLog){
     checkError(s_id.isNoId(), "Already have an active agent. Must reset first.");
-    new Agent(configData, clock, timeLimit);
+    new Agent(configData, clock, timeLimit, enableEventLog);
     return s_id;
   }
 
