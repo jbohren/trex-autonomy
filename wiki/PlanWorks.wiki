@@ -43,7 +43,7 @@ object name
 object component keys
 object variable keys
 object token keys
-\N
+slot id,index pairs (colon separated list of comma-separated tuples) OR \N
 }}}
 
 ==== .ruleInstaces ====
