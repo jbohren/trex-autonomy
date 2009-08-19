@@ -36,9 +36,9 @@ namespace TREX {
 				       const std::vector<ConstrainedVariableId>& variables)
     : ExecutionConstraint(name, propagatorName, constraintEngine, makeScope(variables)),
       m_result(static_cast<BoolDomain&>(getCurrentDomain(getScope()[0]))),
-      m_clock(static_cast<IntervalIntDomain&>(getCurrentDomain(getScope()[1]))),
-      m_start(static_cast<IntervalIntDomain&>(getCurrentDomain(getScope()[2]))),
-      m_end(static_cast<IntervalIntDomain&>(getCurrentDomain(getScope()[3]))),
+      m_clock(static_cast<const IntervalIntDomain&>(getScope()[1]->lastDomain())),
+      m_start(static_cast<const IntervalIntDomain&>(getScope()[2]->lastDomain())),
+      m_end(static_cast<const IntervalIntDomain&>(getScope()[3]->lastDomain())),
       m_max_duration(static_cast<IntervalIntDomain&>(getCurrentDomain(getScope()[4]))),
       m_token(getParentToken(getScope()[2])){
   }
@@ -87,6 +87,11 @@ namespace TREX {
     return status == m_status;
   }
 
+  /**
+   * This function is very important to make sure that we do not propagate values until we actually have a valid status variable.
+   * To do this, we verify that the timeline in question has a successor token with a status value bound. Also, this token must no
+   * longer be current (i.e. not a current observation)
+   */
   bool ExecutionFunction::hasStatus(){
     if(m_status == EMPTY_LABEL()){
 
@@ -102,7 +107,8 @@ namespace TREX {
 
 	const AbstractDomain& successor_status = getCurrentDomain(successor_token->getVariable(PARAM_STATUS, false));
 
-	if(successor_status.isSingleton())
+	// Should no longer be current
+	if(successor_status.isSingleton() && !db_core->isCurrentObservation(m_token))
 	  m_status = successor_status.getSingletonValue();
       }
     }
@@ -178,6 +184,11 @@ namespace TREX {
 
       if(m_result.isEmpty())
 	return;
+
+      // Restrict the base domain of the result, since we hae gone to great lengths to make sure that
+      // the source variables are committed, and not subject to change, in which case this is just a function. If
+      // a conflict arises, the recovery logic of the core will have to apply
+      getScope()[0]->restrictBaseDomain(m_result);
     }
   }
 
