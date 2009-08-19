@@ -230,6 +230,16 @@ namespace TREX {
      */
     bool inScope(const TokenId& token) const;
 
+    /**
+     * @brief Tests if the given token is in active deliberation scope
+     */
+    bool inDeliberation(const TokenId& token) const;
+
+    /**
+     * @brief Test if the given token is a current observation
+     */
+    bool isCurrentObservation(const TokenId& token);
+
     void notify(const Observation& observations);
 
     bool handleRequest(const TokenId& goal);
@@ -378,11 +388,6 @@ namespace TREX {
     bool updateRelatedTokens(const TokenId& token);
 
     /**
-     * @brief Test if the given token is a current observation
-     */
-    bool isCurrentObservation(const TokenId& token);
-
-    /**
      * @brief Add to agenda
      */
     void addToTokenAgenda(const TokenId& token);
@@ -484,11 +489,6 @@ namespace TREX {
      * @see synchronize
      */
     bool isSolverTimedOut();
-
-    /**
-     * @brief Tests if the given token is in active deliberation scope
-     */
-    bool inDeliberation(const TokenId& token) const;
 
     /**
      * @brief Fix buffers and key maps
