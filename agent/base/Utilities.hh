@@ -8,6 +8,9 @@
 using namespace EUROPA;
 
 namespace TREX {
+
+  void computeConnectedTokens(const TokenId token, TokenSet& results);
+
   class ConfigurationException {
   public:
     ConfigurationException(const std::string& description);
@@ -25,6 +28,8 @@ namespace TREX {
   std::string timeString();
 
   void runAgent(const char* configFile, unsigned int stepsPerTick, const char* problemName);
+
+  bool validateResults(const char* problemName);
 
   bool hasValidFile(const char* problemName);
 

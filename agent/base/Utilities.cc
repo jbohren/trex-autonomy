@@ -15,6 +15,25 @@
 using namespace EUROPA;
 
 namespace TREX {
+
+  void computeConnectedTokens(const TokenId token, TokenSet& results){
+    // If already present, we have visited it
+    if(results.find(token) != results.end())
+      return;
+
+    // Add to collection - will not be expanded again
+    results.insert(token);
+
+
+    // If merged then add the active token
+    if(token->isMerged())
+      computeConnectedTokens(token->getActiveToken(), results);
+
+    // If a slave, apply to master
+    if(token->master().isId())
+      computeConnectedTokens(token->master(), results);
+  }
+
   ConfigurationException::ConfigurationException(const std::string& description) : m_description(description) {}
   const std::string& ConfigurationException::toString() const {
     return m_description;
@@ -77,6 +96,18 @@ namespace TREX {
       Agent::instance()->doNext();
     }
 
+    if(!validateResults(problemName)){
+      std::stringstream ss;
+      ss << "New event log failed to validate against " << problemName << ".valid. See " << problemName << ".error for details.";
+      assertTrue(false, ss.str().c_str());
+    }
+
+    Agent::reset();
+  
+    delete root;
+  };
+
+  bool validateResults(const char* problemName){
     std::vector<Agent::Event> eventLog = Agent::instance()->getEventLog();
     std::string eventLogStr = Agent::toString(eventLog);
 
@@ -87,13 +118,11 @@ namespace TREX {
       makeInvalidFile(eventLogStr, problemName);
       std::string fname(problemName);
       fname = fname + ".error";
-      assertTrue(0, fname); 
+      return false; 
     }
 
-    Agent::reset();
-  
-    delete root;
-  };
+    return true;
+  }
 
   bool hasValidFile(const char* problemName){
     std::string fname(problemName);
