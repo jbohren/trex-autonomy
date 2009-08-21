@@ -254,6 +254,11 @@ namespace TREX {
     void getPlanDescription(PlanDescription &planDesc) const;
 
     /**
+     * @brief Write a lightweight log of the db state to disk.
+     */
+    std::string writeDbState();
+
+    /**
      * @brief Output the assembly to file at the current tick
      */
     void dumpAssembly();
@@ -668,11 +673,25 @@ namespace TREX {
     void logToken(TokenId const &tok);
 
     void fillTimelineDescription(const TimelineId tl, PlanDescription::TimelineDescription &tlDesc) const;
+
+    /**
+     * @brief Write a lightweight timeline description to disk. Used by writeDbstate 
+     */
+    void writeTimeline(const TimelineId tl, const char mode, std::ofstream &db_out) const;
+
+    /**
+     * @brief Create the db history log directory
+     */
+    void createHistPath();
+
     
     static std::ostream &writeDomain(std::ostream &out,
 				     AbstractDomain const &dom,
 				     bool singletonsOnly);
 
+    
+    std::string m_histPath;
+    bool m_histPathCreated;
     std::ofstream m_planLog;
   };
 }

@@ -28,8 +28,14 @@
 #include "Filters.hh"
 #include "TestMonitor.hh"
 
+// For fileio
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+
 #include <sstream>
 #include <fstream>
+#include <iomanip>
 
 namespace TREX {
 
@@ -253,7 +259,10 @@ namespace TREX {
       m_lastCompleteTick(MINUS_INFINITY),
       m_state(DbCore::INACTIVE),
       m_solverCfg(findFile(extractData(configData, "solverConfig").toString())),
-      m_planLog(LogManager::instance().file_name(compose(agentName, compose(getName(), "plan")).toString()).c_str()) {
+      m_histPath(""),
+      m_histPathCreated(false),
+      m_planLog(LogManager::instance().file_name(compose(agentName, compose(getName(), "plan")).toString()).c_str())
+  {
 
     DebugMessage::setStream(getStream());
 
@@ -728,8 +737,110 @@ namespace TREX {
     }
   }
 
+  void DbCore::createHistPath() {
+    std::ostringstream oss;
+    oss << LogManager::instance().file_name("reactor_states");
+    
+    // Make the directory for all reactors
+    if(mkdir(oss.str().c_str(), 0777) && errno != EEXIST) {
+      std::cerr<<"Failed to create directory: " << m_histPath;
+      exit(-1);
+    }
+
+    // Generate the path for this reactor
+    oss << "/" << compose(getAgentName(),getName()).toString();
+
+    // Store the path
+    m_histPath = oss.str();
+
+    // Make the destination directory 
+    if(mkdir(m_histPath.c_str(), 0777) && errno != EEXIST) {
+      std::cerr<<"Failed to create directory: " << m_histPath;
+      exit(-1);
+    }
+
+    // Set the prepared flag
+    m_histPathCreated = true;
+  }
+
+  void DbCore::writeTimeline(const TimelineId tl, const char mode, std::ofstream &db_out) const {
+    // Write out the timeline description
+    db_out
+      << tl->getKey()			    // Key
+      << "\t" << tl->getName().toString()   // Name
+      << "\t" << mode			    // Mode designator [I,E,A]
+      << std::endl;
+
+    // Iterate over tokens
+    std::list<TokenId> const &tokens = tl->getTokenSequence();
+    std::list<TokenId>::const_iterator tokit = tokens.begin();
+    std::list<TokenId>::const_iterator const endtok = tokens.end();
+
+    for( ;endtok!=tokit; ++tokit ) {
+      TokenId const &tok = *tokit;
+      // Only report active tokens
+      if(!tok->isActive()) { continue; }
+
+      TempVarId tokStart = tok->start(),
+		tokEnd = tok->end();
+
+      db_out 
+	<< "\t" << tok->getKey()		      // Token key
+	<< "\t" << tok->getPredicateName().toString() // Token name
+	<< "\t" << tokStart->getLowerBound()	      // Start lower
+	<< "\t" << tokStart->getUpperBound()	      // Start upper
+	<< "\t" << tokEnd->getLowerBound()	      // End lower
+	<< "\t" << tokEnd->getUpperBound()	      // End upper
+	<< std::endl;
+    }
+  }
+
+  std::string DbCore::writeDbState() {
+    // Check if the directory has been created
+    if(!m_histPathCreated) {
+      createHistPath();
+    }
+    
+    // Create a new file
+    std::ostringstream oss;
+    oss << m_histPath << "/" << getCurrentTick() << ".reactorstate";
+
+    // Open file for writing
+    std::ofstream db_out(oss.str().c_str());
+
+    // Internals 
+    std::vector< std::pair<TimelineId, TICK> >::const_iterator intit = m_internalTimelineTable.begin();
+    std::vector< std::pair<TimelineId, TICK> >::const_iterator const endint = m_internalTimelineTable.end();
+    
+    // Write out timelne name and contents
+    for( ; endint!=intit; ++intit ) {
+      const TimelineId tl = intit->first; 
+      writeTimeline(tl,'I', db_out);
+    }
+
+    // Externals
+    std::map<int, TimelineContainer>::const_iterator 
+      cextit = m_externalTimelineTable.begin();
+    std::map<int, TimelineContainer>::const_iterator const
+      endcext = m_externalTimelineTable.end();
+
+    for( ; endcext!=cextit; ++cextit ) {
+      const TimelineId tl = cextit->second.getTimeline();
+      writeTimeline(tl,'E', db_out);
+    }
+
+    // Close the file handle
+    db_out.close();
+    
+    // Output assembly as well (very large amount of data, will slow execution)
+    TREX_INFO("ExportPlan", nameString() << m_assembly.exportToPlanWorks());
+
+    return std::string("Success.");
+  }
+
   void DbCore::dumpAssembly() {
-    std::string reply = m_assembly.exportToPlanWorks();
+    writeDbState();
+    m_assembly.exportToPlanWorks();
   }
 
   void DbCore::addDbListener(EUROPA::PlanDatabaseListener& listener) {
@@ -772,7 +883,8 @@ namespace TREX {
     if(!propagate())
       return;
 
-    TREX_INFO("PlanWorks", nameString() << m_assembly.exportToPlanWorks());
+    // Write the timelines out to file (low bandiwdth)
+    TREX_INFO("ExportReactorState", nameString() << writeDbState());
 
     // Send goals planned on server timelines
     dispatchCommands();

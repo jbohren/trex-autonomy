@@ -71,7 +71,7 @@ namespace TREX {
     return (((long long int) currTime.tv_sec) * 1000) + (currTime.tv_usec / 1000);
   }
 
-  const std::string DEST("assembly_dumps");
+  const std::string DEST("plans");
   const char *envPPWConfigFile = "PPW_CONFIG";
   const std::string DURATION_VAR("DURATION_VAR");
   const std::string END_VAR("END_VAR");
