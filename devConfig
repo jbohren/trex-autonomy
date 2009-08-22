@@ -11,3 +11,4 @@ export PLASMA=$PLASMA_HOME/src/PLASMA
 export TREX_LOG_DIR=$TREX/logs
 export LD_LIBRARY_PATH=$PLASMA_HOME/build/lib:$LD_LIBRARY_PATH
 export ANT_HOME=$PLASMA_HOME/ext/ant
+export PYTHONPATH=$TREX/tools/modules:$PYTHONPATH
