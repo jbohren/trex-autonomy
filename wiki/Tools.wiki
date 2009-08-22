@@ -7,7 +7,7 @@ TREX provides several tools which can be used to help developers create and debu
 In order to minimize dependencies, the debug tools communicate using the filesystem. 
 
 = Dependencies =
-See Installing.
+See [Installing].
 
 = Debugging Utilities =
 
