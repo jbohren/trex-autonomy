@@ -367,7 +367,7 @@ namespace TREX {
     DbClientId client = m_db->getClient();
 
     // Allocate a token - it should be inactive but not rejectable - cannot deny the truth
-    TokenId token = client->createToken(observation.getPredicate().c_str(), NOT_REJECTABLE);
+    TokenId token = client->createToken(observation.getPredicate().c_str(), NULL, NOT_REJECTABLE);
 
     // Bind the object variable
     ObjectId timeline = client->getObject(observation.getObjectName().c_str());
@@ -414,7 +414,7 @@ namespace TREX {
 
     // Allocate a token - it should be inactive and rejectable. This respects the semantics that the owner reactor
     // is the decider of what goes or does not go. May get requests that conflict with each other, or with observations.
-    TokenId localGoal = client->createToken(goal->getPredicateName().c_str(), REJECTABLE);
+    TokenId localGoal = client->createToken(goal->getPredicateName().c_str(),NULL, REJECTABLE);
 
     // A request must have its object variable bound. 
     checkError(goal->getObject()->lastDomain().isSingleton(), goal->getObject()->lastDomain().toString());

@@ -276,8 +276,8 @@ TestActions::iterator{
   starts(Counter.Holds c);
   leq(duration, 2);
   eq(c.value, counter);
-  if test (isSingleton(end)){
-    if test (counter >= 0){
+  if (isSingleton(end)){
+    if (counter >= 0){
       any(iterator i);
       enforce(i.counter + 1 == counter);
       // Force into the future so it
