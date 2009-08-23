@@ -58,7 +58,7 @@ class DbReaderWindow():
       assert not hasattr(self, name)
       setattr(self, name, w)
 
-    self.path_chooser.set_filename(self.log_path)
+    self.path_chooser.set_filename(os.path.abspath(self.log_path))
 
     self.path_chooser.connect("selection-changed",self.on_change_log_path)
     self.reactor_chooser.connect("changed",self.on_change_reactor)
