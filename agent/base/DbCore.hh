@@ -496,6 +496,11 @@ namespace TREX {
     bool isSolverTimedOut();
 
     /**
+     * @brief Get the number of planning attempts that have been made.
+     */
+    unsigned int getPlanAttempts();
+
+    /**
      * @brief Fix buffers and key maps
      */
     void cleanupGoal(const TokenId& goal);
@@ -685,6 +690,7 @@ namespace TREX {
 
     std::string m_statePath;
     std::string m_conflictPath;
+    unsigned int m_planAttempts;
     std::ofstream m_planLog;
   };
 }
