@@ -678,20 +678,13 @@ namespace TREX {
      * @brief Write a lightweight timeline description to disk. Used by writeDbstate 
      */
     void writeTimeline(const TimelineId tl, const char mode, std::ofstream &db_out) const;
-
-    /**
-     * @brief Create the db history log directory
-     */
-    void createHistPath();
-
     
     static std::ostream &writeDomain(std::ostream &out,
 				     AbstractDomain const &dom,
 				     bool singletonsOnly);
 
-    
-    std::string m_histPath;
-    bool m_histPathCreated;
+    std::string m_statePath;
+    std::string m_conflictPath;
     std::ofstream m_planLog;
   };
 }

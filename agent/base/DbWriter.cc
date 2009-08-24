@@ -172,7 +172,7 @@ namespace TREX {
 		     const PlanDatabaseId& db, const ConstraintEngineId& ce, const RulesEngineId &re)
     : m_agentName(agentName),
       m_reactorName(reactorName),
-      dest(TREX::LogManager::instance().file_name(DEST)),
+      dest(TREX::LogManager::instance().reactor_dir_path(agentName,reactorName,"plans")),
       pdbId(db),
       ceId(ce), 
       reId(re), 
@@ -927,7 +927,7 @@ namespace TREX {
       }
     }
 
-    std::string seqName = m_agentName + "." + m_reactorName;
+    //std::string seqName = m_agentName + "." + m_reactorName;
     //std::string::size_type extStart = seqName.find('.');
     //seqName = seqName.substr(0, extStart);
 
@@ -942,9 +942,9 @@ namespace TREX {
 	FatalErrno();
       }
     }
-    if(seqName[0] != '/')
-      dest += "/";
-    dest += seqName;
+    //if(seqName[0] != '/')
+    //  dest += "/";
+    //dest += seqName;
     //dest += timestr;
 
     if(mkdir(dest.c_str(), 0777) && errno != EEXIST) {
