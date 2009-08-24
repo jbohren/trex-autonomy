@@ -30,15 +30,15 @@ class DbReader():
 
   # Get the full path to the reactor states of a specific reactor
   def get_db_path(self, log_path, reactor_name):
-    return os.path.join(log_path,DbReader.DB_PATH,reactor_name)
+    return os.path.join(log_path,reactor_name,DbReader.DB_PATH)
 
   # Get the full path to the assemblies of a specific reactor
   def get_assembly_path(self, log_path, reactor_name):
-    return os.path.join(log_path,DbReader.ASSEMBLY_PATH,reactor_name)
+    return os.path.join(log_path,reactor_name,DbReader.ASSEMBLY_PATH)
 
   # Get the list of reactors for which there is reactor output
   def get_available_reactors(self, log_path):
-    reactors = [r for r in os.listdir(os.path.join(log_path,DbReader.DB_PATH)) if r[0] != '.']
+    reactors = [r for r in os.listdir(log_path) if os.path.exists(os.path.join(log_path,r,DbReader.DB_PATH))]
     return reactors
 
   # Read the contents of the DB_PATH to get the ticks that are available

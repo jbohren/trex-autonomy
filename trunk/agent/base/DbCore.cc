@@ -259,9 +259,9 @@ namespace TREX {
       m_lastCompleteTick(MINUS_INFINITY),
       m_state(DbCore::INACTIVE),
       m_solverCfg(findFile(extractData(configData, "solverConfig").toString())),
-      m_histPath(""),
-      m_histPathCreated(false),
-      m_planLog(LogManager::instance().file_name(compose(agentName, compose(getName(), "plan")).toString()).c_str())
+      m_statePath(LogManager::instance().reactor_dir_path(agentName.toString(),getName().toString(),"reactor_states").c_str()),
+      m_conflictPath(LogManager::instance().reactor_dir_path(agentName.toString(),getName().toString(),"conflicts").c_str()),
+      m_planLog(LogManager::instance().reactor_file_path(agentName.toString(),getName().toString(),"plan.log").c_str())
   {
 
     DebugMessage::setStream(getStream());
@@ -737,32 +737,6 @@ namespace TREX {
     }
   }
 
-  void DbCore::createHistPath() {
-    std::ostringstream oss;
-    oss << LogManager::instance().file_name("reactor_states");
-    
-    // Make the directory for all reactors
-    if(mkdir(oss.str().c_str(), 0777) && errno != EEXIST) {
-      std::cerr<<"Failed to create directory: " << m_histPath;
-      exit(-1);
-    }
-
-    // Generate the path for this reactor
-    oss << "/" << compose(getAgentName(),getName()).toString();
-
-    // Store the path
-    m_histPath = oss.str();
-
-    // Make the destination directory 
-    if(mkdir(m_histPath.c_str(), 0777) && errno != EEXIST) {
-      std::cerr<<"Failed to create directory: " << m_histPath;
-      exit(-1);
-    }
-
-    // Set the prepared flag
-    m_histPathCreated = true;
-  }
-
   void DbCore::writeTimeline(const TimelineId tl, const char mode, std::ofstream &db_out) const {
     // Write out the timeline description
     db_out
@@ -796,14 +770,9 @@ namespace TREX {
   }
 
   std::string DbCore::writeDbState() {
-    // Check if the directory has been created
-    if(!m_histPathCreated) {
-      createHistPath();
-    }
-    
     // Create a new file
     std::ostringstream oss;
-    oss << m_histPath << "/" << getCurrentTick() << ".reactorstate";
+    oss << m_statePath << "/" << getCurrentTick() << ".reactorstate";
 
     // Open file for writing
     std::ofstream db_out(oss.str().c_str());

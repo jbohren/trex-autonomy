@@ -72,6 +72,26 @@ namespace TREX {
      */
     std::string file_name(std::string const &short_name) const;
 
+    std::string reactor_dir_path(
+	std::string const &agent_name,
+	std::string const &reactor_name,
+	std::string local_dir_path) const;
+    /** @brief Generate real log filename for reactor-specific files
+     *
+     * If a reactor-specific log is to be generated, this will create a path
+     * to the file in logs/latest/agent_name.reactor_name/base_name.ext
+     *
+     * @param agent_name The name of the agent
+     * @param reactor_name The name of the reactor
+     * @param file_rel_path The path to the file inside of the reactor dir
+     *
+     * @return The real filename for the @e short_name log file.
+     */
+    std::string reactor_file_path(
+	std::string const &agent_name,
+	std::string const &reactor_name,
+	std::string local_file_path) const;
+
     static std::string const &use(std::string const &fileName);
     static TiXmlElement *initXml(std::string const &fileName) {
       return EUROPA::initXml(use(fileName).c_str());

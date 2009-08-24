@@ -205,7 +205,7 @@ class DbReaderWindow():
       self.tick = -1
       available_ticks = []
       self.db_cores = {}
-      self.reactor_name = ""
+      self.reactor_name = None
       self.tick_entry.set_text("")
       self.notify_listeners()
 
@@ -387,11 +387,9 @@ class DbReaderWindow():
   def notify_listeners(self):
     for listener in self.listeners:
       try:
-	if self.db_cores.has_key(self.reactor_name):
-	  listener(self.db_cores, self.reactor_name)
+	listener(self.db_cores, self.reactor_name)
       except:
 	print "Failed to notify listener: "+str(listener)
-	raise
 
 # Testing utilities
 class GtkTester():
@@ -416,10 +414,15 @@ class SimpleAssemblyListener():
     if reactor_name:
       print db_cores
       self.rules = db_cores[reactor_name].assembly.rules
+    else:
+      print "EMPTY DATABASE"
+      self.rules = {}
 
   def cb_tokens(self,db_cores,reactor_name):
     if reactor_name:
       self.tokens = db_cores[reactor_name].assembly.tokens
+    else:
+      self.tokens = {}
 
 # Unit tests
 class TestDbReaderWindow(unittest.TestCase,GtkTester):
@@ -455,8 +458,8 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
     # Define data constants
     LOG_PATH = TREX.util.trex_path("tools/test/db_reader")
     REACTORS = ["pr2.doorman","pr2.navigator","pr2.driver"]
-    TICKS = range(590,610)
-    GO_TICK = 599
+    TICKS = range(0,10)
+    GO_TICK = 5
     
     print "Setting the log path..."
     self.db_reader_window.path_chooser.set_filename(LOG_PATH)
@@ -513,7 +516,7 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
     self.assert_(self.db_reader_window.tick == GO_TICK)
 
     print "Moving to an empty path..."
-    self.db_reader_window.path_chooser.set_filename(".")
+    self.db_reader_window.path_chooser.set_filename(os.path.abspath("."))
     time.sleep(2)
 
     print "Checking listeners were notified..."
@@ -535,24 +538,21 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
       tick_name = "%d.%s" % (tick,DbReader.DB_EXT)
       for r in reactors:
 	shutil.copy2(
-	  os.path.join(src,DbReader.DB_PATH,r,tick_name),
-	  os.path.join(dest,DbReader.DB_PATH,r,tick_name))
+	  os.path.join(src,r,DbReader.DB_PATH,tick_name),
+	  os.path.join(dest,r,DbReader.DB_PATH,tick_name))
       time.sleep(0.1)
 
   # Test auto-reload functionality
-  def test_autoload(self):
+  def _test_autoload(self):
     # Wait for the window to come up
     time.sleep(2)
 
     SRC_LOG_PATH = TREX.util.trex_path("tools/test/db_reader")
     LOG_PATH = TREX.util.trex_path("tools/test/db_reader_window")
 
-    ASSEMBLY_PATH = os.path.join(LOG_PATH, DbReader.ASSEMBLY_PATH)
-    DB_PATH = os.path.join(LOG_PATH, DbReader.DB_PATH)
-
     REACTORS = ["pr2.doorman","pr2.navigator","pr2.driver"]
-    TICKS = range(590,609)
-    FULL_TICKS = range(600,609)
+    TICKS = range(0,9)
+    FULL_TICKS = range(5,9)
 
     if os.path.exists(LOG_PATH):
       print "Clearing log directory..."
@@ -560,8 +560,8 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
 
     print "Creating log directory..."
     os.mkdir(LOG_PATH)
-    os.mkdir(ASSEMBLY_PATH)
-    os.mkdir(DB_PATH)
+    for r in REACTORS:
+      os.mkdir(os.path.join(LOG_PATH,r))
 
     print "Setting the log path..."
     self.db_reader_window.path_chooser.set_filename(LOG_PATH)
@@ -569,9 +569,9 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
 
     print "Creating reactor directories"
     for r in REACTORS:
-      os.mkdir(os.path.join(ASSEMBLY_PATH,r))
-      os.mkdir(os.path.join(DB_PATH,r))
-    time.sleep(0.5)
+      os.mkdir(os.path.join(LOG_PATH,r,DbReader.ASSEMBLY_PATH))
+      os.mkdir(os.path.join(LOG_PATH,r,DbReader.DB_PATH))
+    time.sleep(1.0)
 
     print "Checking for automatic reactor pick-up..."
     print self.db_reader_window.reactor_names
@@ -580,8 +580,8 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
     print "Copying full plan dumps..."
     for r in REACTORS:
       self.copy_children(
-	  os.path.join(SRC_LOG_PATH,DbReader.ASSEMBLY_PATH,r),
-	  os.path.join(ASSEMBLY_PATH,r))
+	  os.path.join(SRC_LOG_PATH,r,DbReader.ASSEMBLY_PATH),
+	  os.path.join(LOG_PATH,r,DbReader.ASSEMBLY_PATH))
 
     print "Copying reactor states..."
     self.copy_ticks(SRC_LOG_PATH,LOG_PATH,REACTORS,TICKS)
@@ -594,10 +594,11 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
     self.db_reader_window.latest_toggle.emit("toggled")
     time.sleep(2)
 
-    self.copy_ticks(SRC_LOG_PATH,LOG_PATH,REACTORS,[609])
+    self.copy_ticks(SRC_LOG_PATH,LOG_PATH,REACTORS,[9])
+    time.sleep(0.1)
 
     print "Checking for automatic tick tracking..."
-    self.assert_(self.db_reader_window.tick_entry.get_text() == str(609))
+    self.assert_(self.db_reader_window.tick_entry.get_text() == str(9))
 
     print "Removing log directory..."
     shutil.rmtree(LOG_PATH)

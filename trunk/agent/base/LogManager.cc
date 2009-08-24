@@ -160,6 +160,62 @@ std::string LogManager::file_name(std::string const &short_name) const {
   return m_path+"/"+short_name;
 }
 
+std::string LogManager::reactor_dir_path(
+    std::string const &agent_name,
+    std::string const &reactor_name,
+    std::string local_dir_path) const
+{
+  // Get reactor base directory (logs/latest/agent_name.reactor_name)
+  std::string abs_path = m_path;
+  
+  local_dir_path = compose(agent_name,reactor_name).toString() +"/"+ local_dir_path;
+  
+  // This will create each local directory between the base log path and the target path
+  // Find the index of the first delimiter in the path
+  size_t dindex = local_dir_path.find_first_of("/");
+  while( dindex != std::string::npos ) {
+    // Get the next index
+    dindex = local_dir_path.find_first_of("/");
+    // Concatenate the local root entry on the end of the absolute path
+    abs_path = abs_path + "/" + local_dir_path.substr(0,dindex);
+    // Pop the root entry off of the path
+    local_dir_path = local_dir_path.substr(dindex+1);
+    // Try to create the directory
+    int ret = mkdir(abs_path.c_str(), 0777);
+    // Fail if mkdir returns an error other then EEXIST
+    if( ret != 0 ) {
+      checkError(EEXIST==errno, "LogManager: "<<strerror(errno));
+    }
+  }
+
+  return abs_path;
+}
+
+std::string LogManager::reactor_file_path(
+    std::string const &agent_name,
+    std::string const &reactor_name,
+    std::string local_file_path) const
+{
+  // Get the filename
+  std::string filename = "";
+  size_t last_delim = local_file_path.find_last_of("/");
+  if(last_delim+1 < local_file_path.size()) {
+    filename = local_file_path.substr(last_delim+1);
+  }
+
+  if(last_delim == std::string::npos) {
+    local_file_path = "";
+  }
+
+  // Create the directories that this filename resides in
+  std::string absolute_dir_path = LogManager::instance().reactor_dir_path(
+      agent_name,
+      reactor_name,
+      local_file_path.substr(0,last_delim));
+
+  return  absolute_dir_path + "/" + filename;
+}
+
 std::string const &LogManager::use(std::string const &fileName) {
   std::ifstream src(fileName.c_str(), std::ios::binary);
 

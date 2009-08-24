@@ -51,7 +51,7 @@ namespace TREX {
 #define CPU_STAT_LOG "cpuStat.log"
 
 /**
-  @brief Create a logginf message, which will
+  @brief Create a logging message, which will
   only be created or used when the given condition is true at run time.
   @param marker A string that "marks" the message to enable it by.
   @param data The data to be printed when the message is enabled.
@@ -59,7 +59,7 @@ namespace TREX {
 #define TREX_INFO(marker, data) TREX_INFO_COND(true, marker, data)
 
 /**
-  @brief Create a conditional logginf message, which will
+  @brief Create a conditional logging message, which will
   only be created or used when the given condition is true at run time.
   @param cond An additional condition to be checked before printing the message,
          which can be any C/C++ expression that could be used in an if statement.
