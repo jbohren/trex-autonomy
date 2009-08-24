@@ -45,25 +45,29 @@ class TokenNetworkFilter():
   def toggle_regex(self,enabled):
     # Set the regex flag
     self.use_regex = enabled
-    if enabled:
+
+    # Compile filters
+    self.compile_regex_filters()
+
+    # Refilter the network
+    self.filter_network()
+  
+  def compile_regex_filters(self):
+    # Clear filters
+    self.regex_filters = []
+    if self.use_regex:
       # Compile all of the current filters
       for filter in self.filters:
 	regex = re.compile(filter)
 	self.regex_filters.append(regex)
-    else:
-      self.regex_filters = []
-
-    # Refilter the network
-    self.filter_network()
 
   # Add a filter
   def add_filter(self,filter):
     self.filters.append(filter)
+    # Compile filters (if necessary)
+    self.compile_regex_filters()
     # Refilter the network
     self.filter_network()
-
-  def add_regex_filter(self,filter):
-    pass
 
   # Remove a filter by value
   def rem_filter(self,filter):
