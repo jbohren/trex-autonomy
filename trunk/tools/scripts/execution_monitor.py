@@ -19,6 +19,9 @@ def main():
   else:
     log_path = "."
 
+  # Window configuration for a window that should not be allowed to be closed
+  WINDOW_FUNCTIONS = gtk.gdk.FUNC_MOVE | gtk.gdk.FUNC_RESIZE | gtk.gdk.FUNC_MINIMIZE | gtk.gdk.FUNC_MAXIMIZE;
+
   # Initialize gtk multithread support
   gtk.gdk.threads_init()
 
@@ -26,8 +29,9 @@ def main():
   db_reader_window = DbReaderWindow(log_path=log_path)
   db_reader_window.w.connect("destroy",gtk.main_quit)
 
-  # Create token network graph generator
+  # Create timelien viewer window
   timeline_window = TimelineWindow()
+  timeline_window.w.window.set_functions(WINDOW_FUNCTIONS)
   db_reader_window.register_listener(timeline_window.set_db_cores)
 
   ############################################################
@@ -37,11 +41,13 @@ def main():
 
   # Create token network window
   token_network_window = TokenNetworkWindow(token_network)
+  token_network_window.window.set_functions(WINDOW_FUNCTIONS)
   token_network_window.register_listener(PropertyWindowFactory)
 
   # Create token network filter window
   token_network_filter = TokenNetworkFilter(token_network)
   token_network_filter_window = TokenNetworkFilterWindow(token_network_filter)
+  token_network_filter_window.w.window.set_functions(WINDOW_FUNCTIONS)
 
   def SpawnPropertyWindow(db_core, token):
     PropertyWindowFactory(db_core.assembly, db_core.assembly.tokens[token.key])

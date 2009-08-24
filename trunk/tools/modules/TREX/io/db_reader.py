@@ -21,7 +21,12 @@ from TREX.core.db_core import DbCore,Timeline
 class DbReader():
   DB_PATH = "reactor_states"
   DB_EXT = "reactorstate"
+
+  CONFLICT_PATH = "conflicts"
+  CONFLICT_EXT = "conflict"
+
   ASSEMBLY_PATH = "plans"
+  ASSEMBLY_EXT = "plan"
 
   def __init__(self):
     # Compile expressions
@@ -44,13 +49,15 @@ class DbReader():
   # Read the contents of the DB_PATH to get the ticks that are available
   def get_available_db_cores(self,log_path,reactor_name):
     tick_paths = os.listdir(self.get_db_path(log_path,reactor_name))
-    ticks = [int(os.path.basename(s)[0:-13]) for s in tick_paths if s[-12:] == DbReader.DB_EXT]
+    ticks = [os.path.basename(s)[0:-(1+len(DbReader.DB_EXT))].split(".") for s in tick_paths if s[-len(DbReader.DB_EXT):] == DbReader.DB_EXT]
+    ticks = [(int(t[0]),int(t[1])) for t in ticks]
     ticks.sort()
     return ticks
 
   def get_available_assemblies(self,log_path,reactor_name):
     tick_paths = os.listdir(self.get_assembly_path(log_path,reactor_name))
-    ticks = [int(os.path.basename(s)[4:]) for s in tick_paths if s[0:4] == "tick"]
+    ticks = [os.path.basename(s)[0:-(1+len(DbReader.ASSEMBLY_EXT))].split(".") for s in tick_paths if s[-len(DbReader.ASSEMBLY_EXT):] == DbReader.ASSEMBLY_EXT]
+    ticks = [(int(t[0]),int(t[1])) for t in ticks]
     ticks.sort()
     return ticks
 
@@ -67,7 +74,7 @@ class DbReader():
     db_path = self.get_db_path(log_path, reactor_name)
 
     # Read in the tick
-    db_file = open(os.path.join(db_path,"%d.%s" % (tick,DbReader.DB_EXT)))
+    db_file = open(os.path.join(db_path,"%d.%d.%s" % (tick[0],tick[1],DbReader.DB_EXT)))
 
     # Mode translation
     modes = {'I':Timeline.INTERNAL, 'E':Timeline.EXTERNAL}
@@ -124,7 +131,7 @@ class DbReader():
     reactor_path = self.get_assembly_path(log_path, reactor_name)
 
     # Generate the step path
-    step_path = os.path.join(reactor_path, "tick%d" % tick, "tick%d" % tick)
+    step_path = os.path.join(reactor_path, "%d.%d.%s" % (tick[0],tick[1],DbReader.ASSEMBLY_EXT), "plan" )
 
     # Read in rule source code paths
     rule_src_reader = csv.reader(open(os.path.join(reactor_path,"rules")),delimiter='\t')
@@ -266,6 +273,7 @@ class TestDbReader(unittest.TestCase):
     ticks = db_reader.get_available_assemblies(log_path,reactor_names[0])
     # Load in the assembly from that tick
     assembly = db_reader.load_assembly(log_path,reactor_names[0],ticks[0])
+    self.assert_(len(assembly.tokens)>0)
 
   def test_read_db_core(self):
     # Create a db reader
@@ -277,7 +285,8 @@ class TestDbReader(unittest.TestCase):
     # Get the available ticks
     ticks = db_reader.get_available_db_cores(log_path,reactor_names[0])
     # Load in the assembly from that tick
-    assembly = db_reader.load_db(log_path,reactor_names[0],ticks[0])
+    db = db_reader.load_db(log_path,reactor_names[0],ticks[0])
+    self.assert_(len(db.int_timelines)>0)
 
 if __name__ == '__main__':
   unittest.main()

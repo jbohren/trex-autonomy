@@ -244,13 +244,13 @@ class ReactorPanel():
 	  timeline.reactor_panel = self
 	  self.int_timelines.append(timeline)
 	else:
+	  # Find another timeline that belongs to this reactor, if it exists
 	  self.ext_timelines.append(timeline)
       else:
 	# Retrieve the timeline object
 	timeline = self.timelines[tl.name]
 	# Update the object
 	timeline.add_tokens(tl.tokens)
-
 
       # Add all tokens to this reactor
       ##############################################################
@@ -279,7 +279,7 @@ class ReactorPanel():
 	# Store / update this token
 	self.all_tokens[new_token.key] = new_token
 	# Update last updated tick for this token
-	self.token_ticks[new_token.key] = db_core.tick
+	self.token_ticks[new_token.key] = db_core.tick[0]
 	# Store this token's timeline
 	self.token_timelines[new_token.key] = timeline
 
@@ -478,13 +478,13 @@ class ReactorPanel():
       (r,g,b) = timeline.get_color()
 
       # Skip tokens that are older than the tickbehind and newer than the current tick
-      if tick < self.db_core.tick-ReactorPanel.TokenHistory:
+      if tick < self.db_core.tick[0]-ReactorPanel.TokenHistory:
 	# Check if this is older than the cache
-	if tick < self.db_core.tick-ReactorPanel.TokenCache:
+	if tick < self.db_core.tick[0]-ReactorPanel.TokenCache:
 	  # Add this token to the removal list
 	  self.tokens_to_remove.append(token)
 	continue
-      elif tick > self.db_core.tick:
+      elif tick > self.db_core.tick[0]:
 	continue
 
       # Do not draw BaseState (HACK)
@@ -613,7 +613,7 @@ class ReactorPanel():
       # Set the color for the appropriate reactors
       if key in self.hilight_keys:
 	cr.set_source_rgba(1.0, 0.7, 0.07, 1.0)
-      elif self.token_ticks[key] < self.db_core.tick:
+      elif self.token_ticks[key] < self.db_core.tick[0]:
 	cr.set_source_rgba(r,g,b, 0.3)
       else:
 	cr.set_source_rgba(r, g, b, 0.7)
@@ -843,14 +843,32 @@ class TimelineWindow():
     # Determine external timeline parents
     for reactor_panel in self.reactor_panels.values():
       for timeline in reactor_panel.ext_timelines:
-	for tl_parent in self.reactor_panels.values():
-	  # Only compare to reactors that aren't the current one
-	  if tl_parent != reactor_panel:
-	    # Generate a list of the internal timeline names for this candidate parent
-	    tl_names = [tl.tl.name for tl in tl_parent.int_timelines]
-	    if timeline.tl.name in tl_names:
-	      # Set this timeline's reactor panel to it's parent
-	      timeline.reactor_panel = tl_parent
+	if not timeline.reactor_panel:
+	  for tl_parent in self.reactor_panels.values():
+	    # Only compare to reactors that aren't the owner
+	    if tl_parent != reactor_panel:
+	      # Generate a list of the internal timeline names for this candidate parent
+	      tl_names = [tl.tl.name for tl in tl_parent.int_timelines]
+	      if timeline.tl.name in tl_names:
+		# Set this timeline's reactor panel to it's parent
+		timeline.reactor_panel = tl_parent
+
+		# Re-order this timeline to group it with the first previous timeline with the same parent
+		tl_index = reactor_panel.ext_timelines.index(timeline)
+		sorted_timelines = [tl for tl in reactor_panel.ext_timelines[0:tl_index] if tl.reactor_panel]
+		
+		for sib in sorted_timelines:
+		  if sib.reactor_panel == tl_parent:
+		    sib_index = reactor_panel.ext_timelines.index(sib)
+		    tl_move = reactor_panel.ext_timelines.pop(tl_index)
+		    reactor_panel.ext_timelines.insert(sib_index,tl_move)
+		    break
+
+      # Re-calculate the row for each timeline
+      row = 0
+      for timeline in reactor_panel.int_timelines + reactor_panel.ext_timelines:
+	timeline.row = row
+	row = row + 1
 		
     # Redraw the active reactor
     self.draw_active_reactor()

@@ -126,7 +126,10 @@ class DbReaderWindow():
 
   # Callback for setting the tick value
   def on_tick_set(self,widget):
-    self.load_tick(self.tick_entry.get_text())
+    try:
+      self.load_tick(self.unformat_tick(self.tick_entry.get_text()))
+    except:
+      self.set_status("Malformatted tick entry!")
 
   # Callback for setting the tick index
   def on_tick_set_index(self,widget,index):
@@ -212,7 +215,7 @@ class DbReaderWindow():
     if len(available_ticks) != len(self.ticks):
       # Append any names that are found but not already registered
       for t in [t for t in available_ticks if t not in self.ticks]:
-	self.tick_combo_model.append([str(t)])
+	self.tick_combo_model.append([self.format_tick(t)])
       self.ticks = available_ticks
 
     # Make sure the selected tick is avaiable
@@ -264,8 +267,15 @@ class DbReaderWindow():
 
   # Update the text entry to reflect the current tick
   def update_tick_entry(self):
-    self.tick_entry.set_text(str(self.tick))
+    self.tick_entry.set_text(self.format_tick(self.tick))
 
+  def format_tick(self,tick):
+    return "%d.%d" % (tick[0],tick[1])
+
+  def unformat_tick(self,tick):
+    i = tick.split(".")
+    return (int(i[0]),int(i[1]))
+  
   # Set the status text
   def set_status(self,text):
     self.status_text = text
@@ -320,8 +330,6 @@ class DbReaderWindow():
   # Get all available data for a given tick from the db_reader
   def load_tick(self,new_tick):
     try:
-      new_tick = int(new_tick)
-
       # Check if this tick exists
       if new_tick not in self.ticks:
 	raise IOError
@@ -357,11 +365,11 @@ class DbReaderWindow():
       self.tick = new_tick
 
       # Post an update to the status bar
-      self.set_status("Loaded Tick [%d] from \"%s\"" % (self.tick,self.reactor_chooser.get_active_text()))
+      self.set_status("Loaded Tick [%s] from \"%s\"" % (self.format_tick(self.tick),self.reactor_chooser.get_active_text()))
     except ValueError:
       self.set_status("Invalid tick entry!")
     except:
-      self.set_status("Could not load Tick [%s] from \"%s\"!" % (str(new_tick),self.reactor_chooser.get_active_text()))
+      self.set_status("Could not load Tick [%s] from \"%s\"!" % (self.format_tick(new_tick),self.reactor_chooser.get_active_text()))
 
     # Update gui
     self.update_tick_entry()
@@ -387,9 +395,12 @@ class DbReaderWindow():
   def notify_listeners(self):
     for listener in self.listeners:
       try:
+	#print "NOTIFYING %s WITH %s\n\t%s\n\t%s" %(str(listener),self.format_tick(self.tick),str(self.db_cores),self.reactor_name) 
 	listener(self.db_cores, self.reactor_name)
+	#print "NOTIFIED!"
       except:
 	print "Failed to notify listener: "+str(listener)
+	raise
 
 # Testing utilities
 class GtkTester():
@@ -412,11 +423,11 @@ class SimpleAssemblyListener():
 
   def cb_rules(self,db_cores,reactor_name):
     if reactor_name:
-      print db_cores
       self.rules = db_cores[reactor_name].assembly.rules
+      print "RECEVIED %d RULES" % len(self.rules)
     else:
-      print "EMPTY DATABASE"
       self.rules = {}
+      print "EMPTY DATABASE"
 
   def cb_tokens(self,db_cores,reactor_name):
     if reactor_name:
@@ -458,8 +469,8 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
     # Define data constants
     LOG_PATH = TREX.util.trex_path("tools/test/db_reader")
     REACTORS = ["pr2.doorman","pr2.navigator","pr2.driver"]
-    TICKS = range(0,10)
-    GO_TICK = 5
+    TICKS = [(t,0) for t in range(0,10)]
+    GO_TICK = (5,0)
     
     print "Setting the log path..."
     self.db_reader_window.path_chooser.set_filename(LOG_PATH)
@@ -502,7 +513,7 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
     time.sleep(4)
 
     print "Checking tick entry..."
-    self.db_reader_window.tick_entry.set_text(str(GO_TICK))
+    self.db_reader_window.tick_entry.set_text(self.db_reader_window.format_tick(GO_TICK))
     time.sleep(1)
     self.db_reader_window.go_but.emit("clicked")
     time.sleep(1)
@@ -535,7 +546,7 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
   
   def copy_ticks(self,src,dest,reactors,ticks):
     for tick in ticks:
-      tick_name = "%d.%s" % (tick,DbReader.DB_EXT)
+      tick_name = "%d.%d.%s" % (tick[0],tick[1],DbReader.DB_EXT)
       for r in reactors:
 	shutil.copy2(
 	  os.path.join(src,r,DbReader.DB_PATH,tick_name),
@@ -543,7 +554,7 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
       time.sleep(0.1)
 
   # Test auto-reload functionality
-  def _test_autoload(self):
+  def test_autoload(self):
     # Wait for the window to come up
     time.sleep(2)
 
@@ -551,8 +562,7 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
     LOG_PATH = TREX.util.trex_path("tools/test/db_reader_window")
 
     REACTORS = ["pr2.doorman","pr2.navigator","pr2.driver"]
-    TICKS = range(0,9)
-    FULL_TICKS = range(5,9)
+    TICKS = [(i,0) for i in range(0,9)]
 
     if os.path.exists(LOG_PATH):
       print "Clearing log directory..."
@@ -594,11 +604,11 @@ class TestDbReaderWindow(unittest.TestCase,GtkTester):
     self.db_reader_window.latest_toggle.emit("toggled")
     time.sleep(2)
 
-    self.copy_ticks(SRC_LOG_PATH,LOG_PATH,REACTORS,[9])
+    self.copy_ticks(SRC_LOG_PATH,LOG_PATH,REACTORS,[(9,0)])
     time.sleep(0.1)
 
     print "Checking for automatic tick tracking..."
-    self.assert_(self.db_reader_window.tick_entry.get_text() == str(9))
+    self.assert_(self.db_reader_window.tick_entry.get_text() == self.db_reader_window.format_tick((9,0)))
 
     print "Removing log directory..."
     shutil.rmtree(LOG_PATH)
