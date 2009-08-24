@@ -113,7 +113,7 @@ namespace TREX {
   const std::string NINFINITY("-Infinity");
   const std::string INTEGER_SORT("INTEGER_SORT");
   const std::string REAL_SORT("REAL_SORT");
-  const std::string STEP("tick");
+  const std::string STEP("plan");
   const std::string PARTIAL_PLAN_STATS("/partialPlanStats");
   const std::string SEQUENCE("/sequence");
   const std::string RULES("/rules");
@@ -703,7 +703,7 @@ namespace TREX {
 
     // Generate step string
     std::ostringstream oss;
-    oss<<STEP<<tick;
+    oss<<tick<<".0."<<STEP;
     
     std::string stepnum = oss.str();
 
@@ -712,6 +712,8 @@ namespace TREX {
       std::cerr << "Failed to create " << ppDest << std::endl;
       FatalErrno();
     }
+
+    stepnum = "plan";
 
     std::string ppPartialPlan = ppDest + SLASH + stepnum + PARTIAL_PLAN;
     std::ofstream ppOut(ppPartialPlan.c_str());

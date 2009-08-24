@@ -259,6 +259,7 @@ namespace TREX {
       m_lastCompleteTick(MINUS_INFINITY),
       m_state(DbCore::INACTIVE),
       m_solverCfg(findFile(extractData(configData, "solverConfig").toString())),
+      m_planAttempts(0),
       m_statePath(LogManager::instance().reactor_dir_path(agentName.toString(),getName().toString(),"reactor_states").c_str()),
       m_conflictPath(LogManager::instance().reactor_dir_path(agentName.toString(),getName().toString(),"conflicts").c_str()),
       m_planLog(LogManager::instance().reactor_file_path(agentName.toString(),getName().toString(),"plan.log").c_str())
@@ -414,7 +415,7 @@ namespace TREX {
 
     // Allocate a token - it should be inactive and rejectable. This respects the semantics that the owner reactor
     // is the decider of what goes or does not go. May get requests that conflict with each other, or with observations.
-    TokenId localGoal = client->createToken(goal->getPredicateName().c_str(),NULL, REJECTABLE);
+    TokenId localGoal = client->createToken(goal->getPredicateName().c_str(), NULL, REJECTABLE);
 
     // A request must have its object variable bound. 
     checkError(goal->getObject()->lastDomain().isSingleton(), goal->getObject()->lastDomain().toString());
@@ -772,7 +773,7 @@ namespace TREX {
   std::string DbCore::writeDbState() {
     // Create a new file
     std::ostringstream oss;
-    oss << m_statePath << "/" << getCurrentTick() << ".reactorstate";
+    oss << m_statePath << "/" << getCurrentTick() << "." <<"0" << ".reactorstate";
 
     // Open file for writing
     std::ofstream db_out(oss.str().c_str());
@@ -836,8 +837,8 @@ namespace TREX {
 
     checkError(verifyEntities(), "Bad entity detected.");
 
-    // If the state is inactive, then we increment the current tick cycle. We do this because in order to evaluate flaws
-    // we need to set the horizon
+    // If the state is inactive, then we increment the current tick cycle.
+    // We do this because in order to evaluate flaws we need to set the horizon
     if(m_state == DbCore::INACTIVE)
       m_currentTickCycle = getCurrentTick();
 
@@ -1059,6 +1060,7 @@ namespace TREX {
 
 	if(!propagate()){
 	  TREX_INFO("trex:error", nameString() << "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
+	  // CONFLICT
 	  throw new DbCore::Exception("Fatal Error");
 	}
 
@@ -1079,6 +1081,7 @@ namespace TREX {
 
 	  if(!propagate()){
 	    TREX_INFO("trex:error", nameString() << "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
+	    // CONFLICT
 	    throw new DbCore::Exception("Fatal Error");
 	  }
 
@@ -1177,6 +1180,7 @@ namespace TREX {
 
 	  if(!propagate()){
 	    TREX_INFO("trex:warning:dispatchCommands", nameString() << "Dispatching " << token->toLongString() << " failed due to an inconsistent network.");
+	    // CONFLICT
 	    return;
 	  }
 
@@ -2033,7 +2037,7 @@ namespace TREX {
       // It is possible that the temporal network is inconsistent in which case it will give the result of an empty domain. 
       // It would be ideal if propagation caught that but it does not appear to!
       if(distanceBounds.isEmpty()){
-	markInvalid("Detected an inconsistency in the temporal network when evaluatiing actions for execution. To investigate, enable ConstraintEngine in Debug.cfg");
+	markInvalid("Detected an inconsistency in the temporal network when evaluating actions for execution. To investigate, enable ConstraintEngine in Debug.cfg");
 	return true;
       }
 
@@ -2453,6 +2457,8 @@ namespace TREX {
 
     TREX_INFO("trex:warning", nameString() << " is marked invalid. Hint:" << comment);
     m_state = DbCore::INVALID;
+    // Output the current reactor state and increment the planning attempts
+    // CONFLICT
   }
 
 
