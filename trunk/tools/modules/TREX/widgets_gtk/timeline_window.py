@@ -132,6 +132,8 @@ class ReactorPanel():
   #   token
   ContextCallbacks = {}
 
+  DoubleClickCallbacks = []
+
   def __init__(self):
     # Initialize data structures
     self.db_core = DbCore()
@@ -342,11 +344,19 @@ class ReactorPanel():
     if event.type == gtk.gdk._2BUTTON_PRESS:
       if event.button == 1:
 	if token:
+	  # Hilight the token
+	  self.hilight_keys = [token.key]
+	  """ MULTIPLE SELECTION
 	  if token.key not in self.hilight_keys:
 	    self.hilight_keys.append(token.key)
 	  else:
 	    self.hilight_keys.remove(token.key)
+	  """
 	  self.draw()
+	  # Call the double click callbacks with the db core and the token
+	  for cb in ReactorPanel.DoubleClickCallbacks:
+	    cb(self.db_core,token)
+
     elif event.type == gtk.gdk.BUTTON_PRESS: 
       if event.button == 1:
 	pass
@@ -359,6 +369,10 @@ class ReactorPanel():
 	self.draw()
       elif event.button == 3:
 	if token:
+	  # Hilight the token
+	  self.hilight_keys = [token.key]
+	  self.draw()
+
 	  # Create context menu
 	  m = gtk.Menu()
 
@@ -1002,6 +1016,14 @@ class TimelineWindow():
     # Remove callback from dictionary
     if ReactorPanel.has_key(label_str):
       del ReactorPanel[label_str]
+
+  def register_double_click_callback(self,cb):
+    ReactorPanel.DoubleClickCallbacks.append(cb)
+
+  def unregister_double_click_callback(self,cb):
+    ReactorPanel.DoubleClickCallbacks.remove(cb)
+
+  
 
 
 # Unit tests

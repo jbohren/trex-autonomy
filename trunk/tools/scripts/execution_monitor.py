@@ -66,6 +66,7 @@ def main():
   # Register context extensions
   timeline_window.register_context_extension("View token properties...",SpawnPropertyWindow)
   timeline_window.register_context_extension("Hilight in token network...",HilightInTokenNetwork)
+  timeline_window.register_double_click_callback(HilightInTokenNetwork)
 
   # Bring the db reader forward
   db_reader_window.w.present()
