@@ -12,8 +12,6 @@ class CircuitBreaker extends AgentTimeline {
 };
 
 class ResetCircuitBreaker extends Behavior {
-  predicate Inactive{}
-  predicate Active{}
   ResetCircuitBreaker(Mode m) { super(m); }
 };
 
@@ -31,8 +29,6 @@ CircuitBreaker::Open{
  * Here is an example of an action that will require a sub action to end it.
  */
 class MasterAction extends Behavior {
-  predicate Active{}
-  predicate Inactive{}
 
   MasterAction(Mode _mode){
     super(_mode);
@@ -40,14 +36,11 @@ class MasterAction extends Behavior {
 };
 
 class SlaveAction extends Behavior {
-  predicate Active{}
-  predicate Inactive{}
 
   SlaveAction(Mode _mode){
     super(_mode);
   }
 };
-
 
 MasterAction::Active{
   duration <= 2;
