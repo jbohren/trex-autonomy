@@ -2,7 +2,9 @@
 
 
 Doorman::Active{
-  equals(DoorController.CheckingDoorway);
+  if(isSingleton(this.object)){
+      equals(DoorController.CheckingDoorway);
+  }
 }
 
 DoorController::Inactive{
@@ -16,6 +18,9 @@ DoorController::CheckingDoorway{
 
 Doorman doorman = new Doorman(Internal);
 DoorController door_controller = new DoorController(Internal);
+CheckPath check_path = new CheckPath(External);
 
 fact(doorman.Inactive);
 fact(door_controller.Inactive);
+
+rejectable(check_path.Active cmd);

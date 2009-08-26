@@ -9,3 +9,7 @@ class DoorController extends AgentTimeline {
   predicate CheckingDoorway{}
   DoorController(Mode _mode){ super(_mode, "Inactive"); }
 };
+
+class CheckPath extends Behavior {
+  CheckPath(Mode _mode){ super(_mode); }
+};
