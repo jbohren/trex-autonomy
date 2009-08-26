@@ -1,0 +1,21 @@
+#include "personal_robots/model.nddl"
+
+
+Doorman::Active{
+  equals(DoorController.CheckingDoorway);
+}
+
+DoorController::Inactive{
+  starts(Doorman.Inactive);
+}
+
+// This will force failure. Planning will not be possible.
+DoorController::CheckingDoorway{
+  1 == 0;
+}
+
+Doorman doorman = new Doorman(Internal);
+DoorController door_controller = new DoorController(Internal);
+
+fact(doorman.Inactive);
+fact(door_controller.Inactive);
