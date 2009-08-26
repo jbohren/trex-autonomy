@@ -242,10 +242,12 @@ namespace TREX {
     static const LabelStr& IGNORE_TIMELINE();
 
 
+    void incrementAttempts();
+    unsigned int getCurrentAttempt() const;
     /**
      * Method to cause an Agent to write all it's reactors assemlies to disk.
      */
-    void dumpAssemblies();
+    std::string dumpState(const bool export_assembly);
 
   private:
 
@@ -294,6 +296,7 @@ namespace TREX {
     ObserverId m_thisObserver; /*!< A connector to allow the agent to play as a middleman by intercepting observations from Reactors */
     unsigned int m_currentTick; /*!< Set by the clock */
     unsigned int m_finalTick; /*!< Determines mission end */
+    unsigned int m_attempts; /*!< Tracks the number of times this tick has been attempted to be resolved */
     std::multimap<LabelStr, ObserverId> m_observersByTimeline; /*!< Routing table for observations */
     std::vector<TeleoReactorId> m_reactors; /*!< The reactors in order of allocation */
     std::map< double, TeleoReactorId> m_reactorsByName; /*!< The set of reactors */

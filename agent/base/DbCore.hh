@@ -259,9 +259,14 @@ namespace TREX {
     std::string writeDbState();
 
     /**
+     * @brief Write a description of a conflict to disk.
+     */
+    std::string writeConflict(std::string brief_description, std::string analysis);
+
+    /**
      * @brief Output the assembly to file at the current tick
      */
-    void dumpAssembly();
+    void dumpState(bool export_assembly = false);
 
     /**
      * @brief Add a PlanDatabaseListener to the internal EUROPA PlanDatabase
@@ -315,7 +320,10 @@ namespace TREX {
      * @brief Encapsulation of change to invalidate db state
      * @param comment Provide context and hints for debugging
      */
-    void markInvalid(const std::string& comment);
+    void markInvalid(
+	const std::string& comment,
+	const bool dump_state=false,
+	const std::string& analysis = std::string(""));
 
     /**
      * @brief Accessor to goal set
@@ -690,7 +698,6 @@ namespace TREX {
 
     std::string m_statePath;
     std::string m_conflictPath;
-    unsigned int m_planAttempts;
     std::ofstream m_planLog;
   };
 }

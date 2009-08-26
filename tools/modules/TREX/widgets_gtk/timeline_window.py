@@ -119,6 +119,7 @@ class ReactorPanel():
   FutureWidth = 500
   MetricTime = False
   TimeScale = 1.0
+  ViewTokenKeys = False
 
   TokenSpace = 2
 
@@ -182,6 +183,7 @@ class ReactorPanel():
     self.timeline_sw.set_vadjustment(self.v_adj)
     self.timeline_label_sw.set_vadjustment(self.v_adj)
 
+
     # Make all windows share the same timeline position
     self.timeline_sw.set_hadjustment(ReactorPanel.H_adj)
 
@@ -194,6 +196,19 @@ class ReactorPanel():
 
     self.timeline_da.connect("expose-event",self.expose_timeline_da)
     self.timeline_da.connect("button-press-event", self.on_timeline_click,None)
+
+  def on_change_color(self,widget):
+    color = self.color_chooser_but.get_color()
+    self.set_color(color.red,color.green,color.blue)
+
+  def set_color(self,r,g,b):
+    # Set the stored color
+    self.color = (r/65535.0,g/65535.0,b/65535.0)
+    # Set the chooser color
+    vis = gtk.gdk.visual_get_system()
+    cmap = gtk.gdk.Colormap(vis,True)
+    self.color_chooser_but.set_color(gtk.gdk.Colormap.alloc_color(cmap,r,g,b))
+    self.draw()
 
   # Create timeline structures for all of the timelines in an assembly
   def process_timelines(self, db_core):
@@ -281,7 +296,7 @@ class ReactorPanel():
 	# Store / update this token
 	self.all_tokens[new_token.key] = new_token
 	# Update last updated tick for this token
-	self.token_ticks[new_token.key] = db_core.tick[0]
+	self.token_ticks[new_token.key] = db_core.tick#[0]
 	# Store this token's timeline
 	self.token_timelines[new_token.key] = timeline
 
@@ -492,13 +507,13 @@ class ReactorPanel():
       (r,g,b) = timeline.get_color()
 
       # Skip tokens that are older than the tickbehind and newer than the current tick
-      if tick < self.db_core.tick[0]-ReactorPanel.TokenHistory:
+      if tick[0] < self.db_core.tick[0]-ReactorPanel.TokenHistory:
 	# Check if this is older than the cache
-	if tick < self.db_core.tick[0]-ReactorPanel.TokenCache:
+	if tick[0] < self.db_core.tick[0]-ReactorPanel.TokenCache:
 	  # Add this token to the removal list
 	  self.tokens_to_remove.append(token)
 	continue
-      elif tick > self.db_core.tick[0]:
+      elif tick > self.db_core.tick:
 	continue
 
       # Do not draw BaseState (HACK)
@@ -509,7 +524,13 @@ class ReactorPanel():
 
       # Create the label string, and get the length of the label
       self.set_label_font(cr)
-      label_str = "%s" % (token.name.split('.')[1])#, int(str(token.key)))
+
+      # Switch on whether we want to view the keys in the label
+      if ReactorPanel.ViewTokenKeys:
+	label_str = "%s (%s)" % (token.name.split('.')[1], str(token.key))
+      else:
+	label_str = "%s" % (token.name.split('.')[1])
+
       _xb,_yb,w_label,_th,_xa,_ya = cr.text_extents(label_str)
 
       # Create the time bound string and get its length
@@ -627,7 +648,7 @@ class ReactorPanel():
       # Set the color for the appropriate reactors
       if key in self.hilight_keys:
 	cr.set_source_rgba(1.0, 0.7, 0.07, 1.0)
-      elif self.token_ticks[key] < self.db_core.tick[0]:
+      elif self.token_ticks[key] < self.db_core.tick:#[0]:
 	cr.set_source_rgba(r,g,b, 0.3)
       else:
 	cr.set_source_rgba(r, g, b, 0.7)
@@ -797,6 +818,7 @@ class TimelineWindow():
     self.center_spin.connect("value-changed",self.on_change_view_controls)
     self.future_width_spin.connect("value-changed",self.on_change_view_controls)
     self.metric_time_check.connect("toggled",self.on_change_view_controls)
+    self.view_token_keys_check.connect("toggled",self.on_change_view_controls)
     self.time_scale_spin.connect("value-changed",self.on_change_view_controls)
 
     self.token_cache_spin.connect("value-changed",self.on_change_view_controls)
@@ -822,6 +844,7 @@ class TimelineWindow():
     ReactorPanel.FutureWidth = self.future_width_spin.get_value()
     ReactorPanel.Center = self.center_spin.get_value()
     ReactorPanel.MetricTime = self.metric_time_check.get_active()
+    ReactorPanel.ViewTokenKeys = self.view_token_keys_check.get_active()
     ReactorPanel.TimeScale = self.time_scale_spin.get_value()
 
     ReactorPanel.TokenCache = self.token_cache_spin.get_value()
@@ -883,6 +906,14 @@ class TimelineWindow():
       for timeline in reactor_panel.int_timelines + reactor_panel.ext_timelines:
 	timeline.row = row
 	row = row + 1
+
+    # Set the statusbar
+    if selected_reactor_name:
+      tick = db_cores[selected_reactor_name].tick
+      if db_cores[selected_reactor_name].conflict:
+	self.statusbar.push(0,"TICK: %s CONFLICT: %s" % (str(tick[0]),str(tick[1])))
+      else:
+	self.statusbar.push(0,"TICK: %s" % (str(tick[0])))
 		
     # Redraw the active reactor
     self.draw_active_reactor()
@@ -903,6 +934,10 @@ class TimelineWindow():
     icon = tree.get_widget("tab_icon")
     text = tree.get_widget("tab_text")
 
+    # Bind the color buttons for changing the reactor color
+    tp.color_chooser_but = tree.get_widget("tab_color_button")
+    tp.color_chooser_but.connect("color-set",tp.on_change_color)
+
     # Set the label text
     text.set_text(reactor_name)
 
@@ -916,14 +951,15 @@ class TimelineWindow():
     # Store the index
     self.reactor_indices[tp.tab_index] = tp
 
-    # Create timelines for this reactor
-    
-
     # Update the colors
     self.update_icons()
 
     # Show all of the label sub-widgets
     label.show_all()
+
+  def set_visible_reactor(self,reactor_name):
+    tab_index = self.reactor_panels[reactor_name].tab_index
+    self.reactor_nb.set_current_page(tab_index)
 
   # Remove a reactor (and delete its tab)
   def rem_reactor(self,reactor_name):

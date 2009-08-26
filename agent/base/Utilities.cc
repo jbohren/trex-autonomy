@@ -92,6 +92,8 @@ namespace TREX {
 
     Agent::initialize(*root, clock, 0, true);
 
+    LogManager::instance().handleInit();
+
     while(!Agent::instance()->missionCompleted()){
       Agent::instance()->doNext();
     }

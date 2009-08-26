@@ -259,7 +259,6 @@ namespace TREX {
       m_lastCompleteTick(MINUS_INFINITY),
       m_state(DbCore::INACTIVE),
       m_solverCfg(findFile(extractData(configData, "solverConfig").toString())),
-      m_planAttempts(0),
       m_statePath(LogManager::instance().reactor_dir_path(agentName.toString(),getName().toString(),"reactor_states").c_str()),
       m_conflictPath(LogManager::instance().reactor_dir_path(agentName.toString(),getName().toString(),"conflicts").c_str()),
       m_planLog(LogManager::instance().reactor_file_path(agentName.toString(),getName().toString(),"plan.log").c_str())
@@ -773,7 +772,7 @@ namespace TREX {
   std::string DbCore::writeDbState() {
     // Create a new file
     std::ostringstream oss;
-    oss << m_statePath << "/" << getCurrentTick() << "." <<"0" << ".reactorstate";
+    oss << m_statePath << "/" << getCurrentTick() << "." << Agent::instance()->getCurrentAttempt() << ".reactorstate";
 
     // Open file for writing
     std::ofstream db_out(oss.str().c_str());
@@ -803,14 +802,41 @@ namespace TREX {
     db_out.close();
     
     // Output assembly as well (very large amount of data, will slow execution)
-    TREX_INFO("ExportPlan", nameString() << m_assembly.exportToPlanWorks());
+    TREX_INFO("ExportPlan", nameString() << m_assembly.exportToPlanWorks(getCurrentTick(), Agent::instance()->getCurrentAttempt()));
+    
+    return std::string("Success.");
+  }
+
+  std::string DbCore::writeConflict(std::string brief_description, std::string analysis) {
+
+    // Write out associated DbState and Assembly for all reactors
+    Agent::instance()->dumpState(true);
+
+    // Create conflict file path
+    std::ostringstream oss;
+    oss << m_conflictPath << "/" << getCurrentTick() << "." << Agent::instance()->getCurrentAttempt() << ".conflict";
+    
+    // Open file for writing
+    std::ofstream conflict_out(oss.str().c_str());
+
+    // Write out conflict data
+    conflict_out<<brief_description<<std::endl;
+    conflict_out<<analysis;
+    
+    // Close file
+    conflict_out.close();
+    
+    // Increment the  number of attempts
+    Agent::instance()->incrementAttempts();
 
     return std::string("Success.");
   }
 
-  void DbCore::dumpAssembly() {
+  void DbCore::dumpState(bool export_assembly) {
+    if(export_assembly) {
+      m_assembly.exportToPlanWorks(getCurrentTick(),Agent::instance()->getCurrentAttempt());
+    }
     writeDbState();
-    m_assembly.exportToPlanWorks();
   }
 
   void DbCore::addDbListener(EUROPA::PlanDatabaseListener& listener) {
@@ -821,7 +847,7 @@ namespace TREX {
     m_sync_stepCount = 0;
     m_search_depth = 0;
     m_search_stepCount = 0;
-
+    
     if(m_state == DbCore::INVALID){
       TREX_INFO("DbCore:handleTickStart", nameString() << "Database is invalid. Repair required.");
       return;
@@ -829,7 +855,7 @@ namespace TREX {
 
     // Update the clock variable
     getAgentClockVariable(m_db)->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
-
+    
     // Since things depend on the clock there could easily be a constraint violated by a tick increment. We generate an excpetion
     // if the database is inconsistent and the deliberative reactor will handle repair.
     if(!propagate())
@@ -852,10 +878,7 @@ namespace TREX {
 
     if(!propagate())
       return;
-
-    // Write the timelines out to file (low bandiwdth)
-    TREX_INFO("ExportReactorState", nameString() << writeDbState());
-
+    
     // Send goals planned on server timelines
     dispatchCommands();
 
@@ -904,7 +927,7 @@ namespace TREX {
     if(m_solver->isExhausted()) {
       m_planLog<<'['<<getCurrentTick()<<"] No plan found"<<std::endl;
       TREXLog() << nameString() << "No plan found." << std::endl;
-      markInvalid("Solver exhausted. No Plan found. Problem is over constrained. Enable Solver:step in Debug.cfg to investigate");
+      markInvalid("Solver exhausted. No Plan found. Problem is over constrained. Enable Solver:step in Debug.cfg to investigate", true);
       return;
     }
 
@@ -1251,19 +1274,25 @@ namespace TREX {
     // expected operation
     if(token.isNoId() || token->end()->lastDomain().getUpperBound() ==  tick || (tick == 0 && !isObservation(token))){
 
-      TREX_INFO_COND(token.isNoId(), "trex:warning:synchronization", nameString() << "Missed expected observation. No current value.");
-		   
+      TREX_INFO_COND(token.isNoId(), "trex:warning:synchronization", nameString() <<
+	  "Missed expected observation. No current value.");
 
       TREX_INFO_COND(token.isId(), "trex:warning:synchronization", nameString() << 
-	       "Missed expected observation to terminate " << token->toString() << " ending at " << token->end()->toString());
+	       "Missed expected observation to terminate " << token->toString() << 
+	       " ending at " << token->end()->toString());
 
-      TREXLog() << nameString() <<  "Missed expected observation on " << timeline->toString() << std::endl;
+      TREXLog() << nameString() <<  "Missed expected observation on " <<
+	timeline->toString() << std::endl;
 
       // Force invalid state to trigger a repair
-      TREX_INFO("trex:warning:synchronization", nameString() << missingObservation(timeline));
-      TREX_INFO_COND(token.isId(), "trex:warning:synchronization", nameString() << m_synchronizer.tokenExtensionFailure(token));
+      std::string missing_observation_str;
+      TREX_INFO("trex:warning:synchronization", nameString() << (missing_observation_str = missingObservation(timeline)));
 
-      markInvalid(std::string("Expected an observation for ") + timeline->toString() + ". Are observations being generated?. The plan may simply be broken.");
+      std::string token_extension_failure_str;
+      TREX_INFO_COND(token.isId(), "trex:warning:synchronization", nameString() << (token_extension_failure_str = m_synchronizer.tokenExtensionFailure(token)));
+
+      markInvalid(std::string("Expected an observation on ") + timeline->toString() + ". Are observations being generated?. The plan may simply be broken.",
+	  true, missing_observation_str + "\n" + token_extension_failure_str);
 
       return false;
     }
@@ -1302,7 +1331,7 @@ namespace TREX {
     if(!m_db->getConstraintEngine()->propagate()){
       TREXLog() << nameString() << "Inconsistent plan." << std::endl;
       TREX_INFO("DbCore:propagate", nameString() << "Inconsistent plan.");
-      markInvalid("The constraint network is inconsistent. To investigate, enable ConstraintEngine in Debug.cfg. Look for EMPTIED domain in log output to find the culprit.");
+      markInvalid("The constraint network is inconsistent. To investigate, enable ConstraintEngine in Debug.cfg. Look for EMPTIED domain in log output to find the culprit.",true);
       TREX_INFO("trex:warning:propagation", nameString() << m_synchronizer.propagationFailure());
     }
     else {
@@ -1444,7 +1473,7 @@ namespace TREX {
     m_lastCompleteTick = getCurrentTick();
 
     if(!timelinesAreComplete()){
-      markInvalid("Incomplete after planning. Need to further constrain the model to require the planner to integrate the plan to the execution frontier.");
+      markInvalid("Incomplete after planning. Need to further constrain the model to require the planner to integrate the plan to the execution frontier.",true);
       return false;
     }
 
@@ -1932,8 +1961,12 @@ namespace TREX {
   bool DbCore::synchronize(){
 
     processPendingTokens();
+    
+    bool solver_timed_out = isSolverTimedOut();
+    bool external_timeline_complete_fail = !completeExternalTimelines();
+    bool resolve_fail = !m_synchronizer.resolve();
 
-    if(isSolverTimedOut() || !completeExternalTimelines() || !m_synchronizer.resolve()){
+    if(solver_timed_out || external_timeline_complete_fail || resolve_fail){
       // Undo any impacts of solver. Reset this before making any deletions to avoid corrupting the stack
       m_solver->reset();
 
@@ -1945,14 +1978,21 @@ namespace TREX {
 
       // Revert to INACTIVE state
       m_state = DbCore::INACTIVE;
+      
+      // First just try to relax and resolve. 
+      bool relax_fail = !m_synchronizer.relax(false);
+      bool resolve_fail = !m_synchronizer.resolve();
 
-      // First just try to relax and resolve. If that fails the first time, apply a stronger
-      // relaxation where we discard current values that are not persistent.
-      if(discardCurrentValues || !m_synchronizer.relax(false) || !m_synchronizer.resolve()){
+      // If this fails the first time, apply a stronger relaxation where we discard current values that are not persistent.
+      if(discardCurrentValues || relax_fail || resolve_fail){
 	// Cleare the state again
 	m_state = DbCore::INACTIVE;
-	if(!m_synchronizer.relax(true) || !m_synchronizer.resolve())
+
+	bool relax_fail = !m_synchronizer.relax(true);
+	bool resolve_fail = !m_synchronizer.resolve();
+	if( relax_fail || resolve_fail) {
 	  return false;
+	}
       }
 
       TREX_INFO("DbCore:synchronize", nameString() <<  "Repaired Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
@@ -1969,6 +2009,9 @@ namespace TREX {
     archive();
 
     TREX_INFO("DbCore:synchronize", nameString() <<  "Synchronized Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
+    
+    // Write the nominal reactor state files (low bandiwdth)
+    TREX_INFO("ExportReactorState", nameString() << Agent::instance()->dumpState(false));
 
     return m_state != DbCore::INVALID;
   }
@@ -2037,7 +2080,7 @@ namespace TREX {
       // It is possible that the temporal network is inconsistent in which case it will give the result of an empty domain. 
       // It would be ideal if propagation caught that but it does not appear to!
       if(distanceBounds.isEmpty()){
-	markInvalid("Detected an inconsistency in the temporal network when evaluating actions for execution. To investigate, enable ConstraintEngine in Debug.cfg");
+	markInvalid("Detected an inconsistency in the temporal network when evaluating actions for execution. To investigate, enable ConstraintEngine in Debug.cfg",true);
 	return true;
       }
 
@@ -2426,7 +2469,7 @@ namespace TREX {
       if(lb < getCurrentTick()){
 	TREX_INFO("trex:warning:planning",  nameString() << "Timed out finding a plan.");
 	TREXLog() << nameString() << "Planning failed to complete in time." << std::endl;
-	markInvalid("The solver could not complete in time. You might have excessive logging, or excessive search. To investigate the latter, enable Solver:step in Debug.cfg");
+	markInvalid("The solver could not complete in time. You might have excessive logging, or excessive search. To investigate the latter, enable Solver:step in Debug.cfg",true);
 	return true;
       }
     }
@@ -2450,15 +2493,17 @@ namespace TREX {
     return false;
   }
 
-  void DbCore::markInvalid(const std::string& comment){
+  void DbCore::markInvalid(const std::string& comment, const bool dump_state, const std::string& analysis) {
     // Recall dispatched goals if transitioning into this state
     if(m_state != DbCore::INVALID)
       dispatchRecalls();
 
+    // Output log line
     TREX_INFO("trex:warning", nameString() << " is marked invalid. Hint:" << comment);
+    if(dump_state) {
+      TREX_INFO("trex:dump:conflict", nameString() << "Dumping conflict: " << writeConflict(comment, analysis)); 
+    }
     m_state = DbCore::INVALID;
-    // Output the current reactor state and increment the planning attempts
-    // CONFLICT
   }
 
 

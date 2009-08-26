@@ -155,11 +155,18 @@ namespace TREX {
     return m_constraintEngine->constraintConsistent();
   }
 
-  const std::string& Assembly::exportToPlanWorks(){
+  const std::string& Assembly::exportToPlanWorks(TICK tick, unsigned int attempt){
     static const std::string sl_reply("DONE");
 
-    checkError(m_constraintEngine->constraintConsistent(), "Should be propagated.");
-    getPPW()->write(TREX::Agent::instance()->getCurrentTick());
+    // The assembly might be getting dumped without being propagated
+    //if(attempt == 0) {
+    //  checkError(m_constraintEngine->constraintConsistent(), "Should be propagated.");
+    //}
+
+    std::cerr<<"DUMPING ASSEMBLY on ATTEMPT "<<attempt<<std::endl;
+
+    // Write out the data
+    getPPW()->write(tick,attempt);
 
     return sl_reply;
   }

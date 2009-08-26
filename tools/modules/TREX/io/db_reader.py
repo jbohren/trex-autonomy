@@ -8,6 +8,7 @@ import unittest
 
 # TREX modules
 from TREX.util import trex_path
+from TREX.core.conflict import Conflict
 from TREX.core.assembly import Assembly,Entity,Rule,Token,Slot,Variable,Object
 from TREX.core.db_core import DbCore,Timeline
 
@@ -28,10 +29,17 @@ class DbReader():
   ASSEMBLY_PATH = "plans"
   ASSEMBLY_EXT = "plan"
 
+  TickRegex = re.compile("([0-9]+).([0-9]+).")
+ 
+
   def __init__(self):
     # Compile expressions
     self.line_regex = re.compile("^(.+)\,([0-9]+)$")
     self.number_range_regex = re.compile("\[*([^\]]+)\]*")
+
+  # Get the full path to the conflicts of a specific reactor
+  def get_conflict_path(self, log_path, reactor_name):
+    return os.path.join(log_path,reactor_name,DbReader.CONFLICT_PATH)
 
   # Get the full path to the reactor states of a specific reactor
   def get_db_path(self, log_path, reactor_name):
@@ -61,6 +69,18 @@ class DbReader():
     ticks.sort()
     return ticks
 
+  def get_available_conflicts(self,log_path,reactor):
+    # Check conflict path
+    conflict_path = self.get_conflict_path(log_path,reactor)
+    conflict_names = os.listdir(conflict_path)
+    conflicts = []
+    for conflict_name in conflict_names:
+      ticknums = DbReader.TickRegex.findall(conflict_name)
+      tick = (int(ticknums[0][0]),int(ticknums[0][1]))
+      conflicts.append(tick)
+
+    return conflicts
+
   ############################################################################
   # load_db(log_path,reactor_name,tick)
   #   This loads a reactor plan (dbcore) from the given log path.
@@ -73,8 +93,25 @@ class DbReader():
     # Generate the reactor_path
     db_path = self.get_db_path(log_path, reactor_name)
 
+    # Determine if this is the last attempt from this tick
+    conflict_path = self.get_conflict_path(log_path, reactor_name)
+    conflict_file_name = os.path.join(conflict_path,"%d.%d.%s" % (tick[0],tick[1],DbReader.CONFLICT_EXT))
+
+    # Check if a conflict file for this tick exists
+    if os.path.exists(conflict_file_name):
+      # Load conflict file
+      conflict_file = open(conflict_file_name)
+      # Create conflict structure, and assign it
+      db_core.conflict = Conflict(conflict_file.readline(),conflict_file.read())
+      # Close the conflict file
+      conflict_file.close()
+
+    # Get a list of all the available conflicts
+    db_core.conflicts = self.get_available_conflicts(log_path, reactor_name)
+
     # Read in the tick
-    db_file = open(os.path.join(db_path,"%d.%d.%s" % (tick[0],tick[1],DbReader.DB_EXT)))
+    db_file_name = os.path.join(db_path,"%d.%d.%s" % (tick[0],tick[1],DbReader.DB_EXT))
+    db_file = open(db_file_name)
 
     # Mode translation
     modes = {'I':Timeline.INTERNAL, 'E':Timeline.EXTERNAL}
