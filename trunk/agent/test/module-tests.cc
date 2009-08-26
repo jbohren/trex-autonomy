@@ -45,6 +45,7 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
+    runTest(testPersonalRobots);
     runTest(testSynch);
     runTest(testExtensions);
     runTest(OrienteeringSolver);
@@ -71,6 +72,10 @@ public:
 
 private:
 
+  static bool testPersonalRobots(){
+    runAgentWithSchema("personal_robots/pr.0.cfg", 50, "pr.0");
+    return true;
+  }
 
   static bool testExtensions(){
     runAgentWithSchema("extensions.2.cfg", 50, "extensions.2");
@@ -344,7 +349,7 @@ private:
 };
 
 int main() {
-  setenv("TREX_PATH", "./orienteering", 1);
+  setenv("TREX_PATH", "./orienteering:./personal_robots", 1);
   initTREX();
   runTestSuite(GamePlayTests::test);
   runTestSuite(AgentTests::test);
