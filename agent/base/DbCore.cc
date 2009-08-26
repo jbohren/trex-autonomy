@@ -36,6 +36,7 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <stdexcept>
 
 namespace TREX {
 
@@ -80,7 +81,7 @@ namespace TREX {
       m_core = DbCore::getInstance(token);
     }
 
-    TREX_INFO("trex:debug:planning", "[" << sl_counter++ << "] Evaluating " << token->toString() << " with " << 
+    TREX_INFO("trex:debug:planning", "[" << sl_counter++ << "] Evaluating " << tokenToString(token) << " with " << 
 	     token->start()->lastDomain().toString() << " AND " << 
 	     token->end()->lastDomain().toString());
 
@@ -96,7 +97,7 @@ namespace TREX {
 
     // Special Treatment if it is in fact a condition (for now called a TestMonitor). Cheap check first
     if(TestMonitor::isCondition(token->getKey())){
-      TREX_INFO("trex:debug:planning:flawfiltering", "Evaluating test condition " << token->toString());
+      TREX_INFO("trex:debug:planning:flawfiltering", "Evaluating test condition " << tokenToString(token));
       bool inScope = startTime.getUpperBound() <= m_core->getCurrentTick() && 
 	startTime.isSingleton() && endTime.getUpperBound() > m_core->getCurrentTick();
 
@@ -217,10 +218,6 @@ namespace TREX {
     m_dispatchedTokens.erase(token);
   }
 
-  DbCore::Exception::Exception(const std::string& description): m_description(description) {}
-
-  const std::string& DbCore::Exception::toString() const {return m_description;}
-
   DbCore::DbListener::DbListener(DbCore& dbCore)
     : PlanDatabaseListener(dbCore.m_db), m_dbCore(dbCore){}
 
@@ -261,18 +258,15 @@ namespace TREX {
       m_solverCfg(findFile(extractData(configData, "solverConfig").toString())),
       m_statePath(LogManager::instance().reactor_dir_path(agentName.toString(),getName().toString(),"reactor_states").c_str()),
       m_conflictPath(LogManager::instance().reactor_dir_path(agentName.toString(),getName().toString(),"conflicts").c_str()),
-      m_planLog(LogManager::instance().reactor_file_path(agentName.toString(),getName().toString(),"plan.log").c_str())
+      m_planLog(LogManager::instance().reactor_file_path(agentName.toString(),getName().toString(),"plan.log").c_str()),
+      m_lastRecalled(0)
   {
 
     DebugMessage::setStream(getStream());
 
     instancesByDb().insert(std::pair<PlanDatabaseId, DbCoreId>(m_db, getId()));
 
-#ifdef USE_NDDL_PARSER
     const LabelStr  configFile(findFile(compose(getAgentName(), compose(getName(), "nddl")).toString()));
-#else
-    const LabelStr  configFile(findFile(compose(getAgentName(), compose(getName(), "xml")).toString()));
-#endif
 
     LogManager::use(configFile.toString());
     m_assembly.playTransactions(configFile.c_str());
@@ -305,17 +299,17 @@ namespace TREX {
       TokenId token = *it;
       checkError(token.isValid(), token);
 
-      checkError(!token->isActive(), "Initially there should be no active tokens. " << token->toString());
+      checkError(!token->isActive(), "Initially there should be no active tokens. " << tokenToString(token));
 
       // If a fact, make sure it is on an internal timeline
       if(token->isFact())
 	facts.push_back(token);
       else if(!isAction(token)){ // Must be a rejectable goal, and an orphan
-	checkError(token->master().isNoId(), token->toString() << " is not an orphan. How can this be. Its master is " << token->master()->toString());
+	checkError(token->master().isNoId(), tokenToString(token) << " is not an orphan. How can this be. Its master is " << token->master()->toString());
 
 	// Should be inactive and rejectable
 	checkError(token->isInactive() && token->getState()->baseDomain().isMember(Token::REJECTED), 
-		   "Must be rejectable if a goal. It aint. " << token->toString());
+		   "Must be rejectable if a goal. It aint. " << tokenToString(token));
       }
     }
 
@@ -388,7 +382,7 @@ namespace TREX {
       const LabelStr& varName = nameValuePair.first;
       const AbstractDomain& varDom = *(nameValuePair.second);
       const ConstrainedVariableId& param = token->getVariable(varName);
-      checkError(param.isValid(), token->toString() << " has no variable named " << varName.toString() << ". " << token->toLongString());
+      checkError(param.isValid(), tokenToString(token) << " has no variable named " << varName.toString() << ". " << token->toLongString());
       restrict(param, varDom);
     }
 
@@ -1018,7 +1012,7 @@ namespace TREX {
     static unsigned int sl_counter(0);
     sl_counter++;
 
-    TREX_INFO("trex:info", nameString() << "Terminating " << token->toString());
+    TREX_INFO("trex:info", nameString() << "Terminating " << tokenToString(token));
 
     // If it is a goal, generate messages indicating its eventual fate
     if(isGoal(token)){
@@ -1058,7 +1052,7 @@ namespace TREX {
 	TokenId token = *t_it;
 	checkError(token.isValid(), token);
 	TREX_INFO("trex:debug:synchronization:notifyObservers", 
-		  nameString() << "Evaluating " << token->toString() << " for update.");
+		  nameString() << "Evaluating " << tokenToString(token) << " for update.");
 
 	// If we are processing the initial tick, set the start time to be exactly 0
 	if(getCurrentTick() == 0 && token->start()->lastDomain().getUpperBound() == 0){
@@ -1066,7 +1060,7 @@ namespace TREX {
 	  if(!propagate()){
 	    TREX_INFO("trex:error", nameString() << "Inconsistent on propagating initial time bounds." << std::endl  << m_synchronizer.propagationFailure());
 
-	    throw new DbCore::Exception("Fatal Error");
+	    throw std::runtime_error("Fatal Error propagating initial time bounds in " + nameString() + "\n\n" + m_synchronizer.propagationFailure());
 	  }
 	}
 
@@ -1084,7 +1078,7 @@ namespace TREX {
 	if(!propagate()){
 	  TREX_INFO("trex:error", nameString() << "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
 	  // CONFLICT
-	  throw new DbCore::Exception("Fatal Error");
+	  throw  std::runtime_error("Fatal Error propagating committed values during synchronization in " + nameString() + "\n\n" + m_synchronizer.propagationFailure());
 	}
 
 	// If the latest end time <= the current tick, skip ahead
@@ -1105,7 +1099,7 @@ namespace TREX {
 	  if(!propagate()){
 	    TREX_INFO("trex:error", nameString() << "Inconsistent on propagating committed values during synchronization." << std::endl  << m_synchronizer.propagationFailure());
 	    // CONFLICT
-	    throw new DbCore::Exception("Fatal Error");
+	    throw std::runtime_error("Fatal Error propagating committed values during synchronization in " + nameString() + "\n\n" + m_synchronizer.propagationFailure());
 	  }
 
 	  // Now dispatch observation
@@ -1174,7 +1168,7 @@ namespace TREX {
 	checkError(token.isValid(), token);
 
 	TREX_INFO("trex:debug:dispatching", 
-		 nameString() << "Evaluating " << token->toString() << " for dispatch window [" << dispatchLB << ", " << dispatchUB << "]");
+		 nameString() << "Evaluating " << tokenToString(token) << " for dispatch window [" << dispatchLB << ", " << dispatchUB << "]");
 	
 	const IntervalIntDomain& startTime = token->start()->lastDomain();
 
@@ -1225,6 +1219,12 @@ namespace TREX {
    * @brief Dispatch Recalls To Respective Servers. All tokens in the future that have been dispatched should be recalled.
    */
   void DbCore::dispatchRecalls(){
+
+    if(m_lastRecalled == getCurrentTick())
+      return;
+
+    m_lastRecalled = getCurrentTick();
+
     TREX_INFO("trex:debug:dispatching:dispatchRecalls", nameString() << "START");
 
     for(std::map<int, TimelineContainer>::iterator it = m_externalTimelineTable.begin(); it != m_externalTimelineTable.end(); ++it){
@@ -1239,12 +1239,13 @@ namespace TREX {
 	checkError(token.isValid(), token);
 
 	TREX_INFO("trex:debug:dispatching", nameString() << 
-		 "Evaluating " << token->toString() << " for recall. Dispatched[" << tc.isDispatched(token) << "] "
+		 "Evaluating " << tokenToString(token) << " for recall. Dispatched[" << tc.isDispatched(token) << "] "
 		 "Ends:" << token->end()->baseDomain().toString());
 
 	// If the token has been dispatched and it is not finished yet ,recall it.
 	if(tc.isDispatched(token) && token->end()->baseDomain().getUpperBound() > getCurrentTick() && !observedNow(token)){
-	  TREX_INFO("trex:dispatching", nameString() << "Recalling " << token->toString());
+
+	  TREX_INFO("trex:dispatching", nameString() << "Recalling " << tokenToString(token));
 	  server->recall(token);
 	  tc.clearDispatched(token);
 	  resetDispatchTime(token);
@@ -1278,8 +1279,7 @@ namespace TREX {
 	  "Missed expected observation. No current value.");
 
       TREX_INFO_COND(token.isId(), "trex:warning:synchronization", nameString() << 
-	       "Missed expected observation to terminate " << token->toString() << 
-	       " ending at " << token->end()->toString());
+	       "Missed expected observation to terminate " << tokenToString(token) << " ending at " << token->end()->toString());
 
       TREXLog() << nameString() <<  "Missed expected observation on " <<
 	timeline->toString() << std::endl;
@@ -1298,7 +1298,7 @@ namespace TREX {
     }
 
     TREX_INFO("DbCore:extendCurrentValue", nameString() << 
-	     timeline->getName().toString() << " extends value " << token->toString() << " for next tick " << getCurrentTick() + 1);
+	     timeline->getName().toString() << " extends value " << tokenToString(token) << " for next tick " << getCurrentTick() + 1);
 
     return extendCurrentValue(token);
   }
@@ -1307,7 +1307,7 @@ namespace TREX {
    * @brief Handles the extension of current value for a single token.
    */
   bool DbCore::extendCurrentValue(const TokenId& token){
-    TREX_INFO("DbCore:extendCurrentValue:token", nameString() << "Extending " << token->toString() << " for end >= " << getCurrentTick());
+    TREX_INFO("DbCore:extendCurrentValue:token", nameString() << "Extending " << tokenToString(token) << " for end >= " << getCurrentTick());
 
     checkError(token->start()->lastDomain().getUpperBound() <= getCurrentTick(),
 	       token->start()->lastDomain() << " and TICK " << getCurrentTick());
@@ -1776,10 +1776,10 @@ namespace TREX {
       TokenId token = *it;
       checkError(token.isValid(), token);
 
-      TREX_INFO("DbCore:archive", nameString() << "Evaluating " << token->toString());
+      TREX_INFO("DbCore:archive", nameString() << "Evaluating " << tokenToString(token));
 
       if(restrict(token) && updateRelatedTokens(token)){
-	TREX_INFO("DbCore:archive", nameString() << token->toString() << " is a candidate for termination.");
+	TREX_INFO("DbCore:archive", nameString() << tokenToString(token) << " is a candidate for termination.");
 
 	disconnectConstraints(token);
 
@@ -1917,7 +1917,7 @@ namespace TREX {
     for(std::vector<TokenId>::const_iterator it = facts.begin(); it != facts.end(); ++it){
       TokenId token = *it;
 
-      checkError(isInternal(token), "Cannot only state facts on internal timelines. " << token->toString());
+      checkError(isInternal(token), "Cannot only state facts on internal timelines. " << tokenToString(token));
 
       // Restrict start bound base domain
       IntervalIntDomain startBound(0, 0);
@@ -1949,7 +1949,7 @@ namespace TREX {
 
     PlanDatabaseId db = token->getPlanDatabase();
     std::map<PlanDatabaseId, DbCoreId>::const_iterator it = instancesByDb().find(db);
-    checkError(it != instancesByDb().end(), "No db core for " << token->toString());
+    checkError(it != instancesByDb().end(), "No db core for " << tokenToString(token));
     DbCoreId dbCore = it->second;
     checkError(dbCore.isValid(), dbCore);
     return dbCore;
@@ -2037,7 +2037,7 @@ namespace TREX {
   bool DbCore::inScope(const TokenId& token) const {
     std::map<int, bool>::const_iterator it = m_tokenScope.find(token->getKey());
     checkError(it != m_tokenScope.end(), 
-	       token->toString() << " not handled correctly on creation. Must process pending tokens before calling this");
+	       tokenToString(token) << " not handled correctly on creation. Must process pending tokens before calling this");
 
     return it->second;
   }
@@ -2086,8 +2086,8 @@ namespace TREX {
 
       // We have a distance bound
       if(distanceBounds.getLowerBound() >= 0 && !distanceBounds.isSingleton()){
-	TREX_INFO("trex:warning:dispatching", token->toString() << " must finish before " << ctoken->toString() << " can be dispatched. The temporal distance between them is:" << distanceBounds.toString());
-	TREX_INFO("DbCore:hasPendingPredecessors", token->toString() << " must finish first.");
+	TREX_INFO("trex:warning:dispatching", tokenToString(token) << " must finish before " << tokenToString(ctoken) << " can be dispatched. The temporal distance between them is:" << distanceBounds.toString());
+	TREX_INFO("DbCore:hasPendingPredecessors", tokenToString(token) << " must finish first.");
 	return true;
       }
     }
@@ -2101,7 +2101,7 @@ namespace TREX {
 
     TimelineId timeline =  (TimelineId) token->getObject()->baseDomain().getSingletonValue();
     std::map<int, TimelineContainer>::const_iterator it = m_externalTimelineTable.find(timeline->getKey());
-    checkError(it !=  m_externalTimelineTable.end(), token->toString());
+    checkError(it !=  m_externalTimelineTable.end(), tokenToString(token));
     return (it->second.lastObserved() == token->start()->baseDomain().getUpperBound());
   }
 
@@ -2163,8 +2163,8 @@ namespace TREX {
   }
 
   void DbCore::handleRejected(const TokenId& token){
-    TREXLog() << nameString() << "Rejected " << token->toString() << std::endl;
-    TREX_INFO("trex:warning", nameString() << token->toString() << " was rejected.\n\n" <<
+    TREXLog() << nameString() << "Rejected " << tokenToString(token) << std::endl;
+    TREX_INFO("trex:warning", nameString() << tokenToString(token) << " was rejected.\n\n" <<
 	      "   If this is a surprise, then you need to enable planner debug messages to investigate: \n" << 
 	      "     :Solver:step - useful for observing the backtracking search.\n" << 
 	      "     :trex:debug:planning - gives additional trex related information in the search in terms of flaw filtering etc.");
@@ -2177,7 +2177,7 @@ namespace TREX {
    * can be restricted because the past is monotonic.
    */
   void DbCore::commitAndRestrict(const TokenId& token){
-    TREX_INFO("trex:debug:synchronization:commitAndRestrict", "Committing " << token->toString());
+    TREX_INFO("trex:debug:synchronization:commitAndRestrict", "Committing " << tokenToString(token));
 
     // Commit the token and touch the state variable to trigger commit event based propagation
     token->commit();
@@ -2539,7 +2539,7 @@ namespace TREX {
 
       const AbstractDomain& endDom = token->end()->lastDomain();
       if(isExternal(token) && endDom.isMember(getCurrentTick()) && !endDom.isSingleton()){
-	TREX_INFO("DbCore:getActiveUncontrollableEvents", "Adding " << token->toString());
+	TREX_INFO("DbCore:getActiveUncontrollableEvents", "Adding " << tokenToString(token));
 	results.push_back(token);
       }
     }
@@ -2559,7 +2559,7 @@ namespace TREX {
 	if((token->master().isId() && isExternal(token->master())) || 
 	   token->start()->lastDomain().getLowerBound() > Agent::instance()->getFinalTick() - 1 ||
 	   token->end()->lastDomain().getLowerBound() > Agent::instance()->getFinalTick()){
-	  TREX_INFO("DbCore:handleAddition", nameString() << "Excluding Action:" << token->toString());
+	  TREX_INFO("DbCore:handleAddition", nameString() << "Excluding Action:" << tokenToString(token));
 	  inScope = false;
 	}
 	else {
@@ -2568,17 +2568,17 @@ namespace TREX {
 	  // will assume the restriction to mission end. Do not generate an action if you do not require it!
 	  token->start()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), Agent::instance()->getFinalTick() - 1));
 	  m_actions.insert(token);
-	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Action:" << token->toString());
+	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Action:" << tokenToString(token));
 	}
       }
       else {
-	checkError(m_assembly.getSchema()->isA(token->getBaseObjectType(), Agent::TIMELINE()), token->toString());
+	checkError(m_assembly.getSchema()->isA(token->getBaseObjectType(), Agent::TIMELINE()), tokenToString(token));
 	inScope = !DbCore::onTimeline(token, Agent::IGNORE_TIMELINE());
 
 	// If in scope, and rejectable it must be a goal
 	if(inScope && token->master().isNoId() && token->getState()->baseDomain().isMember(Token::REJECTED)){
 	  m_goals.insert(token);
-	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Goal:" << token->toString());
+	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Goal:" << tokenToString(token));
 	  token->start()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick() - 1));
 
 	  // Restrict parameters since it is a goal.
@@ -2641,7 +2641,7 @@ namespace TREX {
 
 	  // If there is a gap, bridge it
 	  if(separationDistance.getUpperBound() > 0){
-	    TREX_INFO("trex:warning:planning", nameString() << token->toString() << " is not constrained to succeed " << pred->toString() <<
+	    TREX_INFO("trex:warning:planning", nameString() << tokenToString(token) << " is not constrained to succeed " << pred->toString() <<
 		     " Posting concurrency constraint to integrate the plan.");
 
 	    m_db->getConstraintEngine()->createConstraint("concurrent", makeScope(pred->end(), token->start()));
@@ -2717,7 +2717,7 @@ namespace TREX {
       for(TokenSet::const_iterator it = dispatched_tokens.begin(); it != dispatched_tokens.end(); ++it){
 	TokenId token = *it;
 	checkError(token.isValid(), token);
-	ss << "Dispatched " << token->toString() << " start == " << token->start()->lastDomain().toString() << " && end == " <<  token->end()->lastDomain().toString() << std::endl;
+	ss << "Dispatched " << tokenToString(token) << " start == " << token->start()->lastDomain().toString() << " && end == " <<  token->end()->lastDomain().toString() << std::endl;
       }
     }
 
@@ -2741,12 +2741,12 @@ namespace TREX {
     if(!token->isDiscarded())
       m_tokenAgenda.insert(token);
 
-    TREX_INFO("trex:debug:tokenAgenda:addToTokenAgenda", token->toString());
+    TREX_INFO("trex:debug:tokenAgenda:addToTokenAgenda", tokenToString(token));
   }
 
   void DbCore::removeFromTokenAgenda(const TokenId& token){
     m_tokenAgenda.erase(token);
-    TREX_INFO("trex:debug:tokenAgenda:removeFromTokenAgenda", token->toString());
+    TREX_INFO("trex:debug:tokenAgenda:removeFromTokenAgenda", tokenToString(token));
   }
 
   /**

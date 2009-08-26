@@ -17,12 +17,12 @@ namespace TREX {
 
   /** @brief errno based exception.
    *
-   * Thios exception may be used to manage exceptional
+   * This exception may be used to manage exceptional
    * events that modifies errno value.
    *
    * @author Frederic Py <fpy@mbari.org>
    */
-  class ErrnoExcept :public std::runtime_error {
+  class ErrnoExcept : public std::runtime_error {
   public:
     /** @brief Constructor
      *

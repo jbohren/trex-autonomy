@@ -42,6 +42,11 @@ namespace TREX {
   void makeFile(const std::string& outputStr, const char* prefix, const char* suffix);
 
   /**
+   * Generate a display string for a token
+   */
+  std::string tokenToString(const TokenId& tok);
+
+  /**
    * @brief Obatin the fully qualified path name for the given file by searching the local directory and then the path
    */
   std::string findFile(const std::string& fileName);

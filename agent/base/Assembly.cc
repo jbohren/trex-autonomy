@@ -35,12 +35,6 @@
 #include <fstream>
 #include <sstream>
 
-//#define USE_CODE_GENERATOR
-
-#ifdef USE_CODE_GENERATOR
-#include "Rule.hh"
-#endif
-
 namespace TREX {
 
   Assembly::Schema* Assembly::Schema::s_instance = NULL;
@@ -78,10 +72,6 @@ namespace TREX {
     // Disable auto propagation
     m_constraintEngine->setAutoPropagation(false);
 
-#ifdef USE_CODE_GENERATOR
-    EUROPA::NDDL::loadSchema(getSchema(),((RuleSchema*)getComponent("RuleSchema"))->getId()); 
-#endif
-
     // Register components
     Assembly::Schema* s = Assembly::Schema::instance();
     s->registerComponents(*this);
@@ -103,17 +93,6 @@ namespace TREX {
     check_error(txSource != NULL, "NULL transaction source provided.");
     static bool isFile(true);
 
-#ifdef USE_CODE_GENERATOR
-    // Open transaction source 
-    std::ifstream in(txSource);
-
-    assertTrue(in, "Invalid transaction source '" + std::string(txSource) + "'.");
-
-    // Play transaction
-    DbClientTransactionPlayer transactionPlayer(m_planDatabase->getClient());
-    transactionPlayer.play(in);
-#else
-#ifdef USE_NDDL_PARSER
     std::ifstream f1(findFile("NDDL.cfg").c_str());
     std::ifstream f2(findFile("temp_nddl_gen.cfg").c_str());
     TiXmlElement* iroot = NULL;
@@ -147,10 +126,6 @@ namespace TREX {
     } catch(...) {
       assertTrue(false, "Parser failed with unknown exception.");
     }
-#else
-    executeScript("nddl-xml", txSource, isFile);
-#endif
-#endif
 
     return m_constraintEngine->constraintConsistent();
   }

@@ -14,9 +14,6 @@
 #include "LogManager.hh"
 #include "DbSolver.hh"
 
-//This define causes the new NDDL parser to get used.
-#define USE_NDDL_PARSER
-
 using namespace EUROPA;
 using namespace EUROPA::SOLVERS;
 
@@ -117,15 +114,6 @@ namespace TREX {
    */
   class DbCore: public TeleoReactor {
   public:
-
-    class Exception {
-    public:
-      Exception(const std::string& description);
-
-      const std::string& toString() const;
-    private:
-      const std::string m_description;
-    };
 
     /**
      * @brief Get the global clock variable for the database the given token is in.
@@ -699,6 +687,7 @@ namespace TREX {
     std::string m_statePath;
     std::string m_conflictPath;
     std::ofstream m_planLog;
+    unsigned int m_lastRecalled;
   };
 }
 
