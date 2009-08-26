@@ -490,10 +490,12 @@ namespace TREX {
     if(mergeToken(token, merge_candidate) || insertToken(token, stepCount))
       return true;
 
-    TREX_INFO("trex:warning:synchronization", m_core->nameString() << tokenResolutionFailure(token, merge_candidate));
+    std::string explanation_str;
+    TREX_INFO("trex:warning:synchronization", m_core->nameString() << (explanation_str = tokenResolutionFailure(token, merge_candidate)));
 
     m_core->markInvalid(std::string("Could not insert ") + token->toString() + 
-			" into the plan. The plan is not compatible with observations and must be relaxed. Enable all DbCore messages and also enable Synchronizer messages in the Debug.cfg file.");
+			" into the plan. The plan is not compatible with observations and must be relaxed. Enable all DbCore messages and also enable Synchronizer messages in the Debug.cfg file.", 
+			true, explanation_str);
     return false;
   }
 
@@ -513,10 +515,12 @@ namespace TREX {
       unsigned int stepCount = 0;
       if(!insertToken(token, stepCount)){
 	TREX_INFO("trex:debug:synchronization:insertCopiedValues", m_core->nameString() << "Failed to insert " << token->toString());
-	TREX_INFO("trex:debug:synchronization:insertCopiedValues", tokenResolutionFailure(token, TokenId::noId()));
+	std::string explanation_str;
+	TREX_INFO("trex:debug:synchronization:insertCopiedValues", m_core->nameString() << (explanation_str = tokenResolutionFailure(token, TokenId::noId())));
 	m_core->markInvalid(std::string("Failed to insert ") + token->toString() + 
 			    "This is bad. After relaxing the plan and restoring necessary state, we still can't synchronize. " + 
-			    "There is probably a bug in the model. Enable PlanDatabase and DbCore messages in Debug.log");
+			    "There is probably a bug in the model. Enable PlanDatabase and DbCore messages in Debug.log",
+			    true, explanation_str);
 	return false;
       }
     }
