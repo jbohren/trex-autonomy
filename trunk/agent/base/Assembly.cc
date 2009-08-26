@@ -163,8 +163,6 @@ namespace TREX {
     //  checkError(m_constraintEngine->constraintConsistent(), "Should be propagated.");
     //}
 
-    std::cerr<<"DUMPING ASSEMBLY on ATTEMPT "<<attempt<<std::endl;
-
     // Write out the data
     getPPW()->write(tick,attempt);
 
