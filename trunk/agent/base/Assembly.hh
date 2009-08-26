@@ -57,7 +57,7 @@ namespace TREX {
     /**
      * @brief Export Plan Database for Inspection by PlanWorks
      */
-    const std::string& exportToPlanWorks();
+    const std::string& exportToPlanWorks(TICK tick, unsigned int attempt);
 
     /**
      * @brief Inner class to allow schema registration functions to be invoked. This is necessary because

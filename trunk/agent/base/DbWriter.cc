@@ -673,7 +673,7 @@ namespace TREX {
     sourcePaths.push_back(spath);
   }
 
-  void DbWriter::write(TICK tick) {
+  void DbWriter::write(TICK tick, unsigned int attempt) {
 
     /*
      * init output destination files if this has not been done
@@ -703,7 +703,7 @@ namespace TREX {
 
     // Generate step string
     std::ostringstream oss;
-    oss<<tick<<".0."<<STEP;
+    oss<<tick<<"."<<attempt<<"."<<STEP;
     
     std::string stepnum = oss.str();
 

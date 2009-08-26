@@ -79,6 +79,7 @@ namespace TREX {
     m_thisObserver(new AgentObserver(m_id)),
     m_currentTick(0),
     m_finalTick(timeLimit == 0 ?getFinalTick(extractData(configData, "finalTick").c_str()) : timeLimit),
+    m_attempts(0),
     m_clock(clock),
     m_synchUsage(RStat::zeroed), 
     m_deliberationUsage(RStat::zeroed),
@@ -417,6 +418,9 @@ namespace TREX {
 
     debugMsg("Agent:handleTickStart", "Tick " << m_currentTick << " for " << getName().toString());
 
+    // Reset the number of attempts
+    m_attempts = 0;
+
     // Reset
     m_synchUsage.reset();
     m_deliberationUsage.reset();
@@ -549,15 +553,26 @@ namespace TREX {
 
   std::ostream& Agent::getStream(){return m_standardDebugStream;}
 
+  void Agent::incrementAttempts() {
+    m_attempts++;
+  }
+
+  unsigned int Agent::getCurrentAttempt() const {
+    return m_attempts;
+  }
+
   /**
    * Method to cause an Agent to write all it's reactors' assemlies to disk.
    */
-  void Agent::dumpAssemblies() {
+  std::string Agent::dumpState(const bool export_assembly) {
+    // Output assemblies for all reactors
     for(std::vector<TeleoReactorId>::const_iterator it = m_reactors.begin(); it != m_reactors.end(); ++it){
       TeleoReactorId r = *it;
       if(DbCoreId::convertable(r)) {
-	((DbCoreId)r)->dumpAssembly();
+	((DbCoreId)r)->dumpState(export_assembly);
       }
     }
+
+    return std::string("Done.");
   }
 }

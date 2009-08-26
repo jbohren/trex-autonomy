@@ -5,6 +5,7 @@ import unittest
 
 # TREX modules
 from TREX.core.assembly import Assembly,Token
+from TREX.core.conflict import Conflict
 
 class Timeline():
   # Timeline constants
@@ -25,6 +26,7 @@ class DbCore():
     # Initialize properties
     self.tick = tick
     self.reactor_name = reactor_name
+    self.conflict = None
 
   def clear(self):
     # Clear timelines

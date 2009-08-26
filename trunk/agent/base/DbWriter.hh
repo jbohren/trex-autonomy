@@ -33,7 +33,7 @@ namespace TREX {
 	     const RulesEngineId& reId2);
 
     virtual ~DbWriter();
-    virtual void write(TICK tick);
+    virtual void write(TICK tick, unsigned int attempt);
     virtual void writeStatistics();
 
     void addSourcePath(const char* path);

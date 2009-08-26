@@ -49,6 +49,17 @@ def main():
   token_network_filter_window = TokenNetworkFilterWindow(token_network_filter)
   token_network_filter_window.w.window.set_functions(WINDOW_FUNCTIONS)
 
+  # Create conflict list window
+  def SetSourceFile(tick, reactor):
+    db_reader_window.tick_entry.set_text(db_reader_window.format_tick(tick))
+    db_reader_window.go_but.emit("clicked")
+    
+    timeline_window.set_visible_reactor(reactor)
+
+  conflict_list_window = ConflictListWindow()
+  conflict_list_window.register_activate_callback(SetSourceFile)
+  db_reader_window.register_listener(conflict_list_window.set_db_cores)
+
   def SpawnPropertyWindow(db_core, token):
     PropertyWindowFactory(db_core.assembly, db_core.assembly.tokens[token.key])
 

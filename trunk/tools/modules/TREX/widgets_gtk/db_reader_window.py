@@ -370,6 +370,8 @@ class DbReaderWindow():
       self.set_status("Invalid tick entry!")
     except:
       self.set_status("Could not load Tick [%s] from \"%s\"!" % (self.format_tick(new_tick),self.reactor_chooser.get_active_text()))
+      print "foo"
+      raise
 
     # Update gui
     self.update_tick_entry()

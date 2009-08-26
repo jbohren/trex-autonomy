@@ -14,3 +14,4 @@ from TREX.widgets_gtk.token_network_window import TokenNetworkWindow
 from TREX.widgets_gtk.token_network_filter_window import TokenNetworkFilterWindow
 from TREX.widgets_gtk.property_window import PropertyWindow,PropertyWindowFactory
 from TREX.widgets_gtk.timeline_window import TimelineWindow
+from TREX.widgets_gtk.conflict_list_window import ConflictListWindow
