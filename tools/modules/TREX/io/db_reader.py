@@ -71,13 +71,14 @@ class DbReader():
 
   def get_available_conflicts(self,log_path,reactor):
     # Check conflict path
-    conflict_path = self.get_conflict_path(log_path,reactor)
-    conflict_names = os.listdir(conflict_path)
     conflicts = []
-    for conflict_name in conflict_names:
-      ticknums = DbReader.TickRegex.findall(conflict_name)
-      tick = (int(ticknums[0][0]),int(ticknums[0][1]))
-      conflicts.append(tick)
+    conflict_path = self.get_conflict_path(log_path,reactor)
+    if os.path.exists(conflict_path):
+      conflict_names = os.listdir(conflict_path)
+      for conflict_name in conflict_names:
+	ticknums = DbReader.TickRegex.findall(conflict_name)
+	tick = (int(ticknums[0][0]),int(ticknums[0][1]))
+	conflicts.append(tick)
 
     return conflicts
 

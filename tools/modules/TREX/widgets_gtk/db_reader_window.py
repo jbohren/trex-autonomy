@@ -49,7 +49,7 @@ class DbReaderWindow():
     # Create glade window
     tree = gtk.glade.XML(trex_glade_path("db_reader_window.glade"))
     self.w = tree.get_widget("db_reader_window")
-    self.w.set_title("Assembly Navigator Control")
+    self.w.set_title("TREX Log Reader Control")
 
     # Add references to all widgets
     for w in tree.get_widget_prefix('_'):
@@ -370,8 +370,6 @@ class DbReaderWindow():
       self.set_status("Invalid tick entry!")
     except:
       self.set_status("Could not load Tick [%s] from \"%s\"!" % (self.format_tick(new_tick),self.reactor_chooser.get_active_text()))
-      print "foo"
-      raise
 
     # Update gui
     self.update_tick_entry()
@@ -402,7 +400,6 @@ class DbReaderWindow():
 	#print "NOTIFIED!"
       except:
 	print "Failed to notify listener: "+str(listener)
-	raise
 
 # Testing utilities
 class GtkTester():
