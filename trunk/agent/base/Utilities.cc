@@ -16,6 +16,12 @@ using namespace EUROPA;
 
 namespace TREX {
 
+  std::string tokenToString(const TokenId& tok){
+    std::stringstream ss;
+    ss << tok->getName().toString() << "(" << tok->getKey() << ")" << std::endl;
+    return ss.str();
+  }
+
   void computeConnectedTokens(const TokenId token, TokenSet& results){
     // If already present, we have visited it
     if(results.find(token) != results.end())

@@ -15,6 +15,7 @@
 #include "AgentListener.hh"
 #include "DbCore.hh"
 #include <algorithm>
+#include <stdexcept>
 
 namespace TREX {
 
@@ -22,6 +23,10 @@ namespace TREX {
 
   bool Agent::s_terminated(false);
 
+  /**
+   * This value is based on a notion of infinite time in EUROPA which is a limit of the system to avoid overflow in the temporal
+   * network.
+   */
   TICK Agent::forever() {
     return PLUS_INFINITY / 8;
   }
@@ -407,7 +412,7 @@ namespace TREX {
     while(it != m_sortedReactors.end() && !terminated()){
       TeleoReactorId r = *it;
       if(!r->doSynchronize())
-	throw new SynchronizationFailure();
+	throw std::runtime_error("Unknown synchronization failure. In a future iteration, this will be recoverable.");
       ++it;
     }
 

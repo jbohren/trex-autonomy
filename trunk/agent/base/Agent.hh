@@ -21,11 +21,6 @@
 
 namespace TREX {
 
-  class SynchronizationFailure {
-  public:
-    SynchronizationFailure(){}
-  };
-
   /**
    * @brief The Agent is an observer of messages from TeleoReactors. It is the message bus for distribution of observations
    * The agent employs 3 threads:
