@@ -1,0 +1,11 @@
+#include "TREX.nddl"
+
+class Doorman extends Behavior {
+  Doorman(Mode _mode){ super(_mode); }
+};
+
+class DoorController extends AgentTimeline {
+  predicate Inactive{}
+  predicate CheckingDoorway{}
+  DoorController(Mode _mode){ super(_mode, "Inactive"); }
+};
