@@ -763,7 +763,7 @@ namespace TREX {
     }
   }
 
-  std::string DbCore::writeDbState() {
+  std::string DbCore::dumpState(bool) {
     // Create a new file
     std::ostringstream oss;
     oss << m_statePath << "/" << getCurrentTick() << "." << Agent::instance()->getCurrentAttempt() << ".reactorstate";
@@ -796,7 +796,7 @@ namespace TREX {
     db_out.close();
     
     // Output assembly as well (very large amount of data, will slow execution)
-    TREX_INFO("ExportPlan", nameString() << m_assembly.exportToPlanWorks(getCurrentTick(), Agent::instance()->getCurrentAttempt()));
+    TREX_INFO("trex:monitor:verbose", nameString() << m_assembly.exportToPlanWorks(getCurrentTick(), Agent::instance()->getCurrentAttempt()));
     
     return std::string("Success.");
   }
@@ -824,13 +824,6 @@ namespace TREX {
     Agent::instance()->incrementAttempts();
 
     return std::string("Success.");
-  }
-
-  void DbCore::dumpState(bool export_assembly) {
-    if(export_assembly) {
-      m_assembly.exportToPlanWorks(getCurrentTick(),Agent::instance()->getCurrentAttempt());
-    }
-    writeDbState();
   }
 
   void DbCore::addDbListener(EUROPA::PlanDatabaseListener& listener) {
@@ -1286,10 +1279,10 @@ namespace TREX {
 
       // Force invalid state to trigger a repair
       std::string missing_observation_str;
-      TREX_INFO("trex:warning:synchronization", nameString() << (missing_observation_str = missingObservation(timeline)));
+      TREX_INFO("trex:monitor:conflicts", nameString() << (missing_observation_str = missingObservation(timeline)));
 
       std::string token_extension_failure_str;
-      TREX_INFO_COND(token.isId(), "trex:warning:synchronization", nameString() << (token_extension_failure_str = m_synchronizer.tokenExtensionFailure(token)));
+      TREX_INFO_COND(token.isId(), "trex:monitor:conflicts", nameString() << (token_extension_failure_str = m_synchronizer.tokenExtensionFailure(token)));
 
       markInvalid(std::string("Expected an observation on ") + timeline->toString() + ". Are observations being generated?. The plan may simply be broken.",
 	  true, missing_observation_str + "\n" + token_extension_failure_str);
@@ -1332,7 +1325,7 @@ namespace TREX {
       TREXLog() << nameString() << "Inconsistent plan." << std::endl;
       TREX_INFO("DbCore:propagate", nameString() << "Inconsistent plan.");
       markInvalid("The constraint network is inconsistent. To investigate, enable ConstraintEngine in Debug.cfg. Look for EMPTIED domain in log output to find the culprit.",true);
-      TREX_INFO("trex:warning:propagation", nameString() << m_synchronizer.propagationFailure());
+      TREX_INFO("trex:monitor:conflicts", nameString() << m_synchronizer.propagationFailure());
     }
     else {
       processPendingTokens();
@@ -2010,8 +2003,8 @@ namespace TREX {
 
     TREX_INFO("DbCore:synchronize", nameString() <<  "Synchronized Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
     
-    // Write the nominal reactor state files (low bandiwdth)
-    TREX_INFO("ExportReactorState", nameString() << Agent::instance()->dumpState(false));
+    // Write the nominal reactor state files (low bandwidth)
+    TREX_INFO("trex:monitor", nameString() << dumpState(false));
 
     return m_state != DbCore::INVALID;
   }
@@ -2501,7 +2494,7 @@ namespace TREX {
     // Output log line
     TREX_INFO("trex:warning", nameString() << " is marked invalid. Hint:" << comment);
     if(dump_state) {
-      TREX_INFO("trex:dump:conflict", nameString() << "Dumping conflict: " << writeConflict(comment, analysis)); 
+      TREX_INFO("trex:monitor:conflicts", nameString() << "Dumping conflict: " << writeConflict(comment, analysis)); 
     }
     m_state = DbCore::INVALID;
   }
