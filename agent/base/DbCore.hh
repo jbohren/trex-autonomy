@@ -242,11 +242,6 @@ namespace TREX {
     void getPlanDescription(PlanDescription &planDesc) const;
 
     /**
-     * @brief Write a lightweight log of the db state to disk.
-     */
-    std::string writeDbState();
-
-    /**
      * @brief Write a description of a conflict to disk.
      */
     std::string writeConflict(std::string brief_description, std::string analysis);
@@ -254,7 +249,7 @@ namespace TREX {
     /**
      * @brief Output the assembly to file at the current tick
      */
-    void dumpState(bool export_assembly = false);
+    std::string dumpState(bool export_assembly = false);
 
     /**
      * @brief Add a PlanDatabaseListener to the internal EUROPA PlanDatabase
