@@ -212,10 +212,10 @@ class DbReaderWindow():
       self.tick_entry.set_text("")
       self.notify_listeners()
 
-    if len(available_ticks) != len(self.ticks):
+    if len(available_ticks) != len(self.ticks) or (len(self.ticks) + len(available_ticks) > 0 and available_ticks[-1] != self.ticks[-1]):
       # Append any names that are found but not already registered
-      for t in [t for t in available_ticks if t not in self.ticks]:
-	self.tick_combo_model.append([self.format_tick(t)])
+      #for t in [t for t in available_ticks if t not in self.ticks]:
+      #self.tick_combo_model.append([self.format_tick(t)])
       self.ticks = available_ticks
 
     # Make sure the selected tick is avaiable
