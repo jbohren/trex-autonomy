@@ -2004,7 +2004,7 @@ namespace TREX {
     TREX_INFO("DbCore:synchronize", nameString() <<  "Synchronized Database Below" << std::endl << PlanDatabaseWriter::toString(m_db));
     
     // Write the nominal reactor state files (low bandwidth)
-    TREX_INFO("trex:monitor", nameString() << dumpState(false));
+    TREX_INFO("trex:monitor:status", nameString() << dumpState(false));
 
     return m_state != DbCore::INVALID;
   }
