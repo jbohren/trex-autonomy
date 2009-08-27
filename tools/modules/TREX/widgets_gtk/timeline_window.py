@@ -957,6 +957,9 @@ class TimelineWindow():
     # Show all of the label sub-widgets
     label.show_all()
 
+    # hide the color chooser button since it is not fully functional yet
+    tp.color_chooser_but.hide()
+
   def set_visible_reactor(self,reactor_name):
     tab_index = self.reactor_panels[reactor_name].tab_index
     self.reactor_nb.set_current_page(tab_index)

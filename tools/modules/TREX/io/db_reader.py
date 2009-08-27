@@ -59,14 +59,14 @@ class DbReader():
     tick_paths = os.listdir(self.get_db_path(log_path,reactor_name))
     ticks = [os.path.basename(s)[0:-(1+len(DbReader.DB_EXT))].split(".") for s in tick_paths if s[-len(DbReader.DB_EXT):] == DbReader.DB_EXT]
     ticks = [(int(t[0]),int(t[1])) for t in ticks]
-    ticks.sort()
+    #ticks.sort()
     return ticks
 
   def get_available_assemblies(self,log_path,reactor_name):
     tick_paths = os.listdir(self.get_assembly_path(log_path,reactor_name))
     ticks = [os.path.basename(s)[0:-(1+len(DbReader.ASSEMBLY_EXT))].split(".") for s in tick_paths if s[-len(DbReader.ASSEMBLY_EXT):] == DbReader.ASSEMBLY_EXT]
     ticks = [(int(t[0]),int(t[1])) for t in ticks]
-    ticks.sort()
+    #ticks.sort()
     return ticks
 
   def get_available_conflicts(self,log_path,reactor):
