@@ -57,6 +57,7 @@ def main():
     timeline_window.set_visible_reactor(reactor)
 
   conflict_list_window = ConflictListWindow()
+  conflict_list_window.w.window.set_functions(WINDOW_FUNCTIONS)
   conflict_list_window.register_activate_callback(SetSourceFile)
   db_reader_window.register_listener(conflict_list_window.set_db_cores)
 
