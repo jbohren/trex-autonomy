@@ -11,7 +11,7 @@ TestActions actions = new TestActions();
 GraspObject grasper = new GraspObject(Internal);
 Position pos = new Position(External);
 
-eq(TICK_DURATION, 1);
+eq(TICK_DURATION, 1.0);
 
 GraspObject::Active {
   // This should never fire, but it will test that the comparator is being set correctly
