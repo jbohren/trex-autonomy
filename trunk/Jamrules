@@ -1,29 +1,5 @@
+# This file is requird by jam to bootstrap the build process
 {
- #Echo $(PLASMA) ;
- #Echo $(TREX) ;
- #Echo $(PLASMA_HOME) ;
-
- # Trivial action just to touch a file
- actions TouchFile {
-	touch $(1) ;
- }
-
- # ReactorInputFile build with dependencies. Will conditionally
- # create a soft link to a default input file if the expected input file
- # is not present
- rule ReactorInputFile {
-	local xml = $(2).$(3).xml ;
-	local nddl =  $(2).$(3).nddl ;
- 	Depends $(1) : $(xml) ;
-	SLink [ FGristSourceFiles $(nddl) ] : [ FGristSourceFiles $(3).nddl ] ;
- 	NddlParser  $(xml) : $(nddl) ;
- }
-
- # Action to make the soft link
- actions SLink {
-	ln -s $(2) $(1) ;
- }
-
  # Extracting a local variable is important.
  include [ FDirName $(PLASMA) Jamrules ] ;
  include [ FDirName  $(TREX) Jamfile ] ;
