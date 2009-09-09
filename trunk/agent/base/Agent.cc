@@ -72,12 +72,6 @@ namespace TREX {
     s_id = AgentId::noId();
   }
 
-  void Agent::cleanupLog() {
-    if( s_terminated && s_id.isId() ) {
-      s_id->m_obsLog.endFile();
-    }
-  }
-
   Agent::Agent(const TiXmlElement& configData, Clock& clock, TICK timeLimit, bool enableLogging): 
     m_id(this), 
     m_name(extractData(configData, "name")),
@@ -207,7 +201,10 @@ namespace TREX {
     // Reset the Debug Message Stream before deallocating any reactors
     DebugMessage::setStream(m_standardDebugStream);
 
-    s_terminated = true;
+    s_terminated = true;       
+
+    // Close the observation log
+    m_obsLog.endFile();
 
     // Delete all the reactors
     cleanup(m_reactorsByName);
@@ -238,7 +235,6 @@ namespace TREX {
 
     while(!terminated() && doNext()){}
 
-    m_obsLog.endFile();
     debugMsg("Agent:run", "Completed at tick " << m_currentTick);
 
     if(!terminated())
@@ -246,7 +242,7 @@ namespace TREX {
   }
 
   void Agent::terminate(){
-    debugMsg("Agent:terminate", "Terminating the Agent."); 
+    debugMsg("Agent:terminate", "Terminating the Agent.");
     s_terminated = true;
   }
 

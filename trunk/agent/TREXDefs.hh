@@ -2,8 +2,10 @@
 #include "LabelStr.hh"
 #include "Debug.hh"
 
-// As a sanity check we can switch to using the coed generator
-//#define USE_CODE_GENERATOR
+/**
+ * @author Conor McGann
+ * @file Common type declarations used for TREX.
+ */
 
 using namespace EUROPA;
 
