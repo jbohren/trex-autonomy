@@ -6,7 +6,8 @@
  * @file Provides declaration for the Agent class. This is basically a composition of TeleoReactors. The Agent will
  * allocate reactors and connect them together according to their configuratiun requirements. It will also play the role
  * of middle-man to route observations from sender to receiver.
- * @note The Agent class is not thread safe. If run on a separate thread, it cannot be accessed further.
+ * @status Documented
+ * @note The Agent class is not thread safe.
  */
 
 #include "TREXDefs.hh"
@@ -23,32 +24,45 @@ namespace TREX {
 
   /**
    * @brief The Agent is an observer of messages from TeleoReactors. It is the message bus for distribution of observations
-   * The agent employs 3 threads:
-   * 1. The Clock Monitor Thread - used to read time and map to ticks. Drives clock event handling code throughout.
-   * 2. The Reactor Execution Thread - used to power the main business of working flaws in the internal state of a reactor
-   * 3. The Garbage Collector - used to archive crud accumulated through execution as it is no longer necessary.
+   * @see TeleoReactor
+   * @see Clock
    */
   class Agent {
   public:
 
+    /**
+     * @brief There are three different types of event routed through the agent for sharing information between reactors.
+     */
     enum EventType {
       Notify = 0, /*!< For observations posted from a reactor */
       Request, /*!< For requests made on a reactor */
       Recall /*!< For recalls made on a reactor */
     };
 
+    /**
+     * @brief An Agent Event is used for logging. This is particularly useful when applying an event log for regression testing to validate
+     * current execution against prior stored values.
+     */
     class Event {
     public:
       Event(TICK tick, EventType evType, const LabelStr& objectName, const LabelStr& predicateName);
       Event(const Event& org);
-      TICK m_tick;
-      EventType m_eventType;
-      LabelStr m_objectName;
-      LabelStr m_predicateName;
+      TICK m_tick; /*!< The tick at which the event occurred */
+      EventType m_eventType; /*!< The type of event */
+      LabelStr m_objectName; /*!< What object the event related to. The object should be a timeline */
+      LabelStr m_predicateName; /*!< The predicate name. This is only partial information for the information content in the event, 
+				  but it is enough to do alot of good validation against without incurring excessive overhead */
     };
 
     /**
      * @brief The Agent is a singleton per process.
+     * @param configData The Agent XML Configuration file.
+     * @param clock The clock to be used by the agent. Different clocks are used to provide different run-time behavior.
+     * @param timeLimit The maximum tick to run for. Agetr this time, the agent will terminate. The timeLimit defined here will over-ride
+     * any value provided in the configuration file.
+     * @param enableEventLog Set this true if event logging should be enabled. If true, it will store events for all observations, requests and recalls
+     * in memory.
+     * @see Agent::Agent
      */
     static AgentId initialize(const TiXmlElement& configData, Clock& clock, TICK timeLimit = 0, bool enableEventLog = false);
 
@@ -62,19 +76,11 @@ namespace TREX {
      */
     static void reset();
 
-    static void cleanupLog();
-
     /**
-     * Returns the TICK value corresponding to 'forever'
+     * Returns the TICK value corresponding to 'forever'. This number is as large as possible, but must be distinguishable from the EUROPA
+     * constant indicating infinity. We ensure forever < infinity. This may be wierd, but there you have it!
      */
     static TICK forever();
-
-    virtual ~Agent();
-
-    /**
-     * @brief Run the agent. Will block till it is done with its mission. Run it on a separate thread if you need to do more than just run the agent.
-     */
-    void run();
 
     /**
      * @brief Terminate the agent
@@ -85,6 +91,12 @@ namespace TREX {
      * @brief Access termination flag
      */
     static bool terminated();
+
+    /**
+     * @brief Run the agent. Will block till it is done with its mission. Run it on a separate thread if you need to do more than just run the agent.
+     * @see doNext
+     */
+    void run();
 
     /**
      * @brief Run the agent for a next cycle of execution. Allows for externally timing control in testing
@@ -180,7 +192,7 @@ namespace TREX {
     const PerformanceMonitor& getMonitor() const;
 
     /**
-     * @brief Accessor for the event log
+     * @brief Accessor for the event log. This event log is mostly used in the regression testing suite.
      */
     const std::vector<Event>& getEventLog() const;
 
@@ -201,7 +213,7 @@ namespace TREX {
 
     /**
      * @brief Utility to stringify an event log.
-     * @param eventLog the vecotr of events of interest
+     * @param eventLog the vector of events of interest
      * @param use_tick true if you want tick values to be output. False if we just want the ordering.
      */
     static std::string toString(const  std::vector<Event>& eventLog, bool use_tick = true);
@@ -238,7 +250,9 @@ namespace TREX {
 
 
     void incrementAttempts();
+
     unsigned int getCurrentAttempt() const;
+
     /**
      * Method to cause an Agent to write all it's reactors assemlies to disk.
      */
@@ -247,6 +261,11 @@ namespace TREX {
   private:
 
     static LabelStr buildLogName(LabelStr const &prefix);
+
+    /**
+     * @brief Destructor
+     */
+    virtual ~Agent();
 
     /**
      * @brief Instantiated by singleton initialization function
@@ -300,19 +319,20 @@ namespace TREX {
     std::vector<TeleoReactorId> m_deliberators; /*!< The agenda of reactors for deliberation. Refreshed on every tick. */
     std::list<AgentListenerId> m_listeners; /*!< For monitoring events by external listeners */
 
-    Clock& m_clock;
+    Clock& m_clock; /*!< The clock used to drive agent ticks. */
+
+    /* Support for performance tracking */
     PerformanceMonitor m_monitor;
     RStat m_synchUsage;
     RStat m_deliberationUsage;
 
+    /* Logging support */
     const bool m_enableEventLogger; /*!< If true, the agent will store events */
     std::vector<Event> m_eventLog; /*!< Used for analysis and testing */
-
     ObservationLogger m_obsLog;
-
     std::ostream& m_standardDebugStream; /*!<Stores debug stream to allow it to be reset on destruction */
 
-    static bool s_terminated; /*!< Used to terminated */    
+    static bool s_terminated; /*!< Marker for termination */    
   };
 
 }
