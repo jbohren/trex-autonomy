@@ -9,6 +9,7 @@ file) use a BSD License.
 
 TREX Developer Tools
 Copyright (C) 2009 Willow Garage
+All rights reserved.
 
 --------------------------------------------------------------------------------
 
