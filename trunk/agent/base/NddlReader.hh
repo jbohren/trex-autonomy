@@ -32,15 +32,33 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "NddlReader.hh"
+#include <stdio.h>
+#include <string>
+#include "Utilities.hh"
+#include "XMLUtils.hh"
+#include <fstream>
+#include "ModulePlanDatabase.hh"
+#include "ModuleRulesEngine.hh"
+#include "ModuleNddl.hh"
+#include "ModuleConstraintEngine.hh"
+#include "ModuleTemporalNetwork.hh"
+
+#include "Functions.hh"
+#include "Constraints.hh"
+#include "TestMonitor.hh"
+#include "Propagators.hh"
 
 
-int main(unsigned int argc, char **argv) {
-  int rt = 0; if ((rt = NddlReaderMain(argc, argv))) { return rt; }
-  
-  NddlReader *r = new NddlReader();
-  r->read(argv[1]);
-  delete r;
-  
-  return 0;
-}
+using namespace EUROPA;
+using namespace TREX;
+
+
+int NddlReaderMain(unsigned int argc, char **argv);
+
+class NddlReader: public EngineBase {
+public:
+  NddlReader();
+  void read(std::string file); 
+  virtual void registerConstraints();
+};
+
