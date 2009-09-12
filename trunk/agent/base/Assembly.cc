@@ -41,6 +41,7 @@
 #include "DbCore.hh"
 #include "DbSolver.hh"
 #include "TestMonitor.hh"
+#include "Interpreter.hh"
 #include "Functions.hh"
 
 #include "ModuleConstraintEngine.hh"
@@ -203,6 +204,14 @@ namespace TREX {
 
     return s_instance;
   }
+
+
+  DECLARE_FUNCTION_TYPE(isStarted, "isStarted", "bool", 1);
+  DECLARE_FUNCTION_TYPE(isEnded, "isEnded", "bool", 1);
+  DECLARE_FUNCTION_TYPE(isTimedOut, "isTimedOut", "bool", 1);
+  DECLARE_FUNCTION_TYPE(isSucceded, "isSucceded", "bool", 1);
+  DECLARE_FUNCTION_TYPE(isAborted, "isAborted", "bool", 1);
+  DECLARE_FUNCTION_TYPE(isPreempted, "isPreempted", "bool", 1);
 
   void Assembly::Schema::registerComponents(const Assembly& assembly){
     ConstraintEngineId constraintEngine = ((ConstraintEngine*) assembly.getComponent("ConstraintEngine"))->getId();
