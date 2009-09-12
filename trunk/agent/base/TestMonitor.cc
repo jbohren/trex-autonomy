@@ -1,4 +1,5 @@
 #include "TestMonitor.hh"
+#include "Utilities.hh"
 
 /*********************************************************************
 * Software License Agreement (BSD License)
@@ -122,6 +123,7 @@ namespace TREX {
   }
 
   void TestMonitor::registerCondition(int key, const std::string& label, bool expectedValue){
+    RETURN_IF_NO_EVAL;
     // If there are no entries, then register a listener. The listener will be cleared up when the agent is deleted
     if(entries().empty())
       new TestMonitor::AgentListener();
