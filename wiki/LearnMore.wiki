@@ -1,13 +1,16 @@
-#summary One-sentence summary of this page.
+== Under Construction==
+[http://code.google.com/p/europa-pso/ EUROPA-2] is the technology that makes T-REX tick. It is a temporal planning library available as an open-source system from the NASA Ames Research Center. We use:
+  * the nddl modeling language (pronounced 'noodle') to specify programs in T-REX. 
+  * the temporal database to store run-time state for planning and execution.
+  * the planner to compute actions for execution.
 
-= Introduction =
+Things that make EUROPA really useful are:
+  * explicit support for time.
+  * able to handle concurrent actions.
+  * able to handle durative actions.
+  * built in support for reasoning about and managing resources.
 
-Add your content here.
-
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Things that make T-REX special are:
+  * direct exploitation of EUROPA technology in a natural way.
+  * a method for decomposing robot behavior into modular controllers that can be assembled in a principled way.
+  * a lightweight technology footprint.
