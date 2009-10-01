@@ -1,1 +1,66 @@
-Under Construction
+= Prerequisites =
+TREX requires the EUROPA planning and scheduling library which is available through Google Code [http://code.google.com/p/europa-pso/ here]. The EUROPA build requires Perforce Jam 2.5 or better. Under linux this can be obtained thus:
+{{{
+sudo apt-get install jam
+}}}
+= Getting Required Sources =
+These instructions assume TREX and EUROPA will be peer directories with a common parent which we shall call trex_europa.
+{{{
+mkdir trex_europa
+cd trex_europa
+}}}
+Now check out EUROPA:
+{{{
+svn co http://europa-pso.googlecode.com/svn/PLASMA/trunk PLASMA
+}}}
+To check out TREX:
+{{{
+svn co http://trex-autonomy.googlecode.com/svn/trunk TREX
+}}}
+= Setting up the Environment =
+The relevant environment variables are described [DevConfig here]. A *devConfig* file already includes these settings for your convenience.
+{{{
+source TREX/devConfig
+}}}
+= Building and Running the Test Harness =
+TREX has an extensive test harness consisting of small examples which exercise a range of different behaviors in the executive. To build all relevant libraries and execute the tests, simply do:
+{{{
+cd TREX/agent/test
+jam run-agent-module-tests
+}}}
+If successful, you should see the following command line complete without complaint.
+{{{
+ExecuteTarget RUN_agent-module-tests_g_rt
+}}}
+Inspection of the file *RUN_agent-module-tests_g_rt* should illustrate the set of tests that passed and will look something like this:
+{{{
+GamePlayTests::test***************
+Running testPersonalRobots .... SUCCESS
+Running testSynch .... SUCCESS
+Running testExtensions .... SUCCESS
+Running OrienteeringSolver .... SUCCESS
+Running testRecall .... SUCCESS
+Running testRepair .... SUCCESS
+Running testLogging .... SUCCESS
+Running testPersistence .... SUCCESS
+Running testSimulationWithPlannerTimeouts .... SUCCESS
+Running testScalability .... SUCCESS
+Running testTestMonitor .... SUCCESS
+Running testOneDeliberatorOneAdapter .... SUCCESS
+Running bugFixes .... SUCCESS
+Running testInconsistent .... SUCCESS
+Running testOneStepAhead .... SUCCESS
+Running testFileSearch .... SUCCESS
+Running testDispatch .... SUCCESS
+Running testSqueezeObserver .... SUCCESS
+Running testSimulation .... SUCCESS
+Running testUndefinedSingleTimeline .... SUCCESS
+Running testUndefinedDerived .... SUCCESS
+Running testActions .... SUCCESS
+GamePlayTests::test PASSED.
+AgentTests::test***************
+Running testRealTimeClock .... SUCCESS
+Running testForeverConfiguration .... SUCCESS
+Running testTimelimitOverride .... SUCCESS
+AgentTests::test PASSED.
+}}}
