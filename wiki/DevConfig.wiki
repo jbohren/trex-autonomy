@@ -1,12 +1,9 @@
 #summary Environment variables necessary for developing TREX
 
 = Introduction =
-
 Several environment variables need to be defined to develop TREX or run TREX regression tests.
 
-= Details =
-
-=== PLASMA Environment Variables ===
+= EUROPA Environment Variables =
 {{{
 export PLASMA_HOME=/path/to/PLASMA
 export PLASMA=$PLASMA_HOME/src/PLASMA
@@ -14,12 +11,11 @@ export ANT_HOME=$PLASMA_HOME/ext/ant
 export LD_LIBRARY_PATH=$PLASMA_HOME/build/lib:$LD_LIBRARY_PATH
 }}}
 
-=== PlanWorks Environment Variables ===
+Note that for a Mac, the LD_LIBRARY_PATH setting is replaced with:
 {{{
-export PLANWORKS_HOME=/path/to/PlanWorks                      
+export DYLD_LIBRARY_PATH=$PLASMA_HOME/build/lib:$DYLD_LIBRARY_PATH
 }}}
-
-=== TREX Environment Variables ===
+= TREX Environment Variables =
 {{{
 export TREX=/path/to/TREX
 export TREX_LOG_DIR=$TREX/logs
