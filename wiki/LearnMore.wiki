@@ -1,16 +1,13 @@
-== Under Construction==
-[http://code.google.com/p/europa-pso/ EUROPA-2] is the technology that makes T-REX tick. It is a temporal planning library available as an open-source system from the NASA Ames Research Center. We use:
-  * the nddl modeling language (pronounced 'noodle') to specify programs in T-REX. 
-  * the temporal database to store run-time state for planning and execution.
-  * the planner to compute actions for execution.
+= Under Construction =
+== Why T-REX? ==
+What would anybody want to use T-REX? Here are some of the benefits we hope to deliver with T-REX:
+ * *Goal-directed Commanding*: Do you want to command a robot with goals telling it what to do, instead of detailing precisely how it should achieve them. If so, then a planning system is useful to turn goals into commands automatically, saving the robot operator alot of work, and possibly reducing the possibility of error.
+ * *Robust Execution*: Many real-world environments are highly uncertain. If your robot can decide how best to accomplish its objectives based on the situation at hand, then it can be robust to these uncertainties. A planner is a principled way to select suitable actions to achieve a goal, and it can leverage a plethora of work in automated reasoning to do so. Planners running online are handy because they can incrementally figure out what to do and/or they can re-plan if prior plans do not work out.
+ * *Safe Execution*: Many sophisticated robots are expensive, complex machines that should be programmed with care. A _model_ can capture safety constraints that must be observed by all executions. Such a model is directly used by the planner and all plans produced are guaranteed to comply with these constraints. We call this _model compliant execution_. If the model is correct, this provides a powerful quality assurance mechanism for robot behavior.
+ * *High-level Programming*: It easy to get lost in details when programming a complex machine. A high-level modeling language raises the level of abstraction to the essential features of the robot mechanisms, available behaviors, and the task domain. This approach allows a programming model that can focus on the problem domain rather than worry about threads, memory management, and so forth.
 
-Things that make EUROPA really useful are:
-  * explicit support for time.
-  * able to handle concurrent actions.
-  * able to handle durative actions.
-  * built in support for reasoning about and managing resources.
-
-Things that make T-REX special are:
-  * direct exploitation of EUROPA technology in a natural way.
-  * a method for decomposing robot behavior into modular controllers that can be assembled in a principled way.
-  * a lightweight technology footprint.
+== Key Ideas ==
+There are a few key ideas behind T-REX, and then of course, the devil is in the details. Those details deeply involve constraint-based temporal planning as embodied by [http://code.google.com/p/europa-pso/ EUROPA-2]. However, as a first introduction, we will outline the key ideas.
+=== [TimelinesAndExecution Timelines and their Execution] ===
+=== [SensePlanAct Sense-Plan-Act] ===
+=== [DivideAndConquer Divide-and-Conquer] ===
