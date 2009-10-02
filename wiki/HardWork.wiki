@@ -1,2 +1,3 @@
 = Under Construction =
-[http://trex-autonomy.googlecode.com/svn/wiki/images/pr2.jpg]
+[http://trex-autonomy.googlecode.com/svn/wiki/images/pr2.jpg] This is some text
+and it goes here
