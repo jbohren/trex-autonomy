@@ -1,3 +1,3 @@
 = Under Construction =
 ||[http://trex-autonomy.googlecode.com/svn/wiki/images/pr2.jpg]||[http://trex-autonomy.googlecode.com/svn/wiki/images/nomad.jpg]||[http://trex-autonomy.googlecode.com/svn/wiki/images/rover.jpg]||[http://trex-autonomy.googlecode.com/svn/wiki/images/auv.jpg]||[http://trex-autonomy.googlecode.com/svn/wiki/images/depthx.jpg]||
-|| A PR2 Alpha Prototype from Willow Garage|| NOMAD is designed and built by CMU for Arctic Exploration || A sketch of a NASA Mars Rover || An MBARI Autonomous Underwater Vehicle for Mapping the Ocean Floor || DepthX for underwater cave exploration (CMU/Stone Aerospace) ||
+||PR2 Alpha (Willow Garage)||NOMAD (CMU)|| Mars Rover (NASA) || Dorado AUV (MBARI) || DepthX (CMU/Stone Aerospace) ||
