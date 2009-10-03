@@ -43,6 +43,7 @@
 #include "TestMonitor.hh"
 #include "Interpreter.hh"
 #include "Functions.hh"
+#include "CFunction.hh"
 
 #include "ModuleConstraintEngine.hh"
 #include "Propagators.hh"
@@ -206,16 +207,38 @@ namespace TREX {
   }
 
 
-  DECLARE_FUNCTION_TYPE(isStarted, "isStarted", "bool", 1);
-  DECLARE_FUNCTION_TYPE(isEnded, "isEnded", "bool", 1);
-  DECLARE_FUNCTION_TYPE(isTimedOut, "isTimedOut", "bool", 1);
-  DECLARE_FUNCTION_TYPE(isSucceded, "isSucceded", "bool", 1);
-  DECLARE_FUNCTION_TYPE(isAborted, "isAborted", "bool", 1);
-  DECLARE_FUNCTION_TYPE(isPreempted, "isPreempted", "bool", 1);
+#define DECLARE_FUNCTION_TYPE(cname, fname, constraint, type, args)	\
+  class cname##Function : public CFunction				\
+  {									\
+  public:								\
+    cname##Function() : CFunction(#fname) {}				\
+    virtual ~cname##Function() {}					\
+    									\
+    virtual const char* getConstraint() { return constraint; }		\
+    virtual const DataTypeId getReturnType() { return type::instance(); } \
+    virtual unsigned int getArgumentCount() { return args; }		\
+    virtual void checkArgTypes(const std::vector<DataTypeId>& argTypes) {} \
+  };
+
+  DECLARE_FUNCTION_TYPE(IsStarted, isStarted, "isStarted", BoolDT, 1);
+  DECLARE_FUNCTION_TYPE(IsEnded, isEnded, "isEnded", BoolDT, 1);
+  DECLARE_FUNCTION_TYPE(IsTimedOut, isTimedOut, "isTimedOut", BoolDT, 1);
+  DECLARE_FUNCTION_TYPE(IsSucceded, isSucceded, "isSucceded", BoolDT, 1);
+  DECLARE_FUNCTION_TYPE(IsAborted, isAborted, "isAborted", BoolDT, 1);
+  DECLARE_FUNCTION_TYPE(IsPreempted, isPreempted, "isPreempted", BoolDT, 1);
 
   void Assembly::Schema::registerComponents(const Assembly& assembly){
     ConstraintEngineId constraintEngine = ((ConstraintEngine*) assembly.getComponent("ConstraintEngine"))->getId();
     checkError(constraintEngine.isValid(), "No ConstraintEngine registered");
+
+
+    // Register functions
+    constraintEngine->getCESchema()->registerCFunction((new IsStartedFunction())->getId());
+    constraintEngine->getCESchema()->registerCFunction((new IsEndedFunction())->getId());
+    constraintEngine->getCESchema()->registerCFunction((new IsTimedOutFunction())->getId());
+    constraintEngine->getCESchema()->registerCFunction((new IsSuccededFunction())->getId());
+    constraintEngine->getCESchema()->registerCFunction((new IsAbortedFunction())->getId());
+    constraintEngine->getCESchema()->registerCFunction((new IsPreemptedFunction())->getId());
 
     // Register constraints
     REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefaultOnCommit, "defaultOnCommit", "OnCommit");
