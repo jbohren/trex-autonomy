@@ -35,7 +35,7 @@
 #include "NddlReader.hh"
 
 
-int main(unsigned int argc, char **argv) {
+int main(int argc, char **argv) {
   int rt = 0; if ((rt = NddlReaderMain(argc, argv))) { return rt; }
   
   NddlReader *r = new NddlReader();
