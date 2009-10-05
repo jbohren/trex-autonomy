@@ -1,6 +1,6 @@
 = Under Construction =
 
-[References McGann2009a]
+[RelatedWork#References McGann2009a]
 
 = References =
  * McGann2009a
