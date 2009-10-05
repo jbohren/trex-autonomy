@@ -1,5 +1,5 @@
 = Prerequisites =
-TREX requires the EUROPA planning and scheduling library which is available through Google Code [http://code.google.com/p/europa-pso/ here]. The EUROPA build requires Perforce Jam 2.5 or better. Under linux this can be obtained thus:
+TREX requires Perforce Jam 2.5 or better. Under linux this can be obtained thus:
 {{{
 sudo apt-get install jam
 }}}
