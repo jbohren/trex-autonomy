@@ -21,7 +21,7 @@ Despite these complexity factors, we would like our robots to embody some very i
 
 == The Robot Programmer's Dilemna ==
 [http://trex-autonomy.googlecode.com/svn/wiki/images/frazzled_programmer.jpg]
-If you have ever tried to program a sophisticated robot to achieve such high-levels of performance, in such challenging environments, then you might empathize with the difficulties invoved:
+If you have ever tried to program a sophisticated robot to achieve such high levels of performance, in such challenging environments, then you might empathize with the difficulties invoved:
  * There are many components to integrate and manage.
  * Often these components interact in intricate ways.
  * There can often be many alternatives to consider to achieve good behavior.
