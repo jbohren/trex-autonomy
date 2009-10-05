@@ -1,6 +1,16 @@
-= Under Construction =
+= T-REX in the Scheme of Things =
+T-REX is part of a progression of research in the area of architectures and programming methodologies for autonomous robots. The block diagrams below illustrate a progression of the research. In all cases, there has been a de-facto agreement on the use of modular task specific components variously called behaviors, actions, commands or skills. These components typically comprise what is often called the functional layer of an autonomy system.
+
 ||[http://trex-autonomy.googlecode.com/svn/wiki/images/related_work.1.png]||[http://trex-autonomy.googlecode.com/svn/wiki/images/related_work.2.png]||[http://trex-autonomy.googlecode.com/svn/wiki/images/related_work.3.png]||[http://trex-autonomy.googlecode.com/svn/wiki/images/related_work.4.png]||
-|| A || B || C || D ||
+|| Ad-hoc Methods / Reactive execution || Three Layer Architectures || Model-based Executives || T-REX ||
+
+== Ad-Hoc Methods/ Reactive Execution ==
+
+== Three Layer Arcitectures ==
+
+== Model-based Executives ==
+
+== T-REX ==
 
 [RelatedWork#References McGann2009a]
 
