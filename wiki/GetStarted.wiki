@@ -23,7 +23,7 @@ The relevant environment variables are described [DevConfig here]. A *devConfig*
 source TREX/devConfig
 }}}
 = Building and Running the Test Harness =
-TREX has an extensive test harness consisting of small examples which exercise a range of different behaviors in the executive. To build all relevant libraries and execute the tests, simply do:
+TREX has an extensive test harness consisting of small examples which exercise a range of different behaviors in the executive. To build all relevant libraries and execute the tests:
 {{{
 cd TREX/agent/test
 jam run-agent-module-tests
