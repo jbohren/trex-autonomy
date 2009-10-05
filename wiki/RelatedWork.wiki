@@ -1,7 +1,6 @@
 = Under Construction =
-This <ref name="ref1"/>
 
-{{Reflist |
-refs=
-<ref name="ref1"> Dummies, First Edition, Hungry Minds, Inc., 1980.</ref>
-}}
+[References McGann2009a]
+
+= References =
+ * McGann2009a
