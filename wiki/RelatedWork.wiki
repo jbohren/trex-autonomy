@@ -1,10 +1,10 @@
 = T-REX in the Scheme of Things =
-T-REX is part of a progression of research in the area of architectures and programming methodologies for autonomous robots. The block diagrams below illustrate a progression of the research. In all cases, there has been a de-facto agreement on the use of modular task specific components variously called behaviors, actions, commands or skills. These components typically comprise what is often called the functional layer of an autonomy system.
+The block diagrams below depict common  architectural patterns for autonomous robots. In all cases, there has been a de-facto agreement on the use of modular task specific components variously called behaviors, actions, commands or skills. The approaches differ primarily in how such primitives are composed to achieve more sophisticated tasks.
 
 ||[http://trex-autonomy.googlecode.com/svn/wiki/images/related_work.1.png]||[http://trex-autonomy.googlecode.com/svn/wiki/images/related_work.2.png]||[http://trex-autonomy.googlecode.com/svn/wiki/images/related_work.3.png]||[http://trex-autonomy.googlecode.com/svn/wiki/images/related_work.4.png]||
-|| Ad-hoc Methods / Reactive execution || Three Layer Architectures || Model-based Executives || T-REX ||
+|| Ad-hoc Methods / Reactive Execution || Three Layer Architectures || Model-based Executives || T-REX ||
 
-== Ad-Hoc Methods/ Reactive Execution ==
+== Ad-Hoc Methods / Reactive Execution ==
 
 == Three Layer Arcitectures ==
 
@@ -15,4 +15,21 @@ T-REX is part of a progression of research in the area of architectures and prog
 [RelatedWork#References McGann2009a]
 
 = References =
- * McGann2009a
+ * Alami98: R. Alami, R. Chatila, S. Fleury, M. Ghallab, F. Ingrand. International Journal of Robotics Research (Special Issue on ``Integrated Architectures for Robot Control and Programming'', Vol 17, N° 4, Apri1 1998).
+ * Allen83: James F. Allen. Maintaining Knowledge about Temporal Intervals. Communications of the ACM, 26(11):832-843. 1983
+ * Beetz00: Michael Beetz.  Runtime Plan Adaptation in Structured Reactive Controllers. ICAA, 2000
+ * Bonasso97: R. Peter Bonasso, R. James Firby, Erann Gat, David Kortenkamp, David P. Miller, Marc G. Slack: Experiences with an architecture for intelligent, reactive agents. J. Exp. Theor. Artif. Intell. 9(2-3): 237-256 (1997)
+ * Dechetr91: Rina Dechter, Itay Meiri, Judea Pearl: Temporal Constraint Networks. Artif. Intell. 49(1-3): 61-95 (1991)
+ * Firby87: R. James Firby.  An Investigation into Reactive Planning in Complex Domains. AAAI 1987: 202-206 
+ * Frank03: J. Frank and A. K. Jonsson: Constraint-based Attribute and Interval Planning. Constraints 8(4): 339-364
+ * Georgeff89:  M. P.  Georgeff and A. L. Lansky,  (1987). Reactive reasoning and planning. In Proceedings of the Sixth National Conference on Artificial Intelligence (AAAI-87), pages 677-682, Seattle, WA. 
+ * Kim01: P. Kim, B. C. Williams, and Mark Abramson. Executing Reactive, Model-based Programs through Graph-based Temporal Planning. IJCAI 2001.
+ * Konolige97: K. Konolige. Colbert: A language for reactive control in sapphira. In G. Brewka, C. Habel, and B. Nebel, editors, Advances in Artificial Intelligence, volume 1303 of Lecture Notes in Computer Science. Springer, 1997
+ * McGann08a: C. McGann, F. Py, K. Rajan, H. Thomas, R. Henthorn, R. McEwen. A deliberative architecture for AUV control. ICRA, 2008, 1049-1054.
+ * McGann08b: C. McGann, F. Py, K. Rajan, J. Ryan, R. Henthron. Adaptive Control for Autonomous Underwater Vehicles. AAAI, 2008, 1319-1324.
+ * Muscettola98: Nicola Muscettola, P. Pandurang Nayak, Barney Pell, Brian C. Williams. Remote Agent: To Boldly Go Where No AI System Has Gone Before. AI 103{1-2):5-47
+ * Muscettola02: Nicola Muscettola and Gregory A. Dorais and Chuck Fry and Richard Levinson and Christian Plaunt. IDEA: Planning at the Core of Autonomous Reactive Agents. 3rd International NASA Workshop on Planning and Scheduling for Space. 2002.
+ * Nilsson84: Nils J. Nilsson, ed. Shakey the Robot. SRI Technical Note no 323 (1984), SRI, Menlo Park, California.
+ * Nilsson94: Nils J. Nilsson. Teleo-Reactive Programs for Agent Control. J. Artif. Intell. Res. (JAIR),1:139-158
+ * Simmons98: Reid Simmons ,  David Apfelbaum: A Task Description Language for Robot Control. IROS, 1998
+ * Williams03: Brian C. Williams and Michel D. Ingham and Seung H. Chung and Paul H. Elliott. Model-Based Programming of Intelligent Embedded Systems and Robotic Space Explorers. IEEE: Special Issue on Modeling and Design of Embedded Software (212-237), 2003.
