@@ -1,7 +1,6 @@
 = The Challenges of Programming Autonomous Robots =
 == Domain Characteristics ==
 There is a wide variety of robots capable of a wide variety of tasks. For example, the PR2 is targetted at indoor service tasks. NOMAD is designed to autonomously explore the antarctic. Mars rovers operate as roving geologists on the planetary surface. Marine robots map the sea-floor and venture into uncharted underwater caves.
-a mobile manipulation platform developed to operate in indoor
 ||[http://trex-autonomy.googlecode.com/svn/wiki/images/pr2.jpg]||[http://trex-autonomy.googlecode.com/svn/wiki/images/nomad.jpg]||[http://trex-autonomy.googlecode.com/svn/wiki/images/rover.jpg]||[http://trex-autonomy.googlecode.com/svn/wiki/images/auv.jpg]||[http://trex-autonomy.googlecode.com/svn/wiki/images/depthx.jpg]||
 || [http://www.willowgarage.com/pages/robots/pr2-overview PR2 (Willow Garage)]|| [http://www.frc.ri.cmu.edu/projects/meteorobot2000/ NOMAD (CMU)]||[http://marsrovers.nasa.gov/overview/ Mars Rover (NASA)] ||[http://www.mbari.org/auv/MappingAUV/ Dorado AUV (MBARI)]|| [http://www.frc.ri.cmu.edu/depthx/ DepthX (CMU/Stone Aerospace)] ||
 
