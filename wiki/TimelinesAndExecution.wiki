@@ -1,1 +1,2 @@
-= Under Construction =
+= Timelines and their Execution ==
+[partial_plan.png Partial Plan]
