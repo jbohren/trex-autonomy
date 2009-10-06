@@ -1,38 +1,34 @@
 = Prerequisites =
-TREX requires Perforce Jam 2.5 or better. Under linux this can be obtained thus:
+T-REX requires Perforce Jam 2.5 or better. Under linux this can be obtained thus:
 {{{
 sudo apt-get install jam
 }}}
-= Getting Required Sources =
-These instructions assume TREX and EUROPA will be peer directories with a common parent which we shall call trex_europa.
+The easiest way to build T-REX is through [http://www.ros.org/wiki/ ROS]. Only the ROS build tools are required. These can be obtained by following the instructions in steps 1 and 2, for the ROS only install detailed [http://www.ros.org/wiki/ROS/Installation here]. 
+= Getting Required Sources and Building =
+Make sure the [http://www.ros.org/wiki/ROS/EnvironmentVariables#ROS_PACKAGE_PATH ROS_PACKAGE_PATH] environment variable is set to include the directory into which you check out T-REX. For example:
 {{{
-mkdir trex_europa
-cd trex_europa
+export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
 }}}
-Now check out EUROPA:
+Check out the ROS package used to build TREX and all its external dependencies:
 {{{
-svn co http://europa-pso.googlecode.com/svn/PLASMA/trunk PLASMA
+svn co http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core trex_core
 }}}
-To check out TREX:
+Now you can build:
 {{{
-svn co http://trex-autonomy.googlecode.com/svn/trunk TREX
-}}}
-= Setting up the Environment =
-The relevant environment variables are described [DevConfig here]. A *devConfig* file already includes these settings for your convenience.
-{{{
-source TREX/devConfig
+roscd trex_core
+make
 }}}
 = Building and Running the Test Harness =
 TREX has an extensive test harness consisting of small examples which exercise a range of different behaviors in the executive. To build all relevant libraries and execute the tests:
 {{{
-cd TREX/agent/test
-jam run-agent-module-tests
+roscd trex_core
+make test
 }}}
 If successful, you should see the following command line complete without complaint.
 {{{
 ExecuteTarget RUN_agent-module-tests_g_rt
 }}}
-Inspection of the file *RUN_agent-module-tests_g_rt* should illustrate the set of tests that passed and will look something like this:
+Inspection of the file *`rospack find trex_core`/TREX/agent/test/RUN_agent-module-tests_g_rt* should illustrate the set of tests that passed and will look something like this:
 {{{
 GamePlayTests::test***************
 Running testPersonalRobots .... SUCCESS
