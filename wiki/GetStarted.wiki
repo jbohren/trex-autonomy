@@ -30,7 +30,7 @@ ExecuteTarget RUN_agent-module-tests_g_rt
 }}}
 Inspection of the output file:
 {{{
-cat TREX/agent/test/RUN_agent-module-tests_g_rt
+cat TREX/agent/test/RUN_agent-module-tests_g_rt.output
 }}}
 should illustrate the set of tests that passed and will look something like this:
 {{{
