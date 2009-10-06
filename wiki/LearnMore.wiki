@@ -15,7 +15,7 @@ Timelines are great, but what we really care about is how we fill them out. A lo
 An age old approach for tackling complexity is to _divide and conquer_. T-REX embraces this idea to enable a planning centric system to scale well, enabling a spectrum of variously reactive and deliberative behavior.
 
 = [RockPaperScissors A Simple Example] =
-The [GettingStarted test harness] includes a simple example of using T-REX to co-ordinate agent behavior. It is based on the common children's game of chance usually referred to as _Rock/Paper/Scissors_.
+The [GetStarted test harness] includes a simple example of using T-REX to co-ordinate agent behavior. It is based on the common children's game of chance usually referred to as _Rock/Paper/Scissors_.
 
 = [RelatedWork T-REX in the Scheme of Things] =
 People have been programming robots for quite some time. If you want to find out more about how approaches to programming robots have evolved, and how T-REX fits in to that work, then this is a good place to go.
