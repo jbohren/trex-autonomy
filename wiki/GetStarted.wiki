@@ -11,7 +11,7 @@ export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
 }}}
 Check out the ROS package used to build TREX and all its external dependencies:
 {{{
-svn co http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core trex_core
+svn co https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core trex_core
 }}}
 Now you can build:
 {{{
