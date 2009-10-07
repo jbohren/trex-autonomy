@@ -5,7 +5,7 @@ Consider a spacecraft travelling through deep space, tasked with taking pictures
  
 
 = Constraints =
-Suppose the spacecraft should take a picture of a specific asteroid. While it is taking a picture of the asteroid, it should be pointing at it. This can be said for any target pose. Also, in order to prevent jitter in the image, it is critical that the engine is _Off_ while the shot is being taken. The figure below illustrates how the spacecraft timelines are filled out to accomodate this goal. It illustrates the values of timelines as they are expected to change, as well as the constraints between start times, end times and parameters. _Causal Links_ form a chain connecting goals to initial conditions.
+Suppose the spacecraft should take a picture of a specific asteroid. While it is taking a picture of the asteroid, it should be pointing at it. This can be said for any target pose. Also, in order to prevent jitter in the image, it is critical that the engine is _Off_ while the shot is being taken. The figure below illustrates how the spacecraft timelines are filled out to accomodate this goal. It illustrates the values of timelines as they are expected to change, as well as the constraints between start times, end times and parameters. _Causal Links_ form a chain connecting goals to initial conditions. A _causal link_ is a directed edge from a _master token_ to a _slave token_. The root of the causal graph is the _TakePicture_ token.
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/partial_plan.png]
 
