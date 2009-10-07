@@ -126,6 +126,8 @@ Attitude::TurningTo{
 
 || This is a really long sentence that could be wrapped. || [http://trex-autonomy.googlecode.com/svn/wiki/images/fix_flaws.png] ||
 
+== Plan Refinment ==
+|| [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.0.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.0.png] ||
 
 
 
