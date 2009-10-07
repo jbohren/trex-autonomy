@@ -75,17 +75,26 @@ Engine::Thrusting{
  met_by(Off);
 }
 }}}
-*Meets* and *met_by* are examples of qualitative constraints between temporal intervals known as the [http://code.google.com/p/europa-pso/wiki/NDDLReference#Slave_Allocation_and_Temporal_Relations Allen Relations]. If the *Camera* is _Off_ it's next state will always be _WarmingUp_:
+*Meets* and *met_by* are examples of qualitative constraints between temporal intervals known as [http://code.google.com/p/europa-pso/wiki/NDDLReference#Slave_Allocation_and_Temporal_Relations Allen Relations]. If the *Camera* is _Off_ it's next state will always be _WarmingUp_:
 {{{
 Camera::Off{
  meets(WarmingUp);
 }
 }}}
-Similarly, if it ss _WarmingUp_, it will transition into _Ready_, and it it's prior value must be _Off_.
+Similarly, if it is _WarmingUp_, it will transition into _Ready_, and it it's prior value must be _Off_.
 {{{
 Camera::WarmingUp{
  meets(Ready);
  met_by(Off);
+}
+}}}
+The Attitude state variable is also constrained to transition between PointingAt and TurningTo. In this case, we have to introduce a constraint between parameters of tokens:
+{{{
+Attitude::PointingAt{
+ meets(TurningTo);
+ // There is a parameter constraint equaiting parameters of the current and previous values.
+ met_by(TurningTo pred);
+ pred.target == target;
 }
 }}}
 
