@@ -1,2 +1,14 @@
-= Timelines and their Execution ==
+= Timelines and Tokens =
+Consider a spacecraft travelling through deep space, tasked with taking pictures of specific targets. The spacecraft has an _engine_ which can be fired to alter its pose. It also has a _camera_ which is turned off when not in use. If the camera was previously off, it can require some warm up period before being ready. The spacecraft _attitude_ is either pointing at a specifc target, thus having a steady pose, or transitioning from one pose to another. 
+
+There are 3 state variables of interest in this spacecraft scenario: *Engine*, *Camera*, and *Attitude*. The *Engine* can be _Off_ or it can be _Thrusting_ to a target pose. The *Camera* can be _Off_, _WarmingUp_, _Ready_, or _TakingPicture_ at some target pose. The spaceacraft *Attitude* is either _PointingAt_ a target pose, or _TurningTo_ a target pose. The figure below illustrates each of the above state variables depicted with a _timeline_. A _timeline_ captures the values of a state variable over time. Both the *Camera* and the *Engine* are _Off_ and the spacecraft is _PointingAt(D12)_ where _D12_ is some pose. The value of a state variable has temporal extent, which means it persists for some period of time. We use a _Token_ to represent a specifc value of a state variable over time. This time period, the temporal scope for a value, is bounded by a start and end time. In the figure below, the start time of each token  is fixed, but the end time is not. This indicates uncertainty and/or ambivalence about when the current value will end. The actual value of token is specified using a labelled _predicate_ with a possibly empty set of parameters, in keeping with conventional [http://en.wikipedia.org/wiki/First-order_logic first-order logic] representations.
+
+[http://trex-autonomy.googlecode.com/svn/wiki/images/initial_state.png]
+
+
+Suppose the spacecraft should take a picture of a specific asteroid. While it is taking a picture of the asteroid, it should be pointing at it. This can be said for any target pose. Also, in order to prevent jitter in the image, it is critical that the engine is _Off_ while the shot is being taken.
+An _Attitude Controller_ is a subsytem that is responsible for pointing the spacecraft correctly. 
+
+
+
 [http://trex-autonomy.googlecode.com/svn/wiki/images/partial_plan.png]
