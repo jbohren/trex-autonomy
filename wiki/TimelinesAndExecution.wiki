@@ -121,6 +121,11 @@ Attitude::TurningTo{
  t.target == target;
 }
 }}}
+= Automated Planning =
+== Flaws ==
+
+[http://trex-autonomy.googlecode.com/svn/wiki/images/fix_flaws.png]
+
 
 
 
