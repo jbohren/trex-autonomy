@@ -92,11 +92,33 @@ The Attitude state variable is also constrained to transition between PointingAt
 {{{
 Attitude::PointingAt{
  meets(TurningTo);
- // There is a parameter constraint equaiting parameters of the current and previous values.
+ // There is a parameter constraint equating parameters of the current and previous values.
  met_by(TurningTo pred);
  pred.target == target;
 }
+Attitude::TurningTo{
+ meets(PointingAt succ);
+ target == succ.target;
+ met_by(PointingAt);
+}
 }}}
+== Interaction Constraints ==
+In addition to constraints on transitions within a timeline, we described a number of constraints between values across timelines. For example, the constraints holding on _TakingPicture_ additionally include:
+{{{
+Camera::TakingPicture{
+ contained_by(Engine.Off);
+ contained_by(Attitude.PointingAt p);
+ p.target == target;
+}
+}}}
+Also, the interaction between _Attitude.TuringTo_ and _Engine.Thrusting_ can be stated simply:
+{{{
+Attitude::TurningTo{
+ equals(Engine.Thrusting t);
+ t.target == target;
+}
+}}}
+
 
 
 
