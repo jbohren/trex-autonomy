@@ -124,9 +124,7 @@ Attitude::TurningTo{
 = Automated Planning =
 == Flaws ==
 
-This 
-is
-a long sentence.[http://trex-autonomy.googlecode.com/svn/wiki/images/fix_flaws.png]
+|| This is a really long sentence that could be wrapped. || [http://trex-autonomy.googlecode.com/svn/wiki/images/fix_flaws.png] ||
 
 
 
