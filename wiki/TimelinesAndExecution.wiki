@@ -128,6 +128,7 @@ Attitude::TurningTo{
 
 == Plan Refinement ==
 || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.0.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.1.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.2.png] ||
+|| [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.3.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.4.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.5.png] ||
 
 
 
