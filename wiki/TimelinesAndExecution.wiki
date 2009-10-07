@@ -11,4 +11,84 @@ Suppose the spacecraft should take a picture of a specific asteroid. While it is
 
 Note that the requirement that _while taking a picture, the engine must be off_ is expressed as a constraint from the *Camera* timeline to the *Engine* timeline, with precedence constraints between timepoints capturing the _while_ semantics. Also note the transition of the *Camera* timeline from _Off_ to _TakingPicture_ must go through intermediate states to first warm up and then be ready. The goal also requires a change in vehicle attitude. The adjustment in attitude is co-temporal with thrusting the engine. This is expressed by equality constraints beteen the start and end times of the respective tokens.
 
+= Modeling =
+So far we have used informal language to describe the spacecraft domain. [http://code.google.com/p/europa-pso/wiki/NDDLReference NDDL] is a formal modeling language used to specify a planning domain such that algorithms for search and inference can be applied to automatically fill out timelines as just described. 
+== Class Declarations ==
+A *Target* is a structure defining a point in cartesion space:
+{{{
+class Target{
+ float x;
+ float y;
+ float z;
+
+ Target(float _x, _y, _z){
+  x = _x;
+  y = _y;
+  z = _z;
+ }
+}
+}}}
+The *Engine* timeline is declared thus:
+{{{
+class Engine extends Timeline{
+ predicate Off{}
+ predicate Thrusting{
+  Target target;
+ }
+
+ Engine(){super();}
+}
+}}}
+
+Similarly, we can declare *Attitude* and *Camera* timelines.
+{{{
+class Camera extends Timeline {
+ predicate Off{}
+ predicate WarmingUp{}
+ predicate Ready{}
+ predicate TakingPicture{
+  Target target;
+ }
+ Camera(){super();}
+}
+
+class Attitude extends Timeline {
+ predicate PointingAt{
+  Target target;
+ }
+ predicate TurningTo{
+  Target target;
+ }
+
+ Attitude(){super();}
+}
+}}}
+== Transition Constraints ==
+There are a number of constraints governing transitions within a given timeline. For example, the engine will transition between _Off_ and _Thrusting_. We can express this with rules constraining successor and predecessor values of each value:
+{{{
+Engine::Off{
+ meets(Thrusting);
+ met_by(Thrusting);
+}
+Engine::Thrusting{
+ meets(Off);
+ met_by(Off);
+}
+}}}
+*Meets* and *met_by* are examples of qualitative constraints between temporal intervals known as the [http://code.google.com/p/europa-pso/wiki/NDDLReference#Slave_Allocation_and_Temporal_Relations Allen Relations]. If the *Camera* is _Off_ it's next state will always be _WarmingUp_:
+{{{
+Camera::Off{
+ meets(WarmingUp);
+}
+}}}
+Similarly, if it ss _WarmingUp_, it will transition into _Ready_, and it it's prior value must be _Off_.
+{{{
+Camera::WarmingUp{
+ meets(Ready);
+ met_by(Off);
+}
+}}}
+
+
+
 
