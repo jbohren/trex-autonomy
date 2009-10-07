@@ -9,6 +9,6 @@ Suppose the spacecraft should take a picture of a specific asteroid. While it is
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/partial_plan.png]
 
-Note that the requirement that _while taking a picture, the engine must be off_ is expressed as a constraint from the *Camera* timeline to the *Engine* timeline, with precedence constraints between timepoints capturing the _while_ semantics. Also note the transition of the *Camera* timeline from *Off* to *TakePicture* must go through intermediate states to first warm up and then be ready. The goal also requires a change in vehicle attitude. The adjustment in attitude is co-temporal with thrusting the engine. This is expressed be equality constraints beteen the start and end times of the respective tokens.
+Note that the requirement that _while taking a picture, the engine must be off_ is expressed as a constraint from the *Camera* timeline to the *Engine* timeline, with precedence constraints between timepoints capturing the _while_ semantics. Also note the transition of the *Camera* timeline from _Off_ to _TakingPicture_ must go through intermediate states to first warm up and then be ready. The goal also requires a change in vehicle attitude. The adjustment in attitude is co-temporal with thrusting the engine. This is expressed by equality constraints beteen the start and end times of the respective tokens.
 
 
