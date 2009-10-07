@@ -130,6 +130,7 @@ Attitude::TurningTo{
 || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.0.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.1.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.2.png] ||
 || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.3.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.4.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.5.png] ||
 || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.6.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.7.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.8.png] ||
+|| [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.9.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.10.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.11.png] ||
 
 
 
