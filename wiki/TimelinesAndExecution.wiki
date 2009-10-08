@@ -7,7 +7,7 @@ Consider a spacecraft travelling through deep space, tasked with taking pictures
 [http://trex-autonomy.googlecode.com/svn/wiki/images/initial_state.png]
  
 
-= Constraints =
+= Constraints and Causal Links =
 Suppose the spacecraft should take a picture of a specific asteroid. While it is taking a picture of the asteroid, it should be pointing at it. This can be said for any target pose. Also, in order to prevent jitter in the image, it is critical that the engine is _Off_ while the shot is being taken. The figure below illustrates how the spacecraft timelines are filled out to accomodate this goal. It illustrates the values of timelines as they are expected to change, as well as the constraints between start times, end times and parameters. _Causal Links_ form a chain connecting goals to initial conditions. A _causal link_ is a directed edge from a _master token_ to a _slave token_. The root of the causal graph is the _TakePicture_ token.
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/partial_plan.png]
@@ -122,12 +122,10 @@ Attitude::TurningTo{
 }
 }}}
 = Automated Planning =
-== Flaws ==
+There is a very general notion that a plan might be flawed, and thus require fixing. The primary reasons why a plan is flawed are because it is _incomplete_ or _inconsistent_. If a plan is _incomplete_, it can be further refined. If it is _inconsistent_ it can be repaired. This section will illustrate the process of plan refinement using the spacecraft example, whereby an initial state and goal represents an _partial plan_ which can be incrementally refined until completion. Plan repair will not be discussed at this time. Suffice to say, it requires a relaxation of the plan in some fashion.
 
-|| This is a really long sentence that could be wrapped. || [http://trex-autonomy.googlecode.com/svn/wiki/images/fix_flaws.png] ||
-
-== Plan Refinement ==
 || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.0.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.1.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.2.png] ||
+|| The example begins with an initial state as previously described, and a goal to take a picture of the Asteroid. In this case, the goal represents a flaw since no decision has been made to put it in the plan. This is indicated by the yellow color. The grey tokens indicate slaves entailed by the model. However, they are not considered flaws because their respective masters can continue indefinitely and thus no transition is actually required. In this case they are just constraints that any plan must not contradict, rather than states that must be achieved.|| || ||
 || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.3.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.4.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.5.png] ||
 || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.6.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.7.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.8.png] ||
 || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.9.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.10.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.11.png] ||
