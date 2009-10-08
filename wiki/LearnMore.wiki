@@ -6,7 +6,9 @@
  * *High-level Programming*: It's easy to get lost in details when programming a complex machine. A high-level modeling language raises the level of abstraction to the essential features of the robot mechanisms, available behaviors, and the task domain. This approach allows a programming model that can focus on the problem domain rather than worry about threads, memory management, and so forth.
 
 = Key Ideas =
-There are a few key ideas behind T-REX, and then of course, the devil is in the details. Those details deeply involve [http://code.google.com/p/europa-pso/ EUROPA-2]. However, as a first introduction, we will introduce the key ideas.
+There are a few key ideas behind T-REX, and then of course, the devil is in the details. Those details deeply involve [http://code.google.com/p/europa-pso/ EUROPA-2]. However, as a first introduction, we will introduce the key concepts.
+== [CTP Constraint-based Temporal Planning] ==
+Constraint-based Temporal Planning is a paradigm for representing and reasoning about plans. It is a foundation of T-REX, and is presented here informally.
 == [TimelinesAndExecution Timelines and their Execution] ==
 Many people are intuitively familiar with the notion of a timeline. In T-REX, a timeline is a core primitive for representing all state in the past, present and future. Check this out if you want to see more formally how this works.
 == [SensePlanAct Sense-Plan-Act] ==
