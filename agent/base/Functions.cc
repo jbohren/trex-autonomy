@@ -50,8 +50,8 @@ namespace TREX {
   const LabelStr ExecutionConstraint::SUCCESS("SUCCESS");
   const LabelStr ExecutionConstraint::PREEMPTED("PREEMPTED");
   const LabelStr ExecutionConstraint::ABORTED("ABORTED");
-  const LabelStr ExecutionConstraint::BEHAVIOR_ACTIVE("Behavior.Active");
-  const LabelStr ExecutionConstraint::BEHAVIOR_INACTIVE("Behavior.Inactive");
+  const LabelStr ExecutionConstraint::ACTION_ACTIVE("AgentAction.Active");
+  const LabelStr ExecutionConstraint::ACTION_INACTIVE("AgentAction.Inactive");
   const LabelStr ExecutionConstraint::PARAM_MAX_DURATION("max_duration");
   const LabelStr ExecutionConstraint::PARAM_STATUS("status");
   const LabelStr ExecutionConstraint::EQUALS("equals");
@@ -91,10 +91,10 @@ namespace TREX {
     TokenId parent_token = getParentToken(token_var);
 
     checkError(parent_token.isId(),
-	       "We assume the second variable is a variable of a Behavior::Active token, but it is not. " << token_var->toLongString());
+	       "We assume the second variable is a variable of a AgentAction::Active token, but it is not. " << token_var->toLongString());
 
-    checkError(parent_token->getPlanDatabase()->getSchema()->isA(parent_token->getPredicateName(), BEHAVIOR_ACTIVE),
-	       "We assume the second variable is a variable of a Behavior::Active token, but it is not. " << parent_token->toLongString());
+    checkError(parent_token->getPlanDatabase()->getSchema()->isA(parent_token->getPredicateName(), ACTION_ACTIVE),
+	       "We assume the second variable is a variable of a AgentAction::Active token, but it is not. " << parent_token->toLongString());
 
     checkError(parent_token->getVariable(PARAM_MAX_DURATION, false).isId(), "Must have a max_duration parameter." << parent_token->toLongString());
 
@@ -136,7 +136,7 @@ namespace TREX {
 
       if(successor_token.isId()){
 
-	checkError(successor_token->getPlanDatabase()->getSchema()->isA(successor_token->getPredicateName(), BEHAVIOR_INACTIVE), 
+	checkError(successor_token->getPlanDatabase()->getSchema()->isA(successor_token->getPredicateName(), ACTION_INACTIVE), 
 		   "Token is out of place. " << successor_token->toLongString());
 
 	const AbstractDomain& successor_status = getCurrentDomain(successor_token->getVariable(PARAM_STATUS, false));
@@ -257,7 +257,7 @@ namespace TREX {
     : ExecutionConstraint(name, propagatorName, constraintEngine, makeScope(variables)),
       m_token(getParentToken(variables[0])),
       m_relation(m_token->getRelation()){
-    checkError(m_token->getPlanDatabase()->getSchema()->isA(m_token->getPredicateName(), BEHAVIOR_ACTIVE),
+    checkError(m_token->getPlanDatabase()->getSchema()->isA(m_token->getPredicateName(), ACTION_ACTIVE),
 	       "This constraint must be an active behavior token. " << m_token->toString());
 
     debugMsg("trex:extensions:MasterSlaveRelation", m_token->toString());
@@ -289,7 +289,7 @@ namespace TREX {
       new_scope.push_back(master->duration());
       
       // Only obtain max duration if parent is also a behavior
-      if(master->getPlanDatabase()->getSchema()->isA(master->getPredicateName(), BEHAVIOR_ACTIVE))
+      if(master->getPlanDatabase()->getSchema()->isA(master->getPredicateName(), ACTION_ACTIVE))
 	new_scope.push_back(master->getVariable(PARAM_MAX_DURATION, false));
 
       return new_scope;

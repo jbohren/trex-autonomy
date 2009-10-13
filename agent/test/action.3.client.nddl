@@ -10,11 +10,11 @@ Counter counter = new Counter(Mode.External);
 
 close();
 
-rejectable(actions.increment a);
-rejectable(actions.increment b);
-rejectable(actions.increment c);
-rejectable(actions.increment d);
-rejectable(actions.increment e);
+rejectable(IncrementAction.Active a);
+rejectable(IncrementAction.Active b);
+rejectable(IncrementAction.Active c);
+rejectable(IncrementAction.Active d);
+rejectable(IncrementAction.Active e);
 a before b;
 b before c;
 c before d;

@@ -16,7 +16,7 @@ class StatusTimeline extends AgentTimeline {
 /**
  * The behavior that interacts with a status timeline
  */
-class TestBehavior extends Behavior {
+class TestBehavior extends AgentAction {
   TestBehavior() { super(Internal); }
 };
 
@@ -24,7 +24,7 @@ class TestBehavior extends Behavior {
  * This class will generate slaves on the testBehavior of different kinds, where we are thus testing that the
  * built in trex_behavior constraint is correctly applied
  */
-class MasterBehavior extends Behavior{
+class MasterBehavior extends AgentAction{
   predicate Active{
     int test_case_id; // Used to branch on what to do
   }

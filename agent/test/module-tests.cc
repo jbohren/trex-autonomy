@@ -60,11 +60,23 @@ using namespace TREX;
   else \
     std::cout << #test << " FAILED." << std::endl; \
   }\
-  catch (...){			\
+  catch(TREX::ConfigurationException* e){							\
+    std::cout << #test << " FAILED with an exception." <<  e->toString() << std::endl; \
+    exit(-1); \
+  }\
+  catch(char* e){\
+    std::cout << #test << " FAILED. "  << e << std::endl; \
+    exit(-1); \
+  }\
+  catch(std::runtime_error e){\
+    std::cout << #test << " FAILED with an exception." <<  e.what() << std::endl; \
+    exit(-1); \
+  }\
+  catch(...){\
     std::cout << #test << " FAILED with an exception.";	\
     exit(-1); \
   }\
-  }
+}
 
 /**
  * Run problem and handle setup and clean up
@@ -79,10 +91,14 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
+    runTest(testDispatch);
+    runTest(testSqueezeObserver);
+    runTest(testSimulation);
+    runTest(testUndefinedSingleTimeline);
+    runTest(testUndefinedDerived);
     runTest(testPersonalRobots);
     runTest(testSynch);
     runTest(testExtensions);
-    runTest(OrienteeringSolver);
     runTest(testRecall);
     runTest(testRepair);
     runTest(testLogging);
@@ -90,17 +106,13 @@ public:
     runTest(testSimulationWithPlannerTimeouts);
     runTest(testScalability);
     runTest(testTestMonitor);
-    runTest(testOneDeliberatorOneAdapter);
+    runTest(testActions);
     runTest(bugFixes); 
+    runTest(testOneDeliberatorOneAdapter);
+    runTest(OrienteeringSolver);
     runTest(testInconsistent);
     runTest(testOneStepAhead);
     runTest(testFileSearch);
-    runTest(testDispatch);
-    runTest(testSqueezeObserver);
-    runTest(testSimulation);
-    runTest(testUndefinedSingleTimeline);
-    runTest(testUndefinedDerived);
-    runTest(testActions);
     return true;
   }
 
@@ -271,11 +283,11 @@ private:
    * Test handling of actions
    */
   static bool testActions(){
-    runAgentWithSchema("Action.0.cfg", 50, "Action.0");
     runAgentWithSchema("action.3.cfg", 50, "action.3");
+    runAgentWithSchema("action.2.cfg", 50, "action.2");
+    runAgentWithSchema("Action.0.cfg", 50, "Action.0");
     runAgentWithSchema("action.4.cfg", 50, "action.4");
     runAgentWithSchema("Action.1.cfg", 50, "Action.1");
-    runAgentWithSchema("action.2.cfg", 50, "action.2");
     return true;
   }
 
@@ -303,7 +315,7 @@ private:
    * Tests the OrienteeringSolver..
    */
   static bool OrienteeringSolver(){
-    runAgentWithSchema("orienteering.5.cfg", 50, "orienteering.5");
+    //runAgentWithSchema("orienteering.5.cfg", 50, "orienteering.5");
     runAgentWithSchema("orienteering.0.cfg", 50, "orienteering.0");
     runAgentWithSchema("orienteering.1.cfg", 50, "orienteering.1");
     runAgentWithSchema("orienteering.2.cfg", 50, "orienteering.2");
@@ -387,5 +399,6 @@ int main() {
   initTREX();
   runTestSuite(GamePlayTests::test);
   runTestSuite(AgentTests::test);
+
   return 0;
 }

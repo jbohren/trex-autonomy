@@ -120,14 +120,19 @@ namespace TREX {
 	     token->end()->lastDomain().toString());
 
     // Cheap check if token is out of scope due to being ignored
-    if(m_core.isId() && !m_core->inScope(token))
+    if(m_core.isId() && !m_core->inScope(token)){
+      TREX_INFO("trex:debug:planning", "Excluding " << tokenToString(token)); 
       return true;
-
+    }
 
     // Now focus on the token
     const IntervalIntDomain& startTime = token->start()->lastDomain();
     const IntervalIntDomain& endTime = token->end()->lastDomain();
 
+    // If definitely out of temporal scope, get rid of it
+    //if(startTime.getLowerBound() > horizon().getUpperBound() ||
+    // endTime.getUpperBound() <= m_core->getCurrentTick())
+    // return true;
 
     // Special Treatment if it is in fact a condition (for now called a TestMonitor). Cheap check first
     if(TestMonitor::isCondition(token->getKey())){
@@ -142,11 +147,15 @@ namespace TREX {
       return !inScope;
     }
 
-    // If the token is possibly in the past, exclude from deliberation. It will be handled in synchronization
+    // If the token is necessarily in the past, exclude from deliberation. It will be handled in synchronization
     // or not at all if sufficiently in the past. Also, if it necessarily starts in the distant future, ignore it
-    if(endTime.getLowerBound() <= (m_core.isId() ? (m_core->getCurrentTick()) : horizon().getLowerBound()) || 
-       startTime.getLowerBound() >= horizon().getUpperBound())
+    if(endTime.getUpperBound() <= (m_core.isId() ? (m_core->getCurrentTick()) : horizon().getLowerBound()) || 
+       startTime.getLowerBound() >= horizon().getUpperBound()){
+      TREX_INFO("trex:debug:planning:flawfiltering", "Out of horizon so excluding " <<
+		entity->toString() << " with token scope " << token->start()->lastDomain().toString() <<
+		" AND " << token->end()->lastDomain().toString());
       return true;
+    }
 
     // First criteria is if the token is necessarily in the horizon. This is the first
     // check since we must plan to completion for the given horizon. Since we have already excluded tokens that are necessarily
@@ -417,6 +426,7 @@ namespace TREX {
       const AbstractDomain& varDom = *(nameValuePair.second);
       const ConstrainedVariableId& param = token->getVariable(varName);
       checkError(param.isValid(), tokenToString(token) << " has no variable named " << varName.toString() << ". " << token->toLongString());
+      TREX_INFO("trex:info:trace", nameString() << "Restricting " << param->toString() << " to " << varDom.toString());
       restrict(param, varDom);
     }
 
@@ -890,14 +900,8 @@ namespace TREX {
     if(m_state == DbCore::INACTIVE)
       m_currentTickCycle = getCurrentTick();
 
+    // Start actiosn as needed
     updateActions();
-    if(!propagate())
-      return;
-
-    // This can be made much more efficient!
-    updateBehaviors("Behavior.Active");
-    //updateBehaviors("Behavior.Inactive");
-
     if(!propagate())
       return;
     
@@ -1030,6 +1034,7 @@ namespace TREX {
   bool DbCore::isObservation(const TokenId& tok) const {return m_observations.find(tok) != m_observations.end();}
   
   bool DbCore::isAction(const TokenId& tok) {
+    return false;
     return tok->getPlanDatabase()->getSchema()->isA(tok->getBaseObjectType(), Agent::ACTION());
   }
 
@@ -1645,34 +1650,10 @@ namespace TREX {
       if(!propagate())
 	return;
     }
-
-
-    // Internal timelines
-
-    // Actions that have started should be committed
-    IntervalIntDomain startBaseDomain(getCurrentTick() + 1, PLUS_INFINITY);
-    for(TokenSet::iterator it = m_actions.begin(); it != m_actions.end(); ++it){
-      TokenId action = *it;
-      checkError(action.isValid(), action);
-      TREX_INFO("trex:debug:synchronization:commit", nameString() << "Evaluating " << action->toString());
-
-      if(!action->isActive() || action->isCommitted())
-	continue;
-
-      if(action->start()->lastDomain().getUpperBound() <= getCurrentTick())
-	commitAndRestrict(action);
-      else // Base domain of the token start time should be pushed with tau
-	action->start()->restrictBaseDomain(startBaseDomain);
-
-      // If now inconsistent, this will trigger a repair during synchronization
-      if(!propagate())
-	return;
-    }
   }
 
   /**
-   * @brief Update actions visible in the current deliberation window. Only applies if planning is quiescent.
-   * @see handleTickStart
+   * @brief
    */
   void DbCore::updateActions(){
     TREX_INFO("trex:debug:synchronization:updateActions", nameString());
@@ -1687,8 +1668,9 @@ namespace TREX {
 
     const IntervalIntDomain horizon(getCurrentTick(), getCurrentTick());
 
-    // Iterate over all actions. If an action can be started, do so
-    for(TokenSet::iterator it = m_actions.begin(); it != m_actions.end(); ++it){
+    // Iterate over all active actions. If one can be started, do it.
+    const TokenSet& actions = m_db->getActiveTokens("AgentAction.Active");
+    for(TokenSet::iterator it = actions.begin(); it != actions.end(); ++it){
       TokenId action = *it;
       checkError(action.isValid(), action);
       const IntervalIntDomain& startTime = action->start()->lastDomain();
@@ -1697,21 +1679,8 @@ namespace TREX {
       TREX_INFO("trex:debug:synchronization:updateActions", 
 		"Evaluating " << action->toString() << " from " << startTime.toString() << " to " << endTime.toString());
 
-      // If the action is committed we may need to nudge its end time
-      if(action->isCommitted()){
-	if(endTime.isMember(getCurrentTick())){
-	  action->end()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
-
-	  // If now inconsistent, this will trigger a repair during synchronization
-	  if(!propagate())
-	    return;
-	}
-
+      if(action->start()->isSpecified() || !horizon.intersects(startTime) || !isInternal(action))
 	continue;
-      }
-
-      if(action->start()->isSpecified() || !horizon.intersects(startTime))
-	  continue;
 
       if(!initialized){
 	getActiveUncontrollableEvents(activeUncontrollableEvents);
@@ -1719,66 +1688,13 @@ namespace TREX {
       }
 
       // Now either nudge the action or start it
-      if(!action->start()->lastDomain().isSingleton() && hasPendingPredecessors(action, activeUncontrollableEvents) || action->isInactive())
-	action->start()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
-      else if(action->isActive()){
+      if(!action->start()->lastDomain().isSingleton() && !hasPendingPredecessors(action, activeUncontrollableEvents)){
 	TREXLog() << nameString() << "Starting " << action->toString() << std::endl;
 	TREX_INFO("trex:debug:synchronization:updateActions", nameString() << "Starting " << action->toString());
 
 	// Start the action in this tick and commit to it. In the event of an inconsistency we have to repair anyway
 	// and the action will be discarded.
 	action->start()->specify(getCurrentTick());
-      }
-
-      // If now inconsistent, this will trigger a repair during synchronization
-      if(!propagate())
-	return;
-    }
-  }
-
-  /**
-   * @brief
-   */
-  void DbCore::updateBehaviors(const LabelStr& predicate){
-    TREX_INFO("trex:debug:synchronization:updateBehaviors", nameString());
-
-    if(m_state != DbCore::INACTIVE){
-      TREX_INFO("trex:debug:synchronization:updateBehaviors", nameString() << "Skipping behavior update as planning is active.");
-      return;
-    }
-
-    std::vector<TokenId> activeUncontrollableEvents;
-    bool initialized(false);
-
-    const IntervalIntDomain horizon(getCurrentTick(), getCurrentTick());
-
-    // Iterate over all active behaviors. If one can be started, do it.
-    const TokenSet& behaviors = m_db->getActiveTokens(predicate);
-    for(TokenSet::iterator it = behaviors.begin(); it != behaviors.end(); ++it){
-      TokenId behavior = *it;
-      checkError(behavior.isValid(), behavior);
-      const IntervalIntDomain& startTime = behavior->start()->lastDomain();
-      const IntervalIntDomain& endTime = behavior->end()->lastDomain();
-
-      TREX_INFO("trex:debug:synchronization:updateBehaviors", 
-		"Evaluating " << behavior->toString() << " from " << startTime.toString() << " to " << endTime.toString());
-
-      if(behavior->start()->isSpecified() || !horizon.intersects(startTime) || !isInternal(behavior))
-	continue;
-
-      if(!initialized){
-	getActiveUncontrollableEvents(activeUncontrollableEvents);
-	initialized = true;
-      }
-
-      // Now either nudge the action or start it
-      if(!behavior->start()->lastDomain().isSingleton() && !hasPendingPredecessors(behavior, activeUncontrollableEvents)){
-	TREXLog() << nameString() << "Starting " << behavior->toString() << std::endl;
-	TREX_INFO("trex:debug:synchronization:updateBehaviors", nameString() << "Starting " << behavior->toString());
-
-	// Start the behavior in this tick and commit to it. In the event of an inconsistency we have to repair anyway
-	// and the behavior will be discarded.
-	behavior->start()->specify(getCurrentTick());
 
 	// If now inconsistent, this will trigger a repair during synchronization
 	if(!propagate())
@@ -2151,15 +2067,11 @@ namespace TREX {
 
   void DbCore::handleDeactivated(const TokenId& token){
     addToTokenAgenda(token);
-
-    if(isAction(token))
-      m_actions.erase(token);
   }
 
   void DbCore::handleRemoval(const TokenId& token){
     m_tokenScope.erase(token->getKey());
     m_goals.erase(token);
-    m_actions.erase(token);
     m_observations.erase(token);
     removeFromTokenAgenda(token);
     m_pendingTokens.erase(token);
@@ -2219,11 +2131,13 @@ namespace TREX {
     // Restrict the start to its current bounds
     token->start()->restrictBaseDomain(token->start()->lastDomain());
     
+    // restrict parameters
+    restrictParameterBaseDomains(token);
+
     // Restrict the end. If in the past just restrict it to current bounds. If current, then the base domain can be restricted
     // just up till the current tick, even if the lower bound of the current domain is more restrictive.
     if(token->end()->lastDomain().getUpperBound() < getCurrentTick()){
       token->end()->restrictBaseDomain(token->end()->lastDomain());
-      restrictParameterBaseDomains(token);
     }
     else
       token->end()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), PLUS_INFINITY));
@@ -2313,17 +2227,6 @@ namespace TREX {
     for( ; endint!=intit; ++intit )
       logTimeLine(intit->first, "internal");
 
-    // Actions
-    if( !m_actions.empty() ) {
-      TokenSet::const_iterator actit = m_actions.begin();
-      TokenSet::const_iterator const endact = m_actions.end();
-      
-      m_planLog<<"  - [actions] :\n";
-      for( ; endact!=actit; ++actit ) { 
-	// For now I just display it we'll see how to improve it later
-	logToken(*actit);
-      }
-    }
     // Externals
     std::map<int, TimelineContainer>::const_iterator 
       cextit = m_externalTimelineTable.begin();
@@ -2581,41 +2484,21 @@ namespace TREX {
       TokenId token = *it;
       bool inScope = true;
 
-      if(isAction(token)){
-	// If the master is external, or necessarily beyond the scope of the mission
-	// (isExternal(token->master()) || token->master()->end()->lastDomain().getUpperBound() <= Agent::instance()->getCurrentTick()))
-	if((token->master().isId() && isExternal(token->master())) || 
-	   token->start()->lastDomain().getLowerBound() > Agent::instance()->getFinalTick() - 1 ||
-	   token->end()->lastDomain().getLowerBound() > Agent::instance()->getFinalTick()){
-	  TREX_INFO("DbCore:handleAddition", nameString() << "Excluding Action:" << tokenToString(token));
-	  inScope = false;
-	}
-	else {
-	  // An action will be treated like a goal in the sense that its start time is to be in the future and it must complete before
-	  // the end of the mission. This could be problematic if we generate actions when we have no time left. This is not likely, and so the default case
-	  // will assume the restriction to mission end. Do not generate an action if you do not require it!
-	  token->start()->restrictBaseDomain(IntervalIntDomain(getCurrentTick(), Agent::instance()->getFinalTick() - 1));
-	  m_actions.insert(token);
-	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Action:" << tokenToString(token));
-	}
-      }
-      else {
-	checkError(m_assembly.getSchema()->isA(token->getBaseObjectType(), Agent::TIMELINE()), tokenToString(token));
-	inScope = !DbCore::onTimeline(token, Agent::IGNORE_TIMELINE());
+      checkError(m_assembly.getSchema()->isA(token->getBaseObjectType(), Agent::TIMELINE()), tokenToString(token));
+      inScope = !DbCore::onTimeline(token, Agent::IGNORE_TIMELINE());
 
-	// If in scope, and rejectable it must be a goal
-	if(inScope && token->master().isNoId() && token->getState()->baseDomain().isMember(Token::REJECTED)){
-	  m_goals.insert(token);
-	  TREX_INFO("DbCore:handleAddition", nameString() << "Adding Goal:" << tokenToString(token));
-	  token->start()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick() - 1));
+      // If in scope, and rejectable it must be a goal
+      if(inScope && token->master().isNoId() && token->getState()->baseDomain().isMember(Token::REJECTED)){
+	m_goals.insert(token);
+	TREX_INFO("DbCore:handleAddition", nameString() << "Adding Goal:" << tokenToString(token));
+	token->start()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick() - 1));
 
-	  // Restrict parameters since it is a goal.
-	  restrictParameterBaseDomains(token);
+	// Restrict parameters since it is a goal.
+	restrictParameterBaseDomains(token);
 
-	  // If not a condition, then we will not require any end time. It can be made explicit
-	  if(!TestMonitor::isCondition(token->getKey()))
-	     token->end()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick()));
-	}
+	// If not a condition, then we will not require any end time. It can be made explicit
+	if(!TestMonitor::isCondition(token->getKey()))
+	  token->end()->restrictBaseDomain(IntervalIntDomain(0, Agent::instance()->getFinalTick()));
       }
  
       m_tokenScope.insert(std::pair<int, bool>(token->getKey(), inScope));
