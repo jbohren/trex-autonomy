@@ -28,4 +28,4 @@ If you have ever tried to program a sophisticated robot to achieve such high lev
  * Choices about how things should be done must often be made in-situ, by the program rather than a-priori by the operator.
  * Murphy's Law is true - _Everything that can go wrong, will_.
 
-[http://code.google.com/p/trex-autonomy/ BACK]
+[http://code.google.com/p/trex-autonomy/wiki/LearnMore Learn More]
