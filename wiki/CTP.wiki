@@ -137,5 +137,3 @@ There is a very general notion that a plan might be flawed, and thus require fix
 || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.16.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.17.png] || [http://trex-autonomy.googlecode.com/svn/wiki/images/plan.18.png] ||
 ||  Because of the temporal constraint structure arising from the model, and the planner ordering decisions made, it is not possible to merge the outstanding * Camera.Off * token with the initial state. Thus it must be activated. || The token is inserted at the end of the timeline. At this point gaps are still possible. || Finally, outstanding tokens are merged, thus completing the plan. ||
 
-
-
