@@ -537,7 +537,7 @@ namespace TREX {
   }
 
   const LabelStr& Agent::ACTION(){
-    static const LabelStr sl_action("AgentActions");
+    static const LabelStr sl_action("AgentAction");
     return sl_action;
   }
 

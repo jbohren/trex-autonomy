@@ -60,8 +60,8 @@ namespace TREX {
     static const LabelStr SUCCESS;
     static const LabelStr PREEMPTED;
     static const LabelStr ABORTED;
-    static const LabelStr BEHAVIOR_ACTIVE;
-    static const LabelStr BEHAVIOR_INACTIVE;
+    static const LabelStr ACTION_ACTIVE;
+    static const LabelStr ACTION_INACTIVE;
     static const LabelStr PARAM_MAX_DURATION;
     static const LabelStr PARAM_STATUS;
     static const LabelStr EQUALS;
@@ -104,7 +104,7 @@ namespace TREX {
 
 
   /**
-   * @brief A function to test if a Behavior::Active token has started
+   * @brief A function to test if a AgentAction::Active token has started
    */
   class IsStarted : public ExecutionFunction {
   public:
@@ -119,7 +119,7 @@ namespace TREX {
   };
 
   /**
-   * @brief A function to test if a Behavior::Active token has ended
+   * @brief A function to test if a AgentAction::Active token has ended
    */
   class IsEnded : public ExecutionFunction {
   public:
@@ -135,7 +135,7 @@ namespace TREX {
 
 
   /**
-   * @brief A function to test if a Behavior::Active token has been timedOut
+   * @brief A function to test if a AgentAction::Active token has been timedOut
    */
   class IsTimedOut : public ExecutionFunction {
   public:
@@ -165,7 +165,7 @@ namespace TREX {
   };
 
   /**
-   * @brief A function to test if a Behavior::Active token has been succeded
+   * @brief A function to test if a AgentAction::Active token has been succeded
    */
   class IsSucceded : public IsStatus {
   public:
@@ -178,7 +178,7 @@ namespace TREX {
   };
 
   /**
-   * @brief A function to test if a Behavior::Active token has been preempted
+   * @brief A function to test if a AgentAction::Active token has been preempted
    */
   class IsPreempted : public IsStatus {
   public:
@@ -191,7 +191,7 @@ namespace TREX {
   };
 
   /**
-   * @brief A function to test if a Behavior::Active token has been aborted
+   * @brief A function to test if a AgentAction::Active token has been aborted
    */
   class IsAborted : public IsStatus {
   public:

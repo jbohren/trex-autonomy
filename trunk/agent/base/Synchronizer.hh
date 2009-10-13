@@ -125,7 +125,7 @@ namespace TREX {
     /**
      * @brief Reset goals as part of repair
      */
-    void resetGoals();
+    void resetGoals(bool discardOpenGoals);
 
     /**
      * @brief Reset the buffered observations as part of repair
@@ -169,7 +169,6 @@ namespace TREX {
     PlanDatabaseId m_db;
     const std::vector<TimelineId>& m_timelines;
     TokenSet& m_goals; /*!< Store all goals */
-    TokenSet& m_actions; /*!< Store all actions */
     TokenSet& m_observations; /*!< Store received observations received */
     TokenSet& m_tokenAgenda; /*!< Buffer of tokens available for synchronization */
     TokenSet& m_committedTokens; /*!< Buffer of committed tokens */

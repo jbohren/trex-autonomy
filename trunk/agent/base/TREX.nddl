@@ -96,19 +96,6 @@ class AgentTimeline extends Timeline {
   }
 };
 
-/**
- * Base class for actions. These will never be exchanged across reactors and are generated to
- * accomplisg goals. This is a construct of a deliberative reactor
- */
-class AgentActions {
-  /**
-   * This action supports a common idiom to indicate we want something to happen proactively.
-   */
-  predicate startEvent{ eq(duration, 1); }
-
-  AgentActions(){}
-};
-
 class StateVariable extends AgentTimeline{
  	predicate Holds{ eq(duration, 1); }
  	StateVariable(Mode _mode){super(_mode);}
@@ -123,9 +110,9 @@ enum ResultStatus {
 };
 
 /**
- * Encapsulate Behaviors that have a state of active or inactive
+ * Encapsulate Actions that have a state of active or inactive
  */
-class Behavior extends AgentTimeline {
+class AgentAction extends AgentTimeline {
 
   predicate Inactive{
     ResultStatus status;
@@ -135,21 +122,21 @@ class Behavior extends AgentTimeline {
     int dispatch_time; // The time at which the goal was dispatched
     int max_duration; // If duration exceeds this, the token should be preempted.
     precedes(dispatch_time, start); // This is a <= constraint, but we use explicit temporal construct instead.
-    temporalDistance(start, [1, +inf], MISSION_END); // Behaviors must start before the mission ends
+    temporalDistance(start, [1, +inf], MISSION_END); // Actions must start before the mission ends
     trex_behavior(object); // Maintains connection between this token and its parent, if also a behavior. Use this to propagate max duration bounds.
   }
 
-  Behavior(Mode _mode){
+  AgentAction(Mode _mode){
     super(_mode, "Inactive", false);
   }
 };
 
-Behavior::Active{
+AgentAction::Active{
   meets(Inactive _reserved_s);
   // This is generic where behaviors are contained
   max_duration <= end - start;
 }
 
-Behavior::Inactive{
+AgentAction::Inactive{
   defaultOnCommit(status, UNDEFINED);
 }

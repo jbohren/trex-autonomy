@@ -223,7 +223,7 @@ namespace TREX {
 
       void clear() {
 	m_internalTimelines.clear();
-	m_actions.clear();
+	//m_actions.clear();
 	m_externalTimelines.clear();
       }
 
@@ -471,15 +471,10 @@ namespace TREX {
     void commit();
 
     /**
-     * @brief Start actions if possible. Otherwise push the time bound.
+     * @brief Start actions if possible.
      * @see handleTickStart
      */
     void updateActions();
-
-    /**
-     * @brief Start behaviors if possible.
-     */
-    void updateBehaviors(const LabelStr& predicate);
 
     /**
      * @brief Utility to set the horizon based on latency, lookAhead, and current tick cycle.
@@ -653,8 +648,6 @@ namespace TREX {
 								  Should be garbage collected when we archive */
 
     TokenSet m_goals; /*!< Store all goals */
-
-    TokenSet m_actions; /*!< Store all actions */
 
     TokenSet m_observations; /*!< Store received observations received */
 

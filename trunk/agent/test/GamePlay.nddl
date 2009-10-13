@@ -218,44 +218,67 @@ Counter::Holds{
 	meets(Holds);
 }
 
-class TestActions extends AgentActions {
+// Actions
+class IncrementAction extends AgentAction{
+  IncrementAction(){super(Internal);}
+};
 
-	predicate increment{}
+class MultiplyAction extends AgentAction{
+  predicate Active{int multiplier;}
+  MultiplyAction(){super(Internal);}
+};
 
-	predicate multiply{int multiplier;}
+class IteratorAction extends AgentAction{
+  predicate Active{int counter;}
+  IteratorAction(){super(Internal);}
+};
 
-	predicate iterator{int counter;}
-
-        predicate doGrasp{
+class GraspAction extends AgentAction{
+  predicate Active{
 	  int x;
 	  int y;
-	  eq(duration, 1);
-	}
+	  duration == 1;
+  }
+  GraspAction(){super(Internal);}
+};
 
-	TestActions() {super();}
-}
+class TestActions{
+  IncrementAction incrementer;
+  MultiplyAction multiplier;
+  IteratorAction iterator;
+  GraspAction grasper;
+
+  TestActions(){
+    incrementer = new IncrementAction();
+    multiplier = new MultiplyAction();
+    iterator = new IteratorAction();
+    grasper = new GraspAction();
+  }
+};
 
 class ValueTimeline extends AgentTimeline{
 	predicate Holds{int value;}
 
 	ValueTimeline(Mode _mode){super(_mode, "undefined");}
+};
+
+IncrementAction::Active{
+  // at start: v
+  any(Counter.Holds v1);
+  v1.start <= start;
+  v1.end >= start;
+
+  // at end: v++
+  any (Counter.Holds v2);
+  v2.start < end;
+  v2.end >= end;
+  v1.value + 1 == v2.value;
+  duration == [1 2];
+
+  v1.end == v2.start;
 }
 
-TestActions::increment{
-	// at start: v
-	any(Counter.Holds v1);
-	precedes(v1.start, start);
-	precedes(start, v1.end);
-
-	// at end: v++
-	ends (Counter.Holds v2);
-	addEq(v1.value, 1, v2.value);
-	eq(duration, [1 2]);
-
-	//v1 meets v2;
-	concurrent(v1.end, v2.start);
-}
-TestActions::multiply{
+MultiplyAction::Active{
 	eq(duration, 1);
 	contained_by(ValueTimeline.Holds v1);
 	concurrent(v1.end, end);
@@ -272,37 +295,35 @@ TestActions::multiply{
  * It is a bit convoluted to construct an action that will subgoal only when its end time is at the current tick.
  * @see action.4
  */
-TestActions::iterator{
+IteratorAction::Active{
   starts(Counter.Holds c);
-  leq(duration, 2);
-  eq(c.value, counter);
+  duration == 1;
+  c.value == counter;
   if (isSingleton(end)){
-    if (counter >= 0){
-      any(iterator i);
-      enforce(i.counter + 1 == counter);
-      // Force into the future so it
-      temporalDistance(end, [1 2], i.start);
+    if (counter > 0){
+      before(Active i);
+      i.counter + 1 == counter;
     }
   }
 }
 
 ValueTimeline::Holds{
-	if(value == 100){
-		starts(TestActions.increment action);
-	}
+  if(value == 100){
+    starts(IncrementAction.Active action);
+  }
 
-	if(value == 1000){
-		contains(TestActions.multiply action);
-		eq(action.multiplier, 10);
-	}
+  if(value == 1000){
+    contains(MultiplyAction.Active action);
+    eq(action.multiplier, 10);
+  }
 
-	// Use the magic number of 1111 to indicate an inconsistency
-	/* BUG IN INTERPRETER
-	if(value == 1111){
-	  eq(1, 0); // Will alwyas fail of course.
-	  }
-	*/
-	neq(value, 1111);
+  // Use the magic number of 1111 to indicate an inconsistency
+  /* BUG IN INTERPRETER
+     if(value == 1111){
+     eq(1, 0); // Will alwyas fail of course.
+     }
+  */
+  neq(value, 1111);
 }
 
 /**
@@ -585,7 +606,7 @@ GraspObject::Active{
   met_by(Inactive);
   meets(Inactive);
 
-  contains(TestActions.doGrasp a);
+  contains(GraspAction.Active a);
   eq(a.x, x);
   eq(a.y, y);
 }
@@ -603,7 +624,7 @@ class Position extends AgentTimeline {
 };
 
 
-TestActions::doGrasp{
+GraspAction::Active{
   contained_by(GraspObject.Active g);
   eq(x, g.x);
   eq(y, g.y);
@@ -614,7 +635,7 @@ TestActions::doGrasp{
 
   // Force iteration
   if(shouldEnd == false){
-    before(TestActions.doGrasp s);
+    before(Active s);
     eq(s.x, x);
     eq(s.y, y);
     precedes(s.end, g.end);

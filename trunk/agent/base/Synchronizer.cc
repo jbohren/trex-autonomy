@@ -50,7 +50,6 @@ namespace TREX {
       m_db(m_core->m_db),
       m_timelines(m_core->m_timelines),
       m_goals(m_core->m_goals), 
-      m_actions(m_core->m_actions), 
       m_observations(m_core->m_observations), 
       m_tokenAgenda(m_core->m_tokenAgenda),
       m_committedTokens(m_core->m_committedTokens){}
@@ -196,7 +195,7 @@ namespace TREX {
     resetObservations();
 
     // Reset the goals, clearing out the crud
-    resetGoals();
+    resetGoals(discardCurrentValues);
 
     // Reset remaining tokens
     resetRemainingTokens(discardCurrentValues);
@@ -223,8 +222,9 @@ namespace TREX {
    * @brief Relaxes goal commitments and removes those goals that are no longer achievable
    * @see relax
    */
-  void Synchronizer::resetGoals(){
-    TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "START");
+  void Synchronizer::resetGoals(bool discardOpenGoals){
+    TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << 
+	     "START with 'discard open goals' " << (discardOpenGoals ? "enabled." : "disabled."));
 
     std::vector<TokenId> past; /*!< Necessarily in the past */
     std::vector<TokenId> present; /*!< Committed goals we will want to make  a relaxed copy of */
@@ -254,23 +254,30 @@ namespace TREX {
 	continue;
       }
 
+      // Case 0: We are discarding open goals
+      if(discardOpenGoals == true){
+	TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Open goal will be removed: " << goal->toString());
+	past.push_back(goal);
+	continue;
+      }
+
       // Case 1: The goal must end in the past
       if(endTime.getUpperBound() <= m_core->getCurrentTick()){
-	TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Ends in the past");
+	TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Ends in the past: " << goal->toString());
 	past.push_back(goal);
 	continue;
       }
 
       // Case 3: The goal was previously rejected and cannot be started. This is also considered the past.
       if(goal->isRejected() && goal->start()->baseDomain().getUpperBound() < m_core->getCurrentTick()){
-	TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Rejected");
+	TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Rejected: " << goal->toString());
 	past.push_back(goal);
 	continue;
       }
 
       // Case 4: The goal is merged with a current value. We will remove the goal as it has already been started.
       if(goal->isMerged() && isCurrent(goal->getActiveToken())){
-	TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Merged with current value.");
+	TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Merged with current value." << goal->toString());
 	past.push_back(goal);
 	continue;
       }
@@ -301,7 +308,7 @@ namespace TREX {
 
     for(std::vector<TokenId>::const_iterator it = past.begin(); it != past.end(); ++it){
       TokenId token = *it;
-      TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Discarding goal:" << token->toString());
+      TREX_INFO("trex:debug:synchronization:resetGoals", m_core->nameString() << "Discarding goal: " << token->toString());
       m_core->cleanupGoal(token);
       token->discard();
     }

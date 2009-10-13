@@ -160,7 +160,7 @@ namespace TREX {
     } catch(std::string ex) {
       assertTrue(false, "Parser failed: " + ex);
     } catch(...) {
-      assertTrue(false, "Parser failed with unknown exception.");
+      assertTrue(false, "Parser failed with unknown exception reading " + std::string(txSource));
     }
 
     return m_constraintEngine->constraintConsistent();

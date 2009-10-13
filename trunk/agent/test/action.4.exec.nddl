@@ -13,5 +13,5 @@ close();
 fact(counter.Holds f);
 f.value = 0;
 
-rejectable(actions.iterator a);
+rejectable(IteratorAction.Active a);
 eq(a.counter, 3);
