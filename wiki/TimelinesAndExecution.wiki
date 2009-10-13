@@ -69,6 +69,6 @@ The figure below illustartes the _observation_events in green and the _dispatch_
 [http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.b.png]
 
 == Execution History ==
-The execution history is shown in the timeline below. Here the execution frontier has advanced to _tick 977_. The action is in an inactive state, with its end time being nudged by the advancing execution frontier. Notice that all the timepoints for state transitions are now ground to singleton values as are all parameters for all tokens. This reduction to singleton values occurs straighforwardly as observations are integrated with the plan during execution.
+The execution history is shown in the timeline below. Here the execution frontier has advanced to _tick 977_. The action is in an *Inactive* state, with its end time being nudged by the advancing execution frontier. Notice that all the timepoints for state transitions are now ground to singleton values as are all parameters for all tokens. This reduction to singleton values occurs straighforwardly as observations are integrated with the plan during execution.
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.c.png]
