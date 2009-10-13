@@ -1,6 +1,6 @@
 #summary How timelines represent a plan for execution and how they are executed.
 = Timeline-based Execution =
-Timelines are the representational foundation for T-REX. You should have some idea of what a timeline is and how it relates to planning by now. If not, read [http://trex-autonomy.googlecode.com/svn/wiki/CTP this material] first. The mapping from timelines to execution is quite straightforward and we will illustrate it with a simple example.
+Timelines are the representational foundation for T-REX. You should have some idea of what a timeline is and how it relates to planning by now. If not, read [http://code.google.com/p/trex-autonomy/wiki/CTP this material] first. The mapping from timelines to execution is quite straightforward and we will illustrate it with a simple example.
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.a.png]
 
