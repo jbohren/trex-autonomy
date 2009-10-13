@@ -36,19 +36,19 @@ class MoveBase extends AgentTimeline {
 }}}
 
 == An Executive with a Plan ==
-Think of an executive as an agent that contains a timeline. The NDDL code below shows how an instance of the *MoveBase* class is allocated. It is constructed with a marker indicating it is _External_. This means that the true source for that timeline value is outside if the agent. This makes sense since it captures the state of an external robot action. Also note that 2 predicate instances are allocated, each corresponding to a *goal token*. They are temporally ordered. These are simply desired values for the timeline to have. They become flaws for the planner to [http://code.google.com/p/trex-autonomy/wiki/CTP#Automated_Planning resolve into a complete plan].
+Think of an executive as an agent that contains a timeline. The NDDL code below shows how an instance of the *MoveBase* class is allocated. It is constructed with a marker indicating it is _External_. This means that the true source for that timeline value is outside of the agent. This makes sense since it captures the state of an external robot action. Also note that 2 predicate instances are allocated, each corresponding to a *goal token*. They are temporally ordered. These are simply desired values for the timeline to have. They become flaws for the planner to [http://code.google.com/p/trex-autonomy/wiki/CTP#Automated_Planning resolve into a complete plan].
 
 {{{
-MoveBase move_base = new MoveBase(External);
+MoveBase movebase = new MoveBase(External);
 
 // First goal
-rejectable(move_base.Active goal_0);
+rejectable(movebase.Active goal_0);
 goal_0.x = 1.0;
 goal_0.y = 2.0;
 goal_0.theta = 0.0;
 
 // Second goal
-rejectable(move_base.Active goal_1);
+rejectable(movebase.Active goal_1);
 goal_1.x = 8.5;
 goal_1.y = 9.0;
 goal_1.theta = 0.4;
@@ -57,11 +57,18 @@ goal_1.theta = 0.4;
 goal_0 before goal_1;
 }}}
 
+The executive will use a planner to plan the goals resulting in a timeline filled out as shown below. This is a planned trajectory for the _state_ of the external _movebase_ action. Actual values for the timeline will emerge during the course of execution. The _execution frontier_ marks the current clock position in the timeline - the point of current execution. The values at or before this point are considered _facts_ since they reflect actual world state. Notice that the goal parameters are bound to singletons while the feedback values of the Inactive values are not specified. These are left for resolution in execution. Also note that the time bounds marking the transitions from one value to another are represented as intervals. This reflects the uncertainty about actual start and finish times for action execution. The plan does not require precesion here and so they are left as flexible as possible. This example assumes that all goals are to be accomplsihed within a mission time window of 1000 time units. Each time unit is called a _tick_.
+ 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.a.png]
 
 == Dispatching Goals and Receiving Observations ==
+The executive must now execute this plan. Execution in this sense means to bring about the expected trajectory of values of its timeline. Since the timeline is external, it is not strictly up to the executive to make this happen. However, it can _task_ an external entity by _dispatching_ desired states (goals) to the responsible party in a timely fashion. We assume that as the receiver transitions states, it will notify the executive of the new value. So when the action becomes active, in pursuit of a goal defined by _ x, y, theta_ it is manifest as an _observation token_ for the executive which is integrated into the timeline. Where the data of the observation match a value in the timeline, the observation and the plan are merged. If they conflict, the plan becomes broken and a new plan will have to be created.
+
+The figure below illustartes the _observation_events in green and the _dispatch_ events in read. At the initial tick, an observation provides the initial timeline value. At _tick 1_ the executive dispatches the first goal. In this example we assume only one goal is dispatched at a time since the receiver (i.e. movebase action server) does not plan ahead for more than one action. The executive gets and immediate response in the same tick indicating that the action has been activated in pursuit of the desired goal. At _tick 567_ the movebase action server achieves its goal and transitions to the *Inactive* state, generating a new observation for the executive.  The executive in turn can now dispatch the next goal, which follows the same process of observations.
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.b.png]
 
 == Execution History ==
+The execution history is shown in the timeline below. Here the execution frontier has advanced to _tick 977. The action is in an inactive state, with its end time being nudged by the advancing execution frontier. Notice that all the timepoints for state transitions are now ground to singleton values as are all parameters for all tokens. This reduction to singleton values occurs straighforwardly as observations are integrated with the plan during execution.
+
 [http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.c.png]
