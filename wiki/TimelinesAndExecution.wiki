@@ -1,9 +1,67 @@
 #summary How timelines represent a plan for execution and how they are executed.
 = Timeline-based Execution =
-Timelines are the representational foundation for T-REX. You should have some idea of what a timeline is and how it relates to planning by now. If not, read [http://code.google.com/p/trex-autonomy/wiki/CTP this material] first. The mapping from timelines to execution is quite straightforward and we will illustrate it with a simple example.
+Timelines are the representational foundation for T-REX. You should have some idea of what a timeline is and how it relates to planning by now. If not, read [http://code.google.com/p/trex-autonomy/wiki/CTP this material] first. The mapping from timelines to execution is quite straightforward as we will now illustrate it with a simple example.
+
+== Moving a mobile robot to a goal ==
+Supopse you have a mobile robot, perhaps something like a [http://www.willowgarage.com/pages/robots/pr2-overview PR2]. The robot can be commanded to a particular pose (x, y, theta). Robot navigation is implemented by a durative action called * MoveBase * which is *Active* while driving to the target location, and *Inactive* otherwise.  In particular, when such an action transitions to the *Inactive* state, it reports if it was successful or not, and provides feedback on the precise position and orientation on completion. An action in this sense is synonomous with a skill, or behavior, which are sometimes used in the literature.
+
+An action with these semantics is readily represented by a timeline. The [http://code.google.com/p/trex-autonomy/wiki/CTP#Modeling NDDL model] to describe the action is shown below. First, the class declaration shows a timeline with 2 possible predicates. Since each predicate has paramaters whose domains are continuous, infinitely many values can be described with this structure. The deatils of the NDDL code, are not that important at this stage. The key thing to understand is that the basic timeline structure is described with 2 predicates, each suitably parameterized. 
+
+{{{
+
+enum ResultStatus {
+  UNDEFINED,  // Used when the action becomes inactive in an undefined state, such as when rebooting
+  SUCCESS,    // Indicates the action terminated, accomplshing its goal. Or so it believes!
+  ABORTED,    // Means the action aborted pursuit of its goal of its own volition
+  PREEMPTED   // Means the action terminated on command from a client.
+};
+
+// Class declaration for MoveBase
+class MoveBase extends AgentTimeline {
+ predicate Active{
+   float x;
+   float y;
+   float theta;
+ }
+
+ predicate Inactive{
+   ResultStatus status;
+   float x;
+   float y;
+   float theta;
+ }
+
+ MoveBase(Mode m) { super(m); }
+};
+}}}
+
+== An Executive with a Plan ==
+Think of an executive as an agent that contains a timeline. The NDDL code below shows how an instance of the *MoveBase* class is allocated. It is constructed with a marker indicating it is _External_. This means that the true source for that timeline value is outside if the agent. This makes sense since it captures the state of an external robot action. Also note that 2 predicate instances are allocated, each corresponding to a *goal token*. They are temporally ordered. These are simply desired values for the timeline to have. They become flaws for the planner to [http://code.google.com/p/trex-autonomy/wiki/CTP#Automated_Planning resolve into a complete plan].
+
+{{{
+MoveBase move_base = new MoveBase(External);
+
+// First goal
+rejectable(move_base.Active goal_0);
+goal_0.x = 1.0;
+goal_0.y = 2.0;
+goal_0.theta = 0.0;
+
+// Second goal
+rejectable(move_base.Active goal_1);
+goal_1.x = 8.5;
+goal_1.y = 9.0;
+goal_1.theta = 0.4;
+
+// goal 0 should be executed before goal_1
+goal_0 before goal_1;
+}}}
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.a.png]
 
+== Dispatching Goals and Receiving Observations ==
+
 [http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.b.png]
 
+== Execution History ==
 [http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.c.png]
