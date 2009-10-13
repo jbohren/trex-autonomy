@@ -10,7 +10,8 @@ export PLASMA_HOME=`pwd`/PLASMA
 export PLASMA=$PLASMA_HOME/src/PLASMA
 export TREX_LOG_DIR=$TREX/logs
 export LD_LIBRARY_PATH=$PLASMA_HOME/build/lib:$LD_LIBRARY_PATH
-export PYTHONPATH=$TREX/tools/modules:$PYTHONPATH
+export PYTHONPATH=$TREX/tools/modules:$TREX/tools/ext:$PYTHONPATH
 if [ -d `pwd`/antlr/antlr_install ] ; then
    export ANTLR_HOME=`pwd`/antlr/antlr_install
+   export LD_LIBRARY_PATH=$ANTLR_HOME/lib:$LD_LIBRARY_PATH
 fi
