@@ -2,7 +2,7 @@
 <wiki:toc max_depth="2" />
 
 = Timeline-based Execution =
-Timelines are the representational foundation for T-REX. You should have some idea of what a timeline is and how it relates to planning by now. If not, read [http://code.google.com/p/trex-autonomy/wiki/CTP this material] first. The mapping from timelines to execution is quite straightforward as we will now illustrate it with a simple example.
+Timelines are the representational foundation for T-REX. You should have some idea of what a timeline is and how it relates to planning by now. If not, read [http://code.google.com/p/trex-autonomy/wiki/CTP this material] first. The mapping from timelines to execution is quite straightforward as we will now illustrate with a simple example.
 
 == Moving a mobile robot to a goal ==
 Supopse you have a mobile robot, perhaps something like a [http://www.willowgarage.com/pages/robots/pr2-overview PR2]. The robot can be commanded to a particular pose (x, y, theta). Robot navigation is implemented by a durative action called * MoveBase * which is *Active* while driving to the target location, and *Inactive* otherwise.  In particular, when such an action transitions to the *Inactive* state, it reports if it was successful or not, and provides feedback on the precise position and orientation on completion. An action in this sense is synonomous with a skill, or behavior, which are sometimes used in the literature.
