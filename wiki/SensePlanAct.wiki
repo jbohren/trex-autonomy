@@ -37,5 +37,4 @@ There are drawbacks. Chief among them are:
  * The timeline based representation is inappropariate for many forms of sensor data such as images, point clouds and other high-dimensional, high-volume data.
  * There is a computational overhead to using a general-purpose planning framework that can often be avoided if a _Teleo-Reactor_ is carefully designed for the specific use case. This is a common critique of general purpose infrastructures vs. tailored solutions and the trade-off is very situationally dependent. 
 
-== Example: Opening a Door ==
-The _Sense, Plan, Act_ paradigm for robot control is a model
+[http://code.google.com/p/trex-autonomy/wiki/LearnMore UP] [http://code.google.com/p/trex-autonomy/wiki/DivideAndConquer NEXT]
