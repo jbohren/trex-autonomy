@@ -23,4 +23,5 @@ T-REX defines an _ownership_ and _usage_ model of timelines to make the composit
 
 == Example ==
 [http://trex-autonomy.googlecode.com/svn/wiki/images/reactorgraph.png]
+[http://trex-autonomy.googlecode.com/svn/wiki/images/master.png]
 
