@@ -1,1 +1,25 @@
-= Under Construction =
+#summary Description of the Sense, Plan, Act paradigm for robot control. How it works and what it offers.
+
+= Sense, Plan, Act =
+
+<wiki:toc max_depth="2" />
+
+[http://code.google.com/p/trex-autonomy/wiki/TimelinesAndExecution Timelines] are the first pillar of T-REX. Ubiquitous, embedded planning is the second. 
+
+== Goal-directed Feedback Control ==
+We think of a control loop for an agent as having a goal to accomplish, in the face of feedback from the environment/plant. T-REX calls such a control loop a * Teleo-Reactor * reflecting it's goal-directed (_teleo_) and _reactive_ nature. A Teleo-Reactor encapsualtes three components of control:
+ * Sensing - where observations from the environment are integrated into the internal state of the controller.
+ * Planning - where a computation is used to determine actions to execute in order to achieve a given goal.
+ * Acting - where planned actions are dispatched for execution.
+
+The concept of control as a continual process of _Sense, Plan, Act_ is not new. It made its debut with [http://www.ai.sri.com/shakey/ Shakey] back in the 60s, but fell out of favor for a variety of reasons, including the fact that _planning_ was slow, and thus the robot was not very reactive. This evolution of robot control architectures is described [http://code.google.com/p/trex-autonomy/wiki/RelatedWork here]. Computers and planning technologies have come along way since then, making planning much faster, and more sophisticated.
+
+== A Wonder Widget: The Deliberative Reactor ==
+T-REX includes a particular kind of Teleo-Reactor that is implemented with an embedded temporal planning system ([http://code.google.com/p/europa-pso/wiki/EuropaWiki EUROPA]). We call this a * Deliberative Reactor * since it utilizes a deliberative planner (i.e. one that can look ahead in formulating a plan) at the core of its control loop. The figure below depicts the internal structure of a * Deliberative Reactor *.
+
+
+
+== Why Planning? ==
+
+== Example: Opening a Door ==
+The _Sense, Plan, Act_ paradigm for robot control is a model
