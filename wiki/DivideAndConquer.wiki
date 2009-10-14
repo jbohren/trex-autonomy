@@ -23,5 +23,5 @@ In T-REX terminology, this means that the agent control structure can be divided
 
 == Example ==
 
-[http://trex-autonomy.googlecode.com/svn/wiki/images/reactor_graph.png]
+[http://trex-autonomy.googlecode.com/svn/wiki/images/reactorgraph.png]
 
