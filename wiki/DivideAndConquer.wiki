@@ -1,1 +1,21 @@
-= Under Construction =
+#summary Describes the application of a divide-and-conquer strategy to T-REX for scaling planning centric approaches to complex systems.
+
+= Divide And Conquer =
+One of the main criticisms of control systems based on _Sense-Plan-Act_ is that they are too slow, because planning is too slow. Thus, planning can only be applied to higher levels of an agent architecture where it can deliberate at length over how best to achieve high-level goals, and then send the plan off to an executive for execution. The executive will not plan, and so it can be much faster. However, the executive must now be programmed by hand to properly decompose higher-level plans into lower-level commands. A key idea behind T-REX is that an executive is not just a single monolithic control loop. In practice, it is both feasible and desirable to break up the control structure into a collection of semi-independent control loops, each with their won internal SPA cycle. Intuitively, this is feasible in many applications because:
+ * Typically planning over long time horizons occurs at a relatively coarse level of abstraction, and can be conducted over relatively long periods of time (perhaps minutes). Many details of agent state can be ignored.
+ * Planning for lower levels of detail is generally conducted over much shorter time horizons. Moreover, it is often teh case that a relatively small set of the total agent state is relevant to the local planning problem.
+
+In T-REX terminology, this means that the agent control structure can be divided into a collection of Teleo-Reactors where each one is configured with a different _functional scope_ (i.e. the set of timelines it considers) and _temporal scope_ (i.e. the planning horizon over which it finds plans. This factored control structure is highly desirable because:
+ * The costs of operating on N small plan databases is much less than the costs of operating on one big one.
+ * It is usually easier to solve problems independently than to solve them all together. 
+ * Plan failure in one reactor can (often) be locally resolved without impacting other reactors.
+ * A working system can be built and tested incrementally.
+
+== The Compositional Nature of a Teleo-Reactor ==
+
+== Timeline Ownership to driect information flow unambiguosly ==
+
+== Synchronization ==
+
+== Example ==
+
