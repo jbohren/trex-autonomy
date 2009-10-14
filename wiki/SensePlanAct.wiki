@@ -19,7 +19,7 @@ T-REX includes a particular kind of Teleo-Reactor that is implemented with an em
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/deliberative_reactor.png]
 
-
+The _Plan Database_ is the store for reactor state in the form of timelines and tokens as described [http://code.google.com/p/trex-autonomy/wiki/TimelinesAndExecution here]. This database actively propagates rules and constraints associated with a _partial plan_. The roles of sensing, planning and acting are played by the _Synchronizer_, the _Planner_, and the _Dispatcher_ respectively.  Keep in mind the notion of a timeline in the context of execution described [http://code.google.com/p/trex-autonomy/wiki/TimelinesAndExecution earlier]. Observations are input to the reactor from the external world, expressing new values arising on timelines. They are converted into tokens and inserted into the relevant timeline by the _Synchronizer_. *Goals* are simly desired values for timelines and again are expressed as tokens in the plan database. The _Planner_ tracks goal requests, and monitors the database for new flaws. It will activate whenever the plan is incomplete, and resolve the matter.
 == Why Planning? ==
 
 == Example: Opening a Door ==
