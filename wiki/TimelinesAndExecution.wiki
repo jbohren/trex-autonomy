@@ -75,4 +75,4 @@ The execution history is shown in the timeline below. Here the execution frontie
 
 ||[http://trex-autonomy.googlecode.com/svn/wiki/images/timelines.c.png]||
 
-[[http://code.google.com/p/trex-autonomy/wiki/LearnMore BACK]  [http://code.google.com/p/trex-autonomy/wiki/SensePlanAct NEXT]
+[http://code.google.com/p/trex-autonomy/wiki/LearnMore BACK]  [http://code.google.com/p/trex-autonomy/wiki/SensePlanAct NEXT]
