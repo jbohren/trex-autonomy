@@ -17,6 +17,7 @@ The concept of control as a continual process of _Sense, Plan, Act_ is not new. 
 == A Wonder Widget: The Deliberative Reactor ==
 T-REX includes a particular kind of Teleo-Reactor that is implemented with an embedded temporal planning system ([http://code.google.com/p/europa-pso/wiki/EuropaWiki EUROPA]). We call this a * Deliberative Reactor * since it utilizes a deliberative planner (i.e. one that can look ahead in formulating a plan) at the core of its control loop. The figure below depicts the internal structure of a * Deliberative Reactor *.
 
+[http://trex-autonomy.googlecode.com/svn/wiki/images/deliberative_reactor.png]
 
 
 == Why Planning? ==
