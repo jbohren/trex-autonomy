@@ -27,7 +27,7 @@ The _Deliberative Reactor_ is something of a wonder widget, since this basic bui
  * *Direct projection of execution impacts in the plan*. It enables the algorithms for temporal reasoning and constraint propagation used during planning to be directly applied for plan monitoring during execution, propagating effects of execution updates throughout the plan.
  * *Model-compliant execution*. It guarantee that any plans executed are model-compliant. Execution works directly on a plan. That plan is constructed through an automated process that is checked for compliance with a model as it goes. Hence there is no way for the executive to execute a plan that violates the model. This can provide important safety guarantees.
  * *High-level programming model*. It creates an agent programming model that is based on a very high-level language, making programs compact.
- * *Adjustable automated programming model*. It creates a programming model that allows prescriptive, reactive program specifications or models can be less prescriptive and allow an automated planner to fill in the gaps. This can also make programs more compact and easier to maintain.
+ * *Adjustable automated programming model*. It creates a programming model that allows prescriptive program specifications or models can be less prescriptive and exploit an automated planner to fill in the gaps. This can also make programs more compact and easier to maintain.
  * *High-impact of research advances*. It provides a technology infusion pathway for advances in planning to directly and substantially impact agent programming since the programming model heavily leverages these capabilities.
 
 == Drawbacks ==
