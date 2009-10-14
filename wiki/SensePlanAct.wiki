@@ -32,11 +32,11 @@ The _Deliberative Reactor_ is something of a wonder widget, since this basic bui
 
 == Drawbacks ==
 There are drawbacks. Chief among them are:
- * There is a steep learning curve to understand constraint-based temporal planning. Hopefully this is mitigated by [http://code.google.com/p/trex-autonomy/wiki/UserDocumentation documentation] and [http://code.google.com/p/trex-autonomy/wiki/Tutorials practical tutorials].
- * Debugging problems can require careful analysis of partial plans. Hopefully this too is alleviated through the availablity of [http://code.google.com/p/trex-autonomy/wiki/Tools execution monitoring and debugging tools].
- * The timeline based representation is inappropariate for many forms of sensor data such as images, point clouds and other high-dimensional, high-volume data.
- * There is a computational overhead to using a general-purpose planning framework that can often be avoided if a _Teleo-Reactor_ is carefully designed for the specific use case. This is a common critique of general purpose infrastructures vs. tailored solutions and the trade-off is very situationally dependent.
- * Automated planning often requires domain-dependent heuristics for problems of even moderate complexity. These heuristics can be challenging to develop, and brittle to maintain as models change, sometimes even for small changes. This is a subject for ongoing research.
+ * *Steep Learning Curve*. There is a steep learning curve to understand constraint-based temporal planning. Hopefully this is mitigated by [http://code.google.com/p/trex-autonomy/wiki/UserDocumentation documentation] and [http://code.google.com/p/trex-autonomy/wiki/Tutorials practical tutorials].
+ * *Problems can be hard to debug*. Debugging problems can require careful analysis of partial plans. Hopefully this too is alleviated through the availablity of [http://code.google.com/p/trex-autonomy/wiki/Tools execution monitoring and debugging tools].
+ * *Heavyweight representation for some applications*. The timeline based representation is inappropariate for many forms of sensor data such as images, point clouds and other high-dimensional, high-volume data.
+ * *Too slow for some applications*. There is a computational overhead to using a general-purpose planning framework that can often be avoided if a _Teleo-Reactor_ is carefully designed for the specific use case. This is a common critique of general purpose infrastructures vs. tailored solutions and the trade-off is very situationally dependent. We have managed to operate complex robots at control rates in the 10Hz range without a problem.
+ * *Planning can be hard*. Automated planning often requires domain-dependent heuristics for problems of even moderate complexity. These heuristics can be challenging to develop, and brittle to maintain as models change, sometimes even for small changes. This is a subject for ongoing research.
 
 
 [http://code.google.com/p/trex-autonomy/wiki/LearnMore UP] [http://code.google.com/p/trex-autonomy/wiki/DivideAndConquer NEXT]
