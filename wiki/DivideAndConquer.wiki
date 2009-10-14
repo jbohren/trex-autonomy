@@ -14,12 +14,12 @@ In T-REX terminology, this means that the agent control structure can be divided
  * A working system can be built and tested incrementally.
 
 == The Compositional Nature of a Teleo-Reactor ==
+The symmetry of inbound and outbound goals and observations enables natural composition of {\em reactors}. This is shown below with a 4 reactor configuration. The internal details of a reactor are irrelevant. Reactor _A_ is the top-level reactor. It can dispatch goals and observations to other reactors (i.e. reactors _B_ and _C_). It's goals originate outside the agent. Both _B_ and _C_ interact with _D_. Thus, the aggregate control structure is partitioned into a collection of reactors. Goals flow top down. Observations flow bottom up.
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/composition.png]
 
 == Timeline ownership to direct information flow unambiguosly ==
-
-== Synchronization ==
+TREX defines an _ownership_ and _usage_ model of timelines to make the composition of reactors explicit, and the rules for information flow and conflict resolution unambiguous.  If a reactor {\em owns} a timeline, it is solely responsible for deciding what value that timeline has as execution unfolds. Such timelines are {\em internal} to that reactor. If a reactor {\em uses} a timeline,  it will receive new values for that timeline as they arise, and it may dispatch any goals it has for that timeline to the owner reactor. Such a timeline is {\em external} to its user. The user of a timeline {\em depends} on it's owner. This dependency dictates the flow of information in TREX. The key to scalability is that the scope of computation for each reactor is restricted to only the set of timelines it explicitly owns or uses, over the time horizon it cares to deliberate. This modularity, coupled with the dependency directed information flow, makes TREX amenable to divide-and-conquer strategies to scale up to larger scale systems efficiently in a unified computational framework.
 
 == Example ==
 
