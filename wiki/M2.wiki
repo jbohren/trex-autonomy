@@ -1,7 +1,2 @@
 #summary Illustration of key ideas behind T-REX through an real-world example in the mobile manipulation domain
 = An Example from a Mobile Manipulation Domain =
-[http://trex-autonomy.googlecode.com/svn/wiki/images/reactorgraph.png]
-
-[http://trex-autonomy.googlecode.com/svn/wiki/images/master.png]
-
-[http://trex-autonomy.googlecode.com/svn/wiki/images/mechanism_control.png]
