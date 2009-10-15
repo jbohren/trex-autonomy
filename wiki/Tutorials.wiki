@@ -40,3 +40,9 @@ These tutorials will introduce different testing techniques you can use.
 == Validating against an event log ==
 == Specifying expected execution conditions ==
 == Building a NDDL simulator ==
+
+=Advanced Topics=
+These tutorials focus on more advanced techniques that involve a deeper knowledge of EUROPA.
+== Implementing a constraint ==
+== Using the orienteering solver ==
+== Configuring the standard EUROPA solver ==
