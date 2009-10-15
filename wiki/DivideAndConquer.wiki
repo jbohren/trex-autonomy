@@ -39,6 +39,6 @@ The screen shot below is from the [http://trex-autonomy.googlecode.com/svn/wiki/
 == Inside the *Mechanism Control* reactor ==
 The screen shot below is for the * Mechanism Control * reactor for the same tick (_10_). Note the correspondence between planned states for the various mechanism timelines and the activation states of the * switch_controllers * timeline. Each transition is achieved by execution of a * switch_controller * action.
 
-Full details of this milestone can be found [http://trex-autonomy.googlecode.com/svn/wiki/M2 here].
+Full details of this milestone can be found [http://code.google.com/p/trex-autonomy/wiki/M2 here].
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/mechanism_control.png]
