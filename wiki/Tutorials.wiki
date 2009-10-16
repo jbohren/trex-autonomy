@@ -3,7 +3,7 @@
 <wiki:toc max_depth="2" />
 
 =Bare Essentials=
-These simple tutorials will get you working with the basic elements of T-REX. You will learn how to:
+These  tutorials will get you working with the basic elements of T-REX.
 == Implement a simple model ==
 == Configure a simple agent ==
 == Run the executive in batch mode ==
