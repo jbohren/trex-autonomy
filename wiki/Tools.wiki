@@ -1,9 +1,8 @@
-#summary Utilities for developing TREX applications
+#summary TREX provides several tools which can be used to help developers create and debug TREX applications.
 
-= Introduction =
-TREX provides several tools which can be used to help developers create and debug TREX applications.
+<wiki:toc max_depth="2" />
 
-== Command Line Tools ==
+= Command Line Tools =
 A set of command line tools are available once the proper configuration variables have been set up in the environment. If you followed the installation and environment setup steps in the [GetStarted Getting Started] guide you are almost there. You should also make sure that the bin directory of your working package is in the path.
 {{{
 export PATH=`rospack find your_working_package`/bin:$PATH
@@ -16,7 +15,7 @@ make
 }}}
 
 The project will be build automatically for you if you use the *trexcreate* utility.
-=== trexcreate ===
+== trexcreate ==
 This utility will create an initial ROS package set up to use TREX. It will create a standard directory structure, and include all of the appropriate build and configuration files.
 
 *Usage:*
@@ -41,42 +40,27 @@ If successful, this utilty will create a child directory of the current director
  * cfg - A directory for T-REX agent configuration files. This directory will contain a simple 2 reactor configuration for a NDDL client and a NDDL server.
 
 It will also make the project for you which ensures the expected utilities are present.
-=== trexparse ===
+== trexparse ==
 This utility will parse a given input NDDL file to check for errors.
 
 *Usage:*
 {{{
 trexparse input_file [--start-dir==some-start-directory]
 }}}
-=== trexfind ===
+== trexfind ==
 This utility will search the trex-path for the first occurence of a given file.
 
 *Usage:*
 {{{
 trexfind file_name [--start-dir==some-start-directory]
 }}}
-=== trexdepends ===
+== trexdepends ==
 This utility will search for all the files included by a target file.
 
 *Usage:*
 {{{
 trexdepends input_file [--start-dir==some-start-directory]
 }}}
-=== trexfast / trexdebug ===
+== trexfast / trexdebug ==
 There are 2 variations of this same utility. Each will run the executive. *trexfast* is a highly optimized version and *trexdebug* is a much slower version which will have alot of useful debug checking code that can be very handy when diagnosing problems. We will explain this for *trexfast*, but the same applies for *trexdebug*
-=== trexmonitor ===
-
-= Dependencies =
-See [Building].
-
-= Debugging Utilities =
-
-== Visualization ==
-
-The visualization tools are written in Python, and use GTK and Cairo for GUI widgets and 2D vector drawing, respectively.
-
-=== Execution Monitor ===
-The execution monitor is a general-purpose inspection and debugging tool for sets of TREX plans.
-
-=== Token Network Viewer ===
-The token network viewer is a tool for visualizing the causal structure of a TREX plan.
+== trexmonitor ==
