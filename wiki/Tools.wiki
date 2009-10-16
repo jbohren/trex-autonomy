@@ -4,16 +4,66 @@
 TREX provides several tools which can be used to help developers create and debug TREX applications.
 
 == Command Line Tools ==
-A set of command line tools are available once the proper configuration variables have been set up in the environment. Here is how you set up the configuration environment:
+A set of command line tools are available once the proper configuration variables have been set up in the environment. If you followed the installation and environment setup steps in the [GetStarted Getting Started] guide you are almost there. You should also make sure that the bin directory of your working package is in the path.
 {{{
-roscd trex_core
-source devConfig
+export PATH=`rospack find your_working_package`/bin:$PATH
 }}}
+
+For some of these tools to work, the package must be built.
+{{{
+roscd your_working_package
+make
+}}}
+
+The project will be build automatically for you if you use the *trexcreate* utility.
 === trexcreate ===
+This utility will create an initial ROS package set up to use TREX. It will create a standard directory structure, and include all of the appropriate build and configuration files.
+
+*Usage:*
+{{{
+trexcreate your_package_name [nddl_deps]
+}}}
+
+If successful, this utilty will create a child directory of the current directory named *your_package_name* with the following:
+ * manifest.xml - A manifest file expected by ROS to delcare the new package
+ * CMakeLists.txt - A cmake file expected by ROS that will declare binaries for _trexfast_, _trexdebug_, and _trexparse_.
+ * src - A directory for source files. This directory will contain:
+  ** reactors.cc - A placeholder for any custom teleo-reactors to be built for this project. A stub reactor will be provided.
+  ** constraints.cc - A placeholder for any custom constraints to be be built for this project. A stub [http://code.google.com/p/europa-pso/wiki/CustomConstraints constraint] will be provided.
+  ** heuristics.cc - A place holder for any custom heuristics to be built for this project. Stubs will be provided for solver [http://code.google.com/p/europa-pso/wiki/SolverReference components].
+ * includes/your_package_name - A directory for include files
+ * nddl - A directory for NDDL model files
+ * test - A directory for test cases. This directory will include:
+  ** test.client.nddl
+  ** test.server.nddl
+  ** test.cfg
+  ** test.test
+ * cfg - A directory for T-REX agent configuration files. This directory will contain a simple 2 reactor configuration for a NDDL client and a NDDL server.
+
+It will also make the project for you which ensures the expected utilities are present.
 === trexparse ===
+This utility will parse a given input NDDL file to check for errors.
+
+*Usage:*
+{{{
+trexparse input_file [--start-dir==some-start-directory]
+}}}
 === trexfind ===
-=== trexfast ===
-=== trexdebug ===
+This utility will search the trex-path for the first occurence of a given file.
+
+*Usage:*
+{{{
+trexfind file_name [--start-dir==some-start-directory]
+}}}
+=== trexdepends ===
+This utility will search for all the files included by a target file.
+
+*Usage:*
+{{{
+trexdepends input_file [--start-dir==some-start-directory]
+}}}
+=== trexfast / trexdebug ===
+There are 2 variations of this same utility. Each will run the executive. *trexfast* is a highly optimized version and *trexdebug* is a much slower version which will have alot of useful debug checking code that can be very handy when diagnosing problems. We will explain this for *trexfast*, but the same applies for *trexdebug*
 === trexmonitor ===
 
 = Dependencies =
