@@ -42,7 +42,7 @@
 using namespace EUROPA;
 
 namespace TREX {
-  #define RETURN_IF_NO_EVAL if (getenv("TREX_NO_EVAL")) {  if (std::string(getenv("TREX_NO_EVAL")) == "1") { return; } }
+  #define RETURN_IF_NO_EVAL if (getenv("TREX_NO_EVAL") != NULL) {  if (std::string(getenv("TREX_NO_EVAL")) == "1") { return; } }
 
   void computeConnectedTokens(const TokenId token, TokenSet& results);
 
