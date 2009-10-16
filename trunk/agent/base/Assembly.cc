@@ -72,6 +72,7 @@
 #include <sstream>
 
 namespace TREX {
+  void initialize() { } //Used to force the library to load.
 
   Assembly::Schema* Assembly::Schema::s_instance = NULL;
 
