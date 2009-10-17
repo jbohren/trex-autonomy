@@ -211,9 +211,11 @@ namespace TREX {
     f.close();
   }
 
-  std::string findFile(const std::string& fileName){
+  std::string findFile(const std::string& fileName, bool forceRebuild){
     static std::vector<std::string> sl_locations;
-
+    if (forceRebuild) { 
+      sl_locations.clear(); 
+    }
     if(sl_locations.empty()){
       sl_locations.push_back("./");
 
