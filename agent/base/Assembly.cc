@@ -31,7 +31,6 @@
 *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 *  POSSIBILITY OF SUCH DAMAGE.
 */
-
 #include "Assembly.hh"
 #include "Utilities.hh"
 #include "Constraints.hh"
@@ -189,6 +188,15 @@ namespace TREX {
     return m_ppw;
   }
 
+  Assembly::SchemaPlugIn::SchemaPlugIn(){
+    Assembly::Schema::instance()->registerPlugIn(this);
+  }
+
+  Assembly::SchemaPlugIn::~SchemaPlugIn(){
+    //Assembly::Schema::instance()->unregisterPlugIn(this);
+  }
+
+
   Assembly::Schema::Schema(){
     if(s_instance != NULL)
       delete s_instance;
@@ -207,6 +215,18 @@ namespace TREX {
     return s_instance;
   }
 
+  void Assembly::Schema::registerPlugIn(SchemaPlugIn* plugIn){
+    m_plugIns.push_back(plugIn);
+  }
+
+  void Assembly::Schema::unregisterPlugIn(SchemaPlugIn* plugIn){
+    std::vector<SchemaPlugIn*> old(m_plugIns);
+    m_plugIns.clear();
+    for(unsigned int i = 0; i < old.size(); i++){
+      if(old[i] != plugIn)
+	m_plugIns.push_back(old[i]);
+    }
+  }
 
 #define DECLARE_FUNCTION_TYPE(cname, fname, constraint, type, args)	\
   class cname##Function : public CFunction				\
@@ -229,9 +249,9 @@ namespace TREX {
   DECLARE_FUNCTION_TYPE(IsPreempted, isPreempted, "isPreempted", BoolDT, 1);
 
   void Assembly::Schema::registerComponents(const Assembly& assembly){
+
     ConstraintEngineId constraintEngine = ((ConstraintEngine*) assembly.getComponent("ConstraintEngine"))->getId();
     checkError(constraintEngine.isValid(), "No ConstraintEngine registered");
-
 
     // Register functions
     constraintEngine->getCESchema()->registerCFunction((new IsStartedFunction())->getId());
@@ -241,41 +261,46 @@ namespace TREX {
     constraintEngine->getCESchema()->registerCFunction((new IsAbortedFunction())->getId());
     constraintEngine->getCESchema()->registerCFunction((new IsPreemptedFunction())->getId());
 
-    // Register constraints
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefaultOnCommit, "defaultOnCommit", "OnCommit");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), AbsMaxOnCommit, "absMaxOnCommit", "OnCommit");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefault, "default", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), SetDefault, "bind", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), LessThanConstraint, "lt", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TestLessThan, "testLT", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), Neighborhood, "neighborhood", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::CompletionMonitorConstraint, "assertCompleted", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::RejectionMonitorConstraint, "assertRejected", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsStarted, "isStarted", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsEnded, "isEnded", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsTimedOut, "isTimedOut", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsSucceded, "isSucceded", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsAborted, "isAborted", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::IsPreempted, "isPreempted", "Default");
-    REGISTER_CONSTRAINT(constraintEngine->getCESchema(), TREX::MasterSlaveRelation, "trex_behavior", "Default");
-
-    // Orienteering solver component registration
-
-    EUROPA::SOLVERS::ComponentFactoryMgr* cfm = (EUROPA::SOLVERS::ComponentFactoryMgr*)assembly.getComponent("ComponentFactoryMgr");
-    REGISTER_FLAW_FILTER(cfm, TREX::GoalsOnlyFilter, GoalsOnly);
-    REGISTER_FLAW_FILTER(cfm, TREX::NoGoalsFilter, NoGoals);
-    REGISTER_FLAW_FILTER(cfm, TREX::DynamicGoalFilter, DynamicGoalFilter);
-    REGISTER_FLAW_MANAGER(cfm, TREX::GoalManager, GoalManager);
-    REGISTER_FLAW_MANAGER(cfm, TREX::GreedyOpenConditionManager, GreedyOpenConditionManager);
-    REGISTER_COMPONENT_FACTORY(cfm, TREX::EuclideanCostEstimator, EuclideanCostEstimator);
-    REGISTER_COMPONENT_FACTORY(cfm, TREX::OrienteeringSolver, OrienteeringSolver);
-    REGISTER_COMPONENT_FACTORY(cfm, TREX::EuropaSolverAdapter, EuropaSolverAdapter);
-
-    // Standard flaw filters used in DbCore
-    REGISTER_FLAW_FILTER(cfm, DeliberationFilter, DeliberationFilter);
-    REGISTER_FLAW_FILTER(cfm, SOLVERS::SingletonFilter, NotSingletonGuard);
-
-    // Custom flaw handlers
-    REGISTER_COMPONENT_FACTORY(cfm, TREX::TestConditionHandler, TestConditionHandler);
+    // Create User-defined stuff.
+    for (unsigned int i = 0; i < m_plugIns.size(); i++) {
+      m_plugIns[i]->registerComponents(assembly);
+    }
   }
+
+  class AssemblyPlugIn: public Assembly::SchemaPlugIn{
+    void registerComponents(const Assembly& assembly){
+      // Register constraints
+      TREX_REGISTER_CONSTRAINT(assembly, SetDefaultOnCommit, defaultOnCommit, OnCommit);
+      TREX_REGISTER_CONSTRAINT(assembly, AbsMaxOnCommit, absMaxOnCommit, OnCommit);
+      TREX_REGISTER_CONSTRAINT(assembly, SetDefault, default, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, SetDefault, bind, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, LessThanConstraint, lt, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TestLessThan, testLT, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, Neighborhood, neighborhood, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TREX::CompletionMonitorConstraint, assertCompleted, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TREX::RejectionMonitorConstraint, assertRejected, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TREX::IsStarted, isStarted, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TREX::IsEnded, isEnded, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TREX::IsTimedOut, isTimedOut, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TREX::IsSucceded, isSucceded, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TREX::IsAborted, isAborted, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TREX::IsPreempted, isPreempted, Default);
+      TREX_REGISTER_CONSTRAINT(assembly, TREX::MasterSlaveRelation, trex_behavior, Default);
+
+      // Solver component registration
+      TREX_REGISTER_FLAW_FILTER(assembly, TREX::GoalsOnlyFilter, GoalsOnly);
+      TREX_REGISTER_FLAW_FILTER(assembly, TREX::NoGoalsFilter, NoGoals);
+      TREX_REGISTER_FLAW_FILTER(assembly, TREX::DynamicGoalFilter, DynamicGoalFilter);
+      TREX_REGISTER_FLAW_MANAGER(assembly, TREX::GoalManager, GoalManager);
+      TREX_REGISTER_FLAW_MANAGER(assembly, TREX::GreedyOpenConditionManager, GreedyOpenConditionManager);
+      TREX_REGISTER_COMPONENT_FACTORY(assembly, TREX::EuclideanCostEstimator, EuclideanCostEstimator);
+      TREX_REGISTER_COMPONENT_FACTORY(assembly, TREX::OrienteeringSolver, OrienteeringSolver);
+      TREX_REGISTER_COMPONENT_FACTORY(assembly, TREX::EuropaSolverAdapter, EuropaSolverAdapter);
+      TREX_REGISTER_FLAW_FILTER(assembly, DeliberationFilter, DeliberationFilter);
+      TREX_REGISTER_FLAW_FILTER(assembly, SOLVERS::SingletonFilter, NotSingletonGuard);
+      TREX_REGISTER_COMPONENT_FACTORY(assembly, TREX::TestConditionHandler, TestConditionHandler);
+    }
+  };
+
+  TREX_REGISTER_SCHEMA_PLUGIN(AssemblyPlugIn);
 }

@@ -94,6 +94,17 @@ namespace TREX {
     const std::string& exportToPlanWorks(TICK tick, unsigned int attempt);
 
     /**
+     * @brief A plug-in class for schemas
+     */
+    class SchemaPlugIn {
+    public:
+      virtual ~SchemaPlugIn();
+      virtual void registerComponents(const Assembly& assembly) = 0;
+    protected:
+      SchemaPlugIn();
+    };
+
+    /**
      * @brief Inner class to allow schema registration functions to be invoked. This is necessary because
      * component factory registration is schema specific
      */
@@ -118,10 +129,22 @@ namespace TREX {
        * @brief Call back on the schema. Allows customization of schemas for an assembly.
        * @param assembly instance from which schema can be obtained.
        */
-      virtual void registerComponents(const Assembly& assembly);
+      void registerComponents(const Assembly& assembly);
+
+      /**
+       * @brief Registration call to extend the set of schema functions used
+       */
+      void registerPlugIn(SchemaPlugIn* plugIn);
+
+      /**
+       * @brief Unregistration call
+       */
+      void unregisterPlugIn(SchemaPlugIn* plugIn);
 
     private:
       static Schema* s_instance; /*! Singleton pointer accessor */
+
+      std::vector<SchemaPlugIn*> m_plugIns;
     };
 
   protected:
@@ -139,8 +162,33 @@ namespace TREX {
     ConstraintEngineId m_constraintEngine;
     PlanDatabaseId m_planDatabase;
     RulesEngineId m_rulesEngine;    
-
     DbWriter* m_ppw; // Optional. Load on demand.
   };
 }
+
+/**
+ * TREX REGISTRATION MACROS
+ */
+#define TREX_REGISTER_SCHEMA_PLUGIN(class_name) class_name __class_name;
+
+#define TREX_REGISTER_CONSTRAINT(assembly, class_name, label, propagator)\
+  {  \
+    ConstraintEngine* ce = (ConstraintEngine*) assembly.getComponent("ConstraintEngine");\
+    REGISTER_CONSTRAINT(ce->getCESchema(), class_name, #label, #propagator);\
+  }
+
+#define TREX_REGISTER_FLAW_FILTER(assembly, class_name, label) \
+  REGISTER_FLAW_FILTER(((EUROPA::SOLVERS::ComponentFactoryMgr*)assembly.getComponent("ComponentFactoryMgr")), class_name, label);
+
+#define TREX_REGISTER_FLAW_HANDLER(assembly, class_name, label) \
+  REGISTER_FLAW_HANDLER(((EUROPA::SOLVERS::ComponentFactoryMgr*)assembly.getComponent("ComponentFactoryMgr")), class_name, label);
+
+#define TREX_REGISTER_FLAW_MANAGER(assembly, class_name, label) \
+  REGISTER_FLAW_MANAGER(((EUROPA::SOLVERS::ComponentFactoryMgr*)assembly.getComponent("ComponentFactoryMgr")), class_name, label);
+
+#define TREX_REGISTER_COMPONENT_FACTORY(assembly, class_name, label) \
+  REGISTER_COMPONENT_FACTORY(((EUROPA::SOLVERS::ComponentFactoryMgr*)assembly.getComponent("ComponentFactoryMgr")), class_name, label);
+
+#define TREX_REGISTER_REACTOR(class_name, label) TREX::TeleoReactor::ConcreteFactory<class_name> __label(#label); 
+
 #endif
