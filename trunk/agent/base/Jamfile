@@ -28,6 +28,5 @@ if ! $(TREX_READY) {
         TextLog.cc
 	DbWriter.cc
 	;
- ModuleMain nddl-reader : NddlReaderClass.cc NddlReader.cc : TREX : nddl-reader ;
  ModuleMain trex-find : TrexFind.cc : TREX : trex-find ;
 }
