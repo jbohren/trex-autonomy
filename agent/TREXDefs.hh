@@ -68,16 +68,6 @@ namespace TREX {
   class DbCore;
   typedef Id<DbCore> DbCoreId;
 
-  /**
-   * @brief Module initialization function
-   */
-  void initTREX();
-
-  /**
-   * @brief Model cleanup function
-   */
-  void uninitTREX();
-
   /* USEFUL UTILITIES */
 
   LabelStr compose(const LabelStr& prefix, const LabelStr& suffix);

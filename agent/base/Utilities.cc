@@ -115,12 +115,6 @@ namespace TREX {
     return TokenId::noId();
   }
 
-  void initTREX(){
-    // TeleoReactor Factory Bindings for default components
-    new TeleoReactor::ConcreteFactory<DbCore>("DeliberativeReactor");
-    new TeleoReactor::ConcreteFactory<SimAdapter>("SimAdapter");
-  }
-
   /**
    * @brief Run utility to run a sample problem with a pseudo clock
    */
