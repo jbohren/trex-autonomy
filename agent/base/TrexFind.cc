@@ -43,12 +43,19 @@ int main(int argc, char **argv) {
     return 2;
   }
 
+  char mypath[1024], wd[1024];
+
   if (argc == 3) {
-    setenv("TREX_START_DIR", argv[2], 1);
-  } else {
-    char mypath[1024];
-    setenv("TREX_START_DIR", getcwd(mypath, 1024), 1);
+    getcwd(wd, 1024);
+    chdir(argv[2]);
   }
+
+  setenv("TREX_START_DIR", getcwd(mypath, 1024), 1);
+  if (argc == 3) {
+    chdir(wd);
+  }
+
+
   //printf("Start dir: %s\n", getenv("TREX_START_DIR"));
 
   //Load config.
