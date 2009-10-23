@@ -48,18 +48,18 @@ This utility will parse a given input NDDL file to check for errors.
 trexparse input_file [--start-dir==some-start-directory]
 }}}
 == trexfind ==
-This utility will search the trex-path for the first occurence of a given file.
+This utility will search the trex-path for the first occurrence of a given file.
 
 *Usage:*
 {{{
-trexfind file_name [--start-dir==some-start-directory]
+trexfind file_name [some-start-directory]
 }}}
 == trexdepends ==
-This utility will search for all the files included by a target file.
+This utility will search for all the files included by a target file. The system will try to autodetect the package name. Adding -q will prevent the display of error messages.
 
 *Usage:*
 {{{
-trexdepends input_file [--start-dir==some-start-directory]
+trexdepends input_file [package_name] [-q]
 }}}
 == trexfast / trexdebug ==
 There are 2 variations of this same utility. Each will run the executive. *trexfast* is a highly optimized version and *trexdebug* is a much slower version which will have alot of useful debug checking code that can be very handy when diagnosing problems. We will explain this for *trexfast*, but the same applies for *trexdebug*
