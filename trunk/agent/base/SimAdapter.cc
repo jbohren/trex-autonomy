@@ -44,6 +44,7 @@
 #include "Domains.hh"
 #include "Token.hh"
 #include "Adapter.hh"
+#include "Assembly.hh"
 #include "SimAdapter.hh"
 #include "Agent.hh"
 #include "Utilities.hh"
@@ -414,3 +415,6 @@ DataTypeId SimAdapter::getFactory(SimAdapter::DomainType t){
    assertTrue(ALWAYS_FAIL, "No match on input type" + t);
    return m_floatDT;
  }
+
+
+TREX_REGISTER_REACTOR(SimAdapter, SimAdapter);

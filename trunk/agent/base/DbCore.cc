@@ -2680,4 +2680,6 @@ namespace TREX {
   }
   */
 
+
+  TREX_REGISTER_REACTOR(DbCore, DeliberativeReactor);
 }
