@@ -39,7 +39,7 @@
 int main(int argc, char **argv) {
 
   if (argc <= 1 || argc >= 4) {
-    printf("Usage %s file [path]\n\tWhere file is the file to find, and path is the start_dir.\n", argv[0]);
+    printf("Usage trexfind file [path]\n\tWhere file is the file to find, and path is the start_dir.\n");
     return 2;
   }
 
