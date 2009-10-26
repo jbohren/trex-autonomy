@@ -13,8 +13,6 @@ For some of these tools to work, the package must be built.
 roscd your_working_package
 make
 }}}
-
-The project will be build automatically for you if you use the *trexcreate* utility.
 == trexcreate ==
 This utility will create an initial ROS package set up to use TREX. It will create a standard directory structure, and include all of the appropriate build and configuration files.
 
@@ -47,9 +45,9 @@ If successful, this utilty will create a child directory of the current director
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.test demo/demo.test]
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.valid demo/demo.valid]
 
-On creation of a package, you must build it:
+On creation of a package, you must build it. For example:
 {{{
-rosmake package_name
+rosmake demo
 }}}
 
 The files listed here are part of the Hello World tutorials to create and run a simple executive.
