@@ -30,7 +30,7 @@ In this case we assume the following package has been created:
 {{{
 trexcreate demo
 }}}
-If successful, this utilty will create a child directory of the current directory named *package_name* with the following:
+If successful, this utilty will create a child directory of the current directory named *demo* with the following:
  * [http://www.ros.org/wiki/Manifest manifest.xml] - A manifest file expected by ROS to delcare the new package.
  * [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/CMakeLists.txt CMakeLists.txt] - A cmake file expected by ROS that will declare binaries for _trexfast_, _trexdebug_, and _trexparse_.
  * src - A directory for source files. This directory will contain:
