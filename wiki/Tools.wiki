@@ -27,12 +27,12 @@ Usage:  trexcreate package_name  [--help] [--deps pkg1 pkg2 pkg3]
 }}}
 
 If successful, this utilty will create a child directory of the current directory named *package_name* with the following:
- * manifest.xml - A manifest file expected by ROS to delcare the new package
- * CMakeLists.txt - A cmake file expected by ROS that will declare binaries for _trexfast_, _trexdebug_, and _trexparse_.
+ * [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/manifest.xml manifest.xml] - A manifest file expected by ROS to delcare the new package.
+ * [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/CMakeLists.txt CMakeLists.txt] - A cmake file expected by ROS that will declare binaries for _trexfast_, _trexdebug_, and _trexparse_.
  * src - A directory for source files. This directory will contain:
-  ** demo_components.cpp - A placeholder for any custom components you might wish to integrate in order to extend the capabilities of the executive
-  ** temp_init_gen_demo.cpp  - A generated file providing a definition for a standard initialization package provided for all trex application packages.
-  ** temp_reg_gen.cpp - A generated registartion file providing a registration function used in all trex application packages.
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/demo_components.cpp demo_components.cpp] - A placeholder for any custom components you might wish to integrate in order to extend the capabilities of the executive
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/temp_init_gen_demo.cpp temp_init_gen_demo.cpp] - A generated file providing a definition for a standard initialization package provided for all trex application packages.
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/temp_reg_gen.cpp temp_reg_gen.cpp] - A generated registartion file providing a registration function used in all trex application packages.
  * includes/package_name - A directory for include files
  * nddl - A directory for NDDL model files. This directory includes a strawman model ([https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/nddl/demo.nddl demo.nddl]) to get you started:
  * cfg - A directory for T-REX agent configuration files.  To get started, this directory contains [https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/cfg/demo.cfg demo.cfg] which provides a 2-reactor configuration.
@@ -42,7 +42,13 @@ If successful, this utilty will create a child directory of the current director
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.server.nddl demo/demo.server.nddl]
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.test demo/demo.test]
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.valid demo/demo.valid]
-It will also make the project for you which ensures the expected utilities are present.
+
+On creation of a package, you must build it:
+{{{
+rosmake package_name
+}}}
+
+The files listed here are part of the Hello World tutorials to create and run a simple executive.
 == trexparse ==
 This utility will parse a given input NDDL file to check for errors.
 
