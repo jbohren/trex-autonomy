@@ -33,7 +33,6 @@ If successful, this utilty will create a child directory of the current director
   ** demo_components.cpp - A placeholder for any custom components you might wish to integrate in order to extend the capabilities of the executive
   ** temp_init_gen_demo.cpp  - A generated file providing a definition for a standard initialization package provided for all trex application packages.
   ** temp_reg_gen.cpp - A generated registartion file providing a registration function used in all trex application packages.
-reactors.cc - teleo-reactors to be built for this project. A stub reactor will be provided.
  * includes/package_name - A directory for include files
  * nddl - A directory for NDDL model files. This directory includes a strawman model ([https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/nddl/demo.nddl demo.nddl]) to get you started:
  * cfg - A directory for shared configuration files. To get started, this directory contains [https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/cfg/demo.cfg
