@@ -26,11 +26,15 @@ Usage:  trexcreate package_name  [--help] [--deps pkg1 pkg2 pkg3]
 
 }}}
 
+In this case we assume the following package has been created:
+{{{
+trexcreate demo
+}}}
 If successful, this utilty will create a child directory of the current directory named *package_name* with the following:
- * [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/manifest.xml manifest.xml] - A manifest file expected by ROS to delcare the new package.
+ * [http://www.ros.org/wiki/Manifest manifest.xml] - A manifest file expected by ROS to delcare the new package.
  * [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/CMakeLists.txt CMakeLists.txt] - A cmake file expected by ROS that will declare binaries for _trexfast_, _trexdebug_, and _trexparse_.
  * src - A directory for source files. This directory will contain:
-  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/demo_components.cpp demo_components.cpp] - A placeholder for any custom components you might wish to integrate in order to extend the capabilities of the executive
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/trex_create_template_components.cpp demo_components.cpp] - A placeholder for any custom components you might wish to integrate in order to extend the capabilities of the executive
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/temp_init_gen_demo.cpp temp_init_gen_demo.cpp] - A generated file providing a definition for a standard initialization package provided for all trex application packages.
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/temp_reg_gen.cpp temp_reg_gen.cpp] - A generated registartion file providing a registration function used in all trex application packages.
  * includes/package_name - A directory for include files
