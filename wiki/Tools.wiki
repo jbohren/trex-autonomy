@@ -18,25 +18,32 @@ The project will be build automatically for you if you use the *trexcreate* util
 == trexcreate ==
 This utility will create an initial ROS package set up to use TREX. It will create a standard directory structure, and include all of the appropriate build and configuration files.
 
-*Usage:*
 {{{
-trexcreate your_package_name [nddl_deps]
+Usage:  trexcreate package_name  [--help] [--deps pkg1 pkg2 pkg3]
+	package_name The ROS package name for the executive
+	--deps a b c Optional ROS package dependencies of the package. In this example - a, b and c.
+	--help       Produces this menu.
+
 }}}
 
-If successful, this utilty will create a child directory of the current directory named *your_package_name* with the following:
+If successful, this utilty will create a child directory of the current directory named *package_name* with the following:
  * manifest.xml - A manifest file expected by ROS to delcare the new package
  * CMakeLists.txt - A cmake file expected by ROS that will declare binaries for _trexfast_, _trexdebug_, and _trexparse_.
  * src - A directory for source files. This directory will contain:
-  ** reactors.cc - A placeholder for any custom teleo-reactors to be built for this project. A stub reactor will be provided.
-  ** constraints.cc - A placeholder for any custom constraints to be be built for this project. A stub [http://code.google.com/p/europa-pso/wiki/CustomConstraints constraint] will be provided.
-  ** heuristics.cc - A place holder for any custom heuristics to be built for this project. Stubs will be provided for solver [http://code.google.com/p/europa-pso/wiki/SolverReference components].
- * includes/your_package_name - A directory for include files
- * nddl - A directory for NDDL model files
- * test - A directory for test cases. This directory will include:
-  ** test.client.nddl
-  ** test.server.nddl
-  ** test.cfg
-  ** test.test
+  ** demo_components.cpp - A placeholder for any custom components you might wish to integrate in order to extend the capabilities of the executive
+  ** temp_init_gen_demo.cpp  - A generated file providing a definition for a standard initialization package provided for all trex application packages.
+  ** temp_reg_gen.cpp - A generated registartion file providing a registration function used in all trex application packages.
+reactors.cc - teleo-reactors to be built for this project. A stub reactor will be provided.
+ * includes/package_name - A directory for include files
+ * nddl - A directory for NDDL model files. This directory includes a strawman model ([https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/nddl/demo.nddl demo.nddl]) to get you started:
+ * cfg - A directory for shared configuration files. To get started, this directory contains [https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/cfg/demo.cfg
+ demo.cfg] which provides a 2-reactor configuration.
+ * test - A directory for test cases. A sample test case is provided. It includes:
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/trex_config.launch trex_config.launch] - A ROS launch file used to set TREX parameters. These will be used when running the executive.
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.client.nddl demo/demo.client.nddl]
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.server.nddl demo/demo.server.nddl]
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.test demo/demo.test]
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.valid demo/demo.valid]
  * cfg - A directory for T-REX agent configuration files. This directory will contain a simple 2 reactor configuration for a NDDL client and a NDDL server.
 
 It will also make the project for you which ensures the expected utilities are present.
