@@ -35,16 +35,13 @@ If successful, this utilty will create a child directory of the current director
   ** temp_reg_gen.cpp - A generated registartion file providing a registration function used in all trex application packages.
  * includes/package_name - A directory for include files
  * nddl - A directory for NDDL model files. This directory includes a strawman model ([https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/nddl/demo.nddl demo.nddl]) to get you started:
- * cfg - A directory for shared configuration files. To get started, this directory contains [https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/cfg/demo.cfg
- demo.cfg] which provides a 2-reactor configuration.
+ * cfg - A directory for T-REX agent configuration files.  To get started, this directory contains [https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/cfg/demo.cfg demo.cfg] which provides a 2-reactor configuration.
  * test - A directory for test cases. A sample test case is provided. It includes:
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/trex_config.launch trex_config.launch] - A ROS launch file used to set TREX parameters. These will be used when running the executive.
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.client.nddl demo/demo.client.nddl]
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.server.nddl demo/demo.server.nddl]
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.test demo/demo.test]
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.valid demo/demo.valid]
- * cfg - A directory for T-REX agent configuration files. This directory will contain a simple 2 reactor configuration for a NDDL client and a NDDL server.
-
 It will also make the project for you which ensures the expected utilities are present.
 == trexparse ==
 This utility will parse a given input NDDL file to check for errors.
