@@ -1,7 +1,7 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
 * 
-*  Copyright (c) 2007. MBARI.
+*  Copyright (c) 2009. Willow Garage.
 *  All rights reserved.
 * 
 *  Redistribution and use in source and binary forms, with or without
@@ -36,29 +36,79 @@
 #include "Utilities.hh"
 #include "XMLUtils.hh"
 
+void printHelp(){
+  printf("trexfind is a utility to locate a file in the trex search path.\n");
+  printf("\n");
+  printf("Usage:  trexfind file [--dir start_dir]  [--help] [--path]\n");
+  printf("  --file The file name to search for.\n");
+  printf("  --dir  Specify a start_dir in which to start the search from. If omitted, we will assume the search starts in the current directory.\n");
+  printf("  --help Produces this menu.\n");
+  printf("  --path Displays the search path.\n\n");
+}
+
+void printSearchPath(){
+  printf("Path: %s.\n\n", getenv("TREX_PATH"));
+  printf("Start Dir: %s.\n", getenv("TREX_START_DIR"));
+}
+
 int main(int argc, char **argv) {
 
-  if (argc <= 1 || argc >= 4) {
-    printf("Usage trexfind file [path]\n\tWhere file is the file to find, and path is the start_dir.\n");
+  bool show_path = false;
+  bool is_valid = true;
+  bool dir_enabled = false;
+  bool print_help = false;
+  char * start_dir = 0;
+
+  if(argc < 2 || argc > 6){
+    printHelp();
     return 2;
   }
 
-  char mypath[1024], wd[1024];
+  for(int i = 1; i < argc; i++){
+    // If it is arg 1, it should be the file. Invalid if it is a marker
+    if(i == 1 && std::strncmp(argv[i], "--", 2) == 0){
+      is_valid = false;
+    }
 
-  if (argc == 3) {
-    getcwd(wd, 1024);
-    chdir(argv[2]);
+    if(std::strcmp(argv[i], "--help") == 0){
+      print_help = true;
+    }
+    else if(std::strcmp(argv[i], "--dir") == 0){
+      if(dir_enabled){
+	printHelp();
+	return 2;
+      }
+      dir_enabled = true;
+    }
+    else if(std::strcmp(argv[i], "--path") == 0){
+      show_path = true;
+    }
+    else if(dir_enabled){
+      if(start_dir == 0)
+	start_dir = argv[i];
+      else{
+	printHelp();
+	return 2;
+      }
+    }
+  }
+
+  if(dir_enabled && start_dir == 0){
+    printHelp();
+    return 2;
+  }
+
+  // Set up the start directory if appropriate.
+  char mypath[1024], wd[1024];
+  getcwd(wd, 1024);
+  if(start_dir != 0){
+    chdir(start_dir);
   }
 
   setenv("TREX_START_DIR", getcwd(mypath, 1024), 1);
-  if (argc == 3) {
-    chdir(wd);
-  }
+  chdir(wd);
 
-
-  //printf("Start dir: %s\n", getenv("TREX_START_DIR"));
-
-  //Load config.
+  // Load configuration files to configure search path
   std::ifstream f1(TREX::findFile("NDDL.cfg").c_str());
   std::ifstream f2(TREX::findFile("temp_nddl_gen.cfg").c_str());
   TiXmlElement* iroot = NULL;
@@ -86,14 +136,24 @@ int main(int argc, char **argv) {
     }
   }
 
-  std::string f = TREX::findFile(argv[1], true);
-  std::ifstream fi(f.c_str());
-  if (fi.good()) {
-    printf("%s\n", f.c_str());
-  } else {
-    printf("File '%s' not found.\nPath: '%s'.\nStart Dir: '%s'.\n", argv[1], getenv("TREX_PATH"), getenv("TREX_START_DIR"));
-    return 1;
+  if(is_valid){
+    std::string f = TREX::findFile(argv[1], true);
+    std::ifstream fi(f.c_str());
+    if (fi.good()) {
+      printf("%s\n", f.c_str());
+    } else {
+      printf("File '%s' not found.\n", f.c_str());
+      printSearchPath();
+      return 1;
+    }
   }
+
+  if(show_path)
+    printSearchPath();
+
+  if(print_help)
+    printHelp();
+
   return 0;
 }
 
