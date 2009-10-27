@@ -51,19 +51,24 @@ rosmake demo
 }}}
 
 The files listed here are part of the Hello World tutorials to create and run a simple executive.
+== trexfind ==
+This utility will search the [http://code.google.com/p/europa-pso/wiki/PathSearch trex path] for the first occurrence of a given file.
+
+{{{
+trexfind is a utility to locate a file in the trex search path.
+
+Usage:  trexfind file [--dir start_dir]  [--help] [--path]
+  --file The file name to search for.
+  --dir  Specify a start_dir in which to start the search from. If omitted, we will assume the search starts in the current directory.
+  --help Produces this menu.
+  --path Displays the search path.
+}}}
 == trexparse ==
 This utility will parse a given input NDDL file to check for errors.
 
 *Usage:*
 {{{
-trexparse input_file [--start-dir==some-start-directory]
-}}}
-== trexfind ==
-This utility will search the trex-path for the first occurrence of a given file.
-
-*Usage:*
-{{{
-trexfind file_name [some-start-directory]
+trexparse input_file
 }}}
 == trexdepends ==
 This utility will search for all the files included by a target file. The system will try to autodetect the package name. Adding -q will prevent the display of error messages.
