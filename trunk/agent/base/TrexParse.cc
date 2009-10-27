@@ -32,25 +32,32 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <fstream>
+#include "Assembly.hh"
+#include <stdio.h>
 #include "Utilities.hh"
-#include "XMLUtils.hh"
 #include "Finder.hh"
+ 
+ 
+using namespace EUROPA;
+using namespace TREX;
 
-class TrexFind: public TREX::Finder {
+namespace trex_project { 
+  void register_projects();
+}
+
+class TrexParse: public TREX::Finder {
 public:
-  TrexFind(): TREX::Finder("trexfind") {}
+  TrexParse(): TREX::Finder("trexparse") {}
 
 protected:
   void execute(const std::string& file){
-      printf("%s\n", file.c_str());
-  }
+    DebugMessage::enableMatchingMsgs("", "NddlInterpreter");
+    TREX::Assembly assembly("NO_AGENT", "NO_REACTOR");
+    assembly.playTransactions(file.c_str());  }
 };
 
 int main(int argc, char **argv) {
-  TrexFind finder;
-  return finder.main(argc, argv);
+  trex_project::register_projects();
+  TrexParse parser;
+  return parser.main(argc, argv);
 }
-
-
-
