@@ -58,7 +58,7 @@ This utility will search the [http://code.google.com/p/europa-pso/wiki/PathSearc
 trexfind is a utility to locate a file in the trex search path.
 
 Usage:  trexfind file [--dir start_dir]  [--help] [--path]
-  --file The file name to search for.
+  file   The file name to search for.
   --dir  Specify a start_dir in which to start the search from. If omitted, we will assume the search starts in the current directory.
   --help Produces this menu.
   --path Displays the search path.
@@ -66,9 +66,14 @@ Usage:  trexfind file [--dir start_dir]  [--help] [--path]
 == trexparse ==
 This utility will parse a given input NDDL file to check for errors.
 
-*Usage:*
 {{{
-trexparse input_file
+trexparse is a utility to locate a file in the trex search path, and then parse it. It uses trexfind to locate the file.
+
+Usage:  trexparse file [--dir start_dir]  [--help] [--path]
+  file   The file name to parse.
+  --dir  Specify a start_dir in which to start the search from. If omitted, we will assume the search starts in the current directory.
+  --help Produces this menu.
+  --path Displays the search path.
 }}}
 == trexdepends ==
 This utility will search for all the files included by a target file. The system will try to autodetect the package name. Adding -q will prevent the display of error messages.
