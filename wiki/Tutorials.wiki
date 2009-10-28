@@ -1,48 +1,42 @@
 #summary Outline of tutorials which are intended to teach T-REX by incremental examples which you can try out.
 
-<wiki:toc max_depth="2" />
-
 =Bare Essentials=
 These  tutorials will get you working with the basic elements of T-REX.
-== Implement a simple model ==
-== Configure a simple agent ==
-== Run the executive in batch mode ==
-== How to read a T-REX log file ==
-== How ro create and read T-REX plans ==
-== How to visualize execution using the Execution Monitor ==
-== Run the executive in interactive mode ==
-
+ * [bare_essentials/tutorial_1/Tutorial.wiki Create a Project] - Introduces the [Tools#trexcreate trexcreate] utility to construct a project and understand the main components.
+ * Implement a simple model 
+ * Configure a simple agent 
+ * Run the executive in batch mode 
+ * How to read a T-REX log file 
+ * How to create and read T-REX plans 
+ * How to visualize execution using the Execution Monitor 
+ * Run the executive in interactive mode 
 =Multiple Reactors=
 These tutorials will take your through the steps of building and running a slightly more elaborate example that demonstrates co-ordinated action across multiple timelines and multiple reactors.
-== A model for Rock, Paper, Scissors ==
-== Playing the game ==
-== Working with multiple reactors ==
-== Implementing a Tele-Reactor ==
-
+ * A model for Rock, Paper, Scissors
+ * Playing the game
+ * Working with multiple reactors
+ * Implementing a Tele-Reactor
 =Basic Trouble-Shooting=
 These tutorials will focus on using the Execution Monitor in conjunction with different debugging strategies to identify and debug problems.
-== How to use the Token Network Viewer ==
-== Detecting and fixing constraint violations ==
-== Detecting and fixing an over-constrained model ==
-== Detecting and fixing an under constrained model ==
-
+ * How to use the Token Network Viewer
+ * Detecting and fixing constraint violations
+ * Detecting and fixing an over-constrained model
+ * Detecting and fixing an under constrained model
 =Design Patterns=
 These tutorials will introduce you to common modeling approaches for modeling problem domains.
-== Using Agent Actions ==
-== Implementing a State Machine ==
-== Implementing an Iterators ==
-== Value Abstraction ==
-== Handling Timeouts ==
-
+ * Using Agent Actions
+ * Implementing a State Machine
+ * Implementing an Iterators
+ * Value Abstraction
+ * Handling Timeouts
 =Testing=
 These tutorials will introduce different testing techniques you can use.
-== Capturing an event log ==
-== Validating against an event log ==
-== Specifying expected execution conditions ==
-== Building a NDDL simulator ==
-
+ * Capturing an event log
+ * Validating against an event log
+ * Specifying expected execution conditions
+ * Building a NDDL simulator
 =Advanced Topics=
 These tutorials focus on more advanced techniques that involve a deeper knowledge of EUROPA.
-== Implementing a constraint ==
-== Using the orienteering solver ==
-== Configuring the standard EUROPA solver ==
+ * Implementing a constraint
+ * Using the orienteering solver
+ * Configuring the standard EUROPA solver
