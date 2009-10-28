@@ -1,8 +1,8 @@
-#summary Outline of tutorials which are intended to teach T-REX by incremental examples which you can try out. All tutorials assume the steps in the [GettingStarted Getting Started] section have been completed successfully.
+#summary Outline of tutorials which are intended to teach T-REX by incremental examples which you can try out. All tutorials assume the steps in the [GetStarted Getting Started] section have been completed successfully.
 
 =Bare Essentials=
 These  tutorials will get you working with the basic elements of T-REX.
- * [bare_essentials/create_a_project/Tutorial.wiki Create a Project] - Introduces the [Tools#trexcreate trexcreate] utility to construct a project and understand the main components.
+ * [CreateProject.wiki Create a Project] - Introduces the [Tools#trexcreate trexcreate] utility to construct a project and understand its main components.
  * Implement a simple model 
  * Configure a simple agent 
  * Run the executive in batch mode 
