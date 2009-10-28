@@ -14,8 +14,7 @@ roscd your_working_package
 make
 }}}
 == trexcreate ==
-This utility will create an initial ROS package set up to use TREX. It will create a standard directory structure, and include all of the appropriate build and configuration files.
-
+trexcreate will create an initial ROS package set up to use TREX. It will create a standard directory structure, and include all of the appropriate build and configuration files.
 {{{
 Usage:  trexcreate package_name  [--help] [--deps pkg1 pkg2 pkg3]
 	package_name The ROS package name for the executive
@@ -52,11 +51,8 @@ rosmake demo
 
 The files listed here are part of the Hello World tutorials to create and run a simple executive.
 == trexfind ==
-This utility will search the [http://code.google.com/p/europa-pso/wiki/PathSearch trex path] for the first occurrence of a given file.
-
-{{{
 trexfind is a utility to locate a file in the trex search path.
-
+{{{
 Usage:  trexfind file [--dir start_dir]  [--help] [--path]
   file   The file name to search for.
   --dir  Specify a start_dir in which to start the search from. If omitted, we will assume the search starts in the current directory.
@@ -64,11 +60,8 @@ Usage:  trexfind file [--dir start_dir]  [--help] [--path]
   --path Displays the search path.
 }}}
 == trexparse ==
-This utility will parse a given input NDDL file to check for errors.
-
-{{{
 trexparse is a utility to locate a file in the trex search path, and then parse it. It uses trexfind to locate the file.
-
+{{{
 Usage:  trexparse file [--dir start_dir]  [--help] [--path]
   file   The file name to parse.
   --dir  Specify a start_dir in which to start the search from. If omitted, we will assume the search starts in the current directory.
@@ -76,15 +69,33 @@ Usage:  trexparse file [--dir start_dir]  [--help] [--path]
   --path Displays the search path.
 }}}
 == trexdepends ==
-This utility will search for a given file, and return a list including the fully qualified path of the given file, and all included files.
-{{{
 trexdepends is a utility to enumerate all included files for a given nddl file.
+{{{
 Usage: trexdepends [file] [--help] [--dir start_dir]
  file   The nddl file to evaluate.
  --help Produces this menu.
  --dir  Indicates the start_dir to include in the search path.
 
 }}}
-== trexfast / trexdebug ==
-There are 2 variations of this same utility. Each will run the executive. *trexfast* is a highly optimized version and *trexdebug* is a much slower version which will have alot of useful debug checking code that can be very handy when diagnosing problems. We will explain this for *trexfast*, but the same applies for *trexdebug*
+== trexrun ==
+trexrun launches a T-REX executive as a ROS node for batch or interactive execution.
+{{{
+Usage: trexrun [--help] [--debug] [--gtest] [--console] [--hyper | --playback] [--debug]
+--help:     Provides this message!
+--playback: Use if debugging a previous run. Expects an xml observation log file as input named <your_agent_name>.log
+            and a clock log file names clock.log. In each tick, this will enforce that the Agent is allowed only as many
+            execution steps that occured during the original run.
+--hyper:    Run at 100% CPU for debugging. This enforces no limit on execution steps during each tick, and does not
+            sleep if there is time left before the next tick.
+--console:  Run in interactive mode. This will have no effect on the number of execution steps during each tick.
+--gtest:    Apply validation tests on completion.
+--debug:    Enables a debug version of the executive whichis slow, but provides alot of extra diagnostics.
+
+TREX requires the following ROS parameters:
+ trex/input_file: An xml file that defines the agent control configuration.
+ trex/path:       A search path for locating input files. This should include a location for
+                  the input configuration file, as well as locations for agent initialization files (nddl files)
+ trex/start_dir   A directory from which to start the search for input files
+ trex/log_dir:    An output directory for TREX log files.
+}}}
 == trexmonitor ==
