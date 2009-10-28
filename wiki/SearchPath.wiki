@@ -20,7 +20,7 @@ For example, suppose the following files exist in the file system:
  * bar/bing/bing/a.foo
  * baz/b.foo
 
-Assume TREX_PATH = "foo:bar/cfg:bar:baz" and TREX_START_DIR = bar/bing/bong. This yields the following search examples:
+Assume TREX_PATH = "foo:bar/cfg:bar:baz". This yields the following search examples:
  * If the start directory is _bar/bing/bing/_, then a search for _a.foo_ will return: _bar/bing/bing/a.foo_.
  * If the start directory is _bar/bing_, then a search for _a.foo_ will return: _bar/a.foo_.
  * If the start directory is _bar/bing_, then a search _b.foo_ will return: _baz/b.foo_.
