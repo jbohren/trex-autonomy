@@ -3,9 +3,7 @@
 <wiki:toc max_depth="2" />
 
 = Command Line Tools =
-A set of command line tools are available once the proper configuration variables have been set up in the environment. If you followed the installation and environment setup steps in the [GetStarted Getting Started] guide you are almost there. 
-
-For some of these tools to work, the package must be built.
+A set of command line tools are available once the proper configuration variables have been set up in the environment. If you followed the installation and environment setup steps in the [GetStarted Getting Started] guide you are almost there. For some of these tools to work, the package must be built.
 {{{
 roscd your_working_package
 make
@@ -17,7 +15,6 @@ Usage:  trexcreate package_name  [--help] [--deps pkg1 pkg2 pkg3]
 	package_name The ROS package name for the executive
 	--deps a b c Optional ROS package dependencies of the package. In this example - a, b and c.
 	--help       Produces this menu.
-
 }}}
 
 In this case we assume the following package has been created:
