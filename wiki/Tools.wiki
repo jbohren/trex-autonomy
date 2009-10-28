@@ -76,11 +76,14 @@ Usage:  trexparse file [--dir start_dir]  [--help] [--path]
   --path Displays the search path.
 }}}
 == trexdepends ==
-This utility will search for all the files included by a target file. The system will try to autodetect the package name. Adding -q will prevent the display of error messages.
-
-*Usage:*
+This utility will search for a given file, and return a list including the fully qualified path of the given file, and all included files.
 {{{
-trexdepends input_file [package_name] [-q]
+trexdepends is a utility to enumerate all included files for a given nddl file.
+Usage: trexdepends [file] [--help] [--dir start_dir]
+ file   The nddl file to evaluate.
+ --help Produces this menu.
+ --dir  Indicates the start_dir to include in the search path.
+
 }}}
 == trexfast / trexdebug ==
 There are 2 variations of this same utility. Each will run the executive. *trexfast* is a highly optimized version and *trexdebug* is a much slower version which will have alot of useful debug checking code that can be very handy when diagnosing problems. We will explain this for *trexfast*, but the same applies for *trexdebug*
