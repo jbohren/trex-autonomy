@@ -11,7 +11,7 @@ T-REX will find the first available instance of a file. It searches according to
 The above environment variables can be set directly in the user environment. However, T-REX provides additional support for setting these properties. TREX_PATH can be over-ridden by:
  * Setting trex/path as a ROS parameter before launching [Tools#trexrun trexrun].
  * Setting the include path in [NddlConfig NDDL.cfg], which will be obtained by searching the path based on the current environment variable settings.
- * Setting the include path in temp_nddl_gen.cfg, which will be obtained by searching the path based on the current environment variable settings. This is only used of no NDDL.cfg file is located.
+ * Setting the include path in temp_nddl_gen.cfg, which will be obtained by searching the path based on the current environment variable settings. This is only used if  NDDL.cfg file is not found. Note that this file is auto-generated when using the [Tools#trexcreate trexcreate] tool.
 
 The TREX_START_DIR environment variable can be over-ridden by setting trex/start_dir as a ROS parameter before launching [Tools#trexrun trexrun].
 
@@ -21,9 +21,9 @@ For example, suppose the following files exist in the file system:
  * baz/b.foo
 
 Assume TREX_PATH = "foo:bar/cfg:bar:baz". This yields the following search examples:
- * If the start directory is _bar/bing/bing/_, then a search for _a.foo_ will return: _bar/bing/bing/a.foo_.
- * If the start directory is _bar/bing_, then a search for _a.foo_ will return: _bar/a.foo_.
- * If the start directory is _bar/bing_, then a search _b.foo_ will return: _baz/b.foo_.
+ * If the start directory is bar/bing/bing/, then a search for a.foo will return: bar/bing/bing/a.foo.
+ * If the start directory is bar/bing, then a search for a.foo will return: bar/a.foo.
+ * If the start directory is bar/bing, then a search b.foo will return: baz/b.foo.
 
 
 
