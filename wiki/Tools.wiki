@@ -3,10 +3,7 @@
 <wiki:toc max_depth="2" />
 
 = Command Line Tools =
-A set of command line tools are available once the proper configuration variables have been set up in the environment. If you followed the installation and environment setup steps in the [GetStarted Getting Started] guide you are almost there. You should also make sure that the bin directory of your working package is in the path.
-{{{
-export PATH=`rospack find your_working_package`/bin:$PATH
-}}}
+A set of command line tools are available once the proper configuration variables have been set up in the environment. If you followed the installation and environment setup steps in the [GetStarted Getting Started] guide you are almost there. 
 
 For some of these tools to work, the package must be built.
 {{{
@@ -78,7 +75,7 @@ Usage: trexdepends [file] [--help] [--dir start_dir]
 
 }}}
 == trexrun ==
-trexrun launches a T-REX executive as a ROS node for batch or interactive execution.
+trexrun launches a T-REX executive as a ROS node for batch or [http://code.google.com/p/trex-autonomy/wiki/TrexRun interactive] execution.
 {{{
 Usage: trexrun [--help] [--debug] [--gtest] [--console] [--hyper | --playback] [--debug]
 --help:     Provides this message!
