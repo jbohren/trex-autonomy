@@ -23,7 +23,8 @@ trexcreate demo
 }}}
 If successful, this utilty will create a child directory of the current directory named *demo* with the following:
  * [http://www.ros.org/wiki/Manifest manifest.xml] - A manifest file expected by ROS to delcare the new package.
- * [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/CMakeLists.txt CMakeLists.txt] - A cmake file expected by ROS that will declare binaries for _trexfast_, _trexdebug_, and _trexparse_.
+ * [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/CMakeLists.txt CMakeLists.txt] - A cmake file expected by ROS that will declare binaries required for _trexrun_ and _trexparse_.
+ * [NddlConfig temp_nddl_gen.cfg] - A NDDL configuration file used to set paths for file search, and binding implementation code to NDDL base classes.
  * src - A directory for source files. This directory will contain:
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/trex_create_template_components.cpp demo_components.cpp] - A placeholder for any custom components you might wish to integrate in order to extend the capabilities of the executive
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/temp_init_gen_demo.cpp temp_init_gen_demo.cpp] - A generated file providing a definition for a standard initialization package provided for all trex application packages.
@@ -45,7 +46,7 @@ rosmake demo
 
 The files listed here are part of the Hello World tutorials to create and run a simple executive.
 == trexfind ==
-trexfind is a utility to locate a file in the trex search path.
+trexfind is a utility to locate a file in the [SearchPath trex search path].
 {{{
 Usage:  trexfind file [--dir start_dir]  [--help] [--path]
   file   The file name to search for.
@@ -72,7 +73,7 @@ Usage: trexdepends [file] [--help] [--dir start_dir]
 
 }}}
 == trexrun ==
-trexrun launches a T-REX executive as a ROS node for batch or [http://code.google.com/p/trex-autonomy/wiki/TrexRun interactive] execution.
+trexrun launches a T-REX executive as a ROS node for batch or [TrexRun interactive] execution.
 {{{
 Usage: trexrun [--help] [--debug] [--gtest] [--console] [--hyper | --playback] [--debug]
 --help:     Provides this message!
