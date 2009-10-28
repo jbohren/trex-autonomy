@@ -1,0 +1,58 @@
+#summary  In this tutorial you will create a project called _demo_ and execute a test case. You will learn about the main artifacts and structure of a T-REX project.
+=Create the project=
+Create a working directory called trex_tutorials:
+{{{
+mkdir trex_tutorials
+cd trex_tutorials
+}}}
+We will assume this is the working directory for remaining tutorials. Add this directory to the ROS_PACKAGE_PATH, if it is not already included:
+{{{
+ROS_PACKAGE_PATH=`pwd`:ROS_PACKAGE_PATH
+}}}
+Create a project called *demo* using [Tutorial#trexcreate trexcreate:
+{{{
+trexcreate demo
+}}}
+This will create a child directory of the current directory named *demo* with the following:
+ * [http://www.ros.org/wiki/Manifest manifest.xml] - A manifest file expected by ROS to delcare the new package.
+ * [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/CMakeLists.txt CMakeLists.txt] - A cmake file expected by ROS that will declare binaries required for _trexrun_ and _trexparse_.
+ * [NddlConfig temp_nddl_gen.cfg] - A NDDL configuration file used to set paths for file search, and binding implementation code to NDDL base classes.
+ * src - A directory for source files. This directory will contain:
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/trex_create_template_components.cpp demo_components.cpp] - A placeholder for any custom components you might wish to integrate in order to extend the capabilities of the executive
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/temp_init_gen_demo.cpp temp_init_gen_demo.cpp] - A generated file providing a definition for a standard initialization package provided for all trex application packages.
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/temp_reg_gen.cpp temp_reg_gen.cpp] - A generated registartion file providing a registration function used in all trex application packages.
+ * includes/package_name - A directory for include files
+ * nddl - A directory for NDDL model files. This directory includes a strawman model ([https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/nddl/demo.nddl demo.nddl]) to get you started:
+ * cfg - A directory for T-REX agent configuration files.  To get started, this directory contains [https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/cfg/demo.cfg demo.cfg] which provides a 2-reactor configuration.
+ * test - A directory for test cases. A sample test case is provided. It includes:
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/trex_config.launch trex_config.launch] - A ROS launch file used to set TREX parameters. These will be used when running the executive.
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.client.nddl demo/demo.client.nddl]
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.server.nddl demo/demo.server.nddl]
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.test demo/demo.test]
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.valid demo/demo.valid]
+
+=Use the new project=
+Some [Tools command line tools] require your new package to be built. To build the new project:
+{{{
+rosmake demo
+}}}
+You can verify that the project is working correctly by running a test case that is generated as part of a skeleton test harness for you:
+{{{
+roscd demo
+make test
+}}}
+You should see output terminating with an indication of success such as:
+{{{
+[AGGREGATED TEST RESULTS SUMMARY]
+
+PACKAGES: 
+ * demo
+
+
+SUMMARY
+ * RESULT: SUCCESS
+ * TESTS: 3
+ * ERRORS: 0
+ * FAILURES: 0
+}}}
+
