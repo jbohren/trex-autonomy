@@ -9,7 +9,7 @@ We will assume this is the working directory for remaining tutorials. Add this d
 {{{
 ROS_PACKAGE_PATH=`pwd`:ROS_PACKAGE_PATH
 }}}
-Create a project called *demo* using [Tutorial#trexcreate trexcreate:
+Create a project called *demo* using [Tutorials#trexcreate trexcreate]:
 {{{
 trexcreate demo
 }}}
@@ -23,19 +23,21 @@ This will create a child directory of the current directory named *demo* with th
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/src/temp_reg_gen.cpp temp_reg_gen.cpp] - A generated registartion file providing a registration function used in all trex application packages.
  * includes/package_name - A directory for include files
  * nddl - A directory for NDDL model files. This directory includes a strawman model ([https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/nddl/demo.nddl demo.nddl]) to get you started:
- * cfg - A directory for T-REX agent configuration files.  To get started, this directory contains [https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/cfg/demo.cfg demo.cfg] which provides a 2-reactor configuration.
+ * cfg - A directory for T-REX agent configuration files.  To get started, this directory contains:
+  ** [https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/cfg/demo.cfg demo.cfg] which provides a 2-reactor configuration.
+  ** [https://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/cfg/debug.cfg debug.cfg] which is used to set debug logging levels for T-REX.
  * test - A directory for test cases. A sample test case is provided. It includes:
-  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/trex_config.launch trex_config.launch] - A ROS launch file used to set TREX parameters. These will be used when running the executive.
-  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.client.nddl demo/demo.client.nddl]
-  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.server.nddl demo/demo.server.nddl]
-  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.test demo/demo.test]
-  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.valid demo/demo.valid]
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/trex_config.launch trex_config.launch] - A ROS launch file used to set T-REX parameters. These will be used when running the executive.
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.client.nddl demo/demo.client.nddl] - The input nddl file for the *client* reactor of the *demo* agent.
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.server.nddl demo/demo.server.nddl] - The input nddl file for the *server* reactor of the *demo* agent.
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.test demo/demo.test] - A roslaunch file suitable for launching a roscore with required parameters and for use with rostest.
+  ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.valid demo/demo.valid] - An event log populated with expected output as timeline changes are requested and as they are expected to occur. This is used as part of the regression testing framework.
 
-=Use the new project=
 Some [Tools command line tools] require your new package to be built. To build the new project:
 {{{
 rosmake demo
 }}}
+=Test the new project=
 You can verify that the project is working correctly by running a test case that is generated as part of a skeleton test harness for you:
 {{{
 roscd demo
@@ -54,5 +56,23 @@ SUMMARY
  * TESTS: 3
  * ERRORS: 0
  * FAILURES: 0
+}}}
+You should also be able to apply [Tools command line tools] now that your package has been built. To find the configuration file `demo.cfg`:
+{{{
+trexfind demo.cfg
+}}}
+A success should generate the fully qualified path to the requested file. For example:
+{{{
+/u/mcgann/ros/ros-pkg/trex_tutorials/demo/cfg/demo.cfg
+}}}
+[Tools#trexdepends] can be used to get all the included nddl files for a given nddl target. if you type:
+{{{
+trexdepends test/demo/demo.client.nddl
+}}}
+You will see that this input file depends on a number of nddl files in this package and other packages:
+{{{
+/u/mcgann/ros/ros-pkg/wg-ros-pkg/stacks/trex/trex_core/TREX/agent/base/TREX.nddl
+/u/mcgann/ros/ros-pkg/trex_tutorials/demo/nddl/demo.nddl
+/wg/adw/mcgann/ros/ros-pkg/trex_tutorials/demo/test/demo/demo.client.nddl
 }}}
 
