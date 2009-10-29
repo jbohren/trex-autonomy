@@ -65,7 +65,7 @@ A success should generate the fully qualified path to the requested file. For ex
 {{{
 /u/mcgann/ros/ros-pkg/trex_tutorials/demo/cfg/demo.cfg
 }}}
-[Tools#trexdepends] can be used to get all the included nddl files for a given nddl target. if you type:
+[Tools#trexdepends trexdepends] can be used to get all the included nddl files for a given nddl target. if you type:
 {{{
 trexdepends test/demo/demo.client.nddl
 }}}
@@ -75,4 +75,43 @@ You will see that this input file depends on a number of nddl files in this pack
 /u/mcgann/ros/ros-pkg/trex_tutorials/demo/nddl/demo.nddl
 /wg/adw/mcgann/ros/ros-pkg/trex_tutorials/demo/test/demo/demo.client.nddl
 }}}
+=Inspect output=
+There are a number of ways to see what is going on inside the executive. One of them is the [TrexLog TREX.log] which is generated anew on every run. All executive log data is oupt to a directory designated by the TREX_LOG_DIR environment variable. This variable can also be set by the ros parameter trex/log_dir. It is this mechanism that is used on the project structure you have just created.
 
+Open up the trex_config.launch file provided to see how trex configuration parameters are set:
+{{{
+roscd demo
+cat test/trex_config.launch
+}}}
+You will see something like:
+{{{
+<launch>
+  <!-- Automatically start roscore /-->
+  <master auto="start"/>
+
+  <!-- TREX Parameters /-->
+  <param name="/trex/update_rate" value="10"/>
+  <param name="/trex/path" value="$(find demo)/cfg:$(find trex_ros)/cfg"/>
+  <param name="/trex/log_dir" value="$(find demo)/logs"/>
+  <param name="/trex/play_back" value="0"/>
+  <param name="/trex/time_limit" value="0"/>
+  <param name="/trex/input_file" value="demo.cfg"/>
+</launch>
+}}}
+Every time TREX executes, it creates a new working directory in the TREX_LOG_DIR. The current active directory is soft linked to *latest*. To inspect the log file generated:
+{{{
+cat logs/latest/TREX.log
+}}}
+Which should produce output of the form:
+{{{
+[0]ON hello ASSERT HelloWorldTimeline.Goodbye{}
+[server][1]Request received: globalToken_0:HelloWorldTimeline.Hello(29)
+[5]ON hello ASSERT HelloWorldTimeline.Hello{}
+[server][7]Request received: HelloWorldTimeline.Goodbye(114)
+[7]ON hello ASSERT HelloWorldTimeline.Goodbye{}
+}}}
+This log file tells you that:
+ * At tick 0, the hello timeline has the value GoodBye
+ * At tick 1, the server reactor received a request to transition the hello timeline to the value token of type Hello.
+ * At tick 5, the hello timeline transitions to the requested value.
+ * At tick 7, a second request is made, this time to transition to Goodby. This transition occurs within the same tick.
