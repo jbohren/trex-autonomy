@@ -52,7 +52,10 @@ namespace TREX {
 
   std::string tokenToString(const TokenId& tok){
     std::stringstream ss;
-    ss << tok->getName().toString() << "(" << tok->getKey() << ")" << std::endl;
+    if(tok->getName() == tok->getPredicateName())
+      ss << tok->getPredicateName().toString() << "(" << tok->getKey() << ")" << std::endl;
+    else
+      ss << tok->getName().toString() << ":" << tok->getPredicateName().toString() << "(" << tok->getKey() << ")" << std::endl;
     return ss.str();
   }
 
@@ -223,10 +226,6 @@ namespace TREX {
       }
     }
 
-
-    //TREX_INFO("findfile", "Searching for " << fileName << ".\n");
-    //printf("Searching for %s.\n", fileName.c_str());
-
     const char * start = getenv("TREX_START_DIR");
 
 
@@ -235,13 +234,7 @@ namespace TREX {
       memset(path2, 0, sizeof(char) * (strlen(start) + 2));
       memcpy((void*)path2, (const void*)start, sizeof(char) * strlen(start));
 
-
-      //TREX_INFO("findfile", "Starting search in " << path2 << ".\n");
-      //printf("Starting search in %s.\n", path2);
-
       while(strlen(path2) != 0) {
-	//TREX_INFO("findfile", "\tIn " << path2 << ".\n");
-	//printf("\tIn %s.\n", path2);
 	std::string qualifiedFileName = path2 + std::string("/") + fileName;
 	
 	//Check if f exists.
@@ -260,7 +253,6 @@ namespace TREX {
 	  }
 	}
 	if (already_path) {
-	  //TREX_INFO("findfile", "Already in the path at " << path2 << ", bailing.\n");
 	  break;
 	}
 	

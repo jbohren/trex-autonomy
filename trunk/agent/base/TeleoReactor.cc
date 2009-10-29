@@ -297,7 +297,7 @@ namespace TREX {
   bool TeleoReactor::request(const TokenId& goal){
     DebugMessage::setStream(getStream());
     Agent::instance()->logRequest(goal);
-    TREXLog() << nameString() << "Request received: " << goal->toString() << std::endl;
+    TREXLog() << nameString() << "Request received: " << tokenToString(goal);
     return handleRequest(goal);
   }
 
@@ -312,7 +312,7 @@ namespace TREX {
   void TeleoReactor::recall(const TokenId& goal){
     Agent::instance()->logRecall(goal);
     DebugMessage::setStream(getStream());
-    TREXLog() << nameString() << "Recall received: " << goal->toString() << std::endl;
+    TREXLog() << nameString() << "Recall received: " << tokenToString(goal) << std::endl;
     handleRecall(goal);
   }
 
