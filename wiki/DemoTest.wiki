@@ -1,0 +1,39 @@
+#summary  In this tutorial you will learn about the test harness structure put in place for testing the executive
+
+*Prerequisites:* We assume you have completed the tutorial on [CreateProject creating a project].
+
+=Test the demo project=
+You can verify that the demo is working correctly by running a test case that is generated as part of a skeleton test harness for you:
+{{{
+roscd demo
+make test
+}}}
+You should see output terminating with an indication of success such as:
+{{{
+[AGGREGATED TEST RESULTS SUMMARY]
+
+PACKAGES: 
+ * demo
+
+
+SUMMARY
+ * RESULT: SUCCESS
+ * TESTS: 3
+ * ERRORS: 0
+ * FAILURES: 0
+}}}
+
+=Inspect test files=
+The test harness includes a single executive test located in the test directory under test/demo. The nomenclature is standardised on <test-case-name>.test
+{{{
+roscd demo/test/demo
+cat demo.test
+}}}
+The text displayed will be something like:
+[http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.test]
+
+The success criteria for the test are defined in the .valid file <test-case-name>.valid. The file demo.valid contains:
+[http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.valid]
+
+=Force test to fail=
+
