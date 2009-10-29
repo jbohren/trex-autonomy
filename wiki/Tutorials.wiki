@@ -2,14 +2,10 @@
 
 =Bare Essentials=
 These  tutorials will get you working with the basic elements of T-REX.
- * [CreateProject Create a Project] - Introduces the [Tools#trexcreate trexcreate] utility to construct a project and understand its main components.
- * Implement a simple model 
- * Configure a simple agent 
- * Run the executive in batch mode 
- * How to read a T-REX log file 
- * How to create and read T-REX plans 
- * How to visualize execution using the Execution Monitor 
- * Run the executive in interactive mode 
+ * [CreateProject Create a Project] - Creates and explores simple Hello World project.
+ * [DemoTest Use the Test Harness] - Demonstrates running the test harness and illustrates its main components.
+ * [DemoExecutionMonitor Visualize Execution] - Shows you how to visualize execution using [Tools#trexmonitor trexmonitor]. 
+ * [DemoDebugFile Control Debug Output] - Illustrates the use of high-fidelity debugging for inspecting execution state.
 =Multiple Reactors=
 These tutorials will take your through the steps of building and running a slightly more elaborate example that demonstrates co-ordinated action across multiple timelines and multiple reactors.
  * A model for Rock, Paper, Scissors
