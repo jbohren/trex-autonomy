@@ -32,12 +32,11 @@ This will create a child directory of the current directory named *demo* with th
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.server.nddl demo/demo.server.nddl] - The input nddl file for the *server* reactor of the *demo* agent.
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.test demo/demo.test] - A roslaunch file suitable for launching a roscore with required parameters and for use with rostest.
   ** [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.valid demo/demo.valid] - An event log populated with expected output as timeline changes are requested and as they are expected to occur. This is used as part of the regression testing framework.
-
-Some [Tools command line tools] require your new package to be built. To build the new project:
+=Try out some command line tools=
+Using [Tools command line tools] requires your new package to be built. To build the new project:
 {{{
 rosmake demo
 }}}
-=Try out some command line tools=
 You should now be able to apply [Tools command line tools] now that your package has been built. To find the configuration file `demo.cfg`:
 {{{
 trexfind demo.cfg
@@ -134,6 +133,7 @@ This will launch the executive and start executing in batch mode. The execute ru
 
 [ INFO] 1256830562.611953000: Destructing Executive...
 }}}
+It's OK to leave the core running for multiple executions of the executive as long as the test case parameters are the same. For now we will bring down ROS by simply switching to the console in which it was launched and typing *CTRL-C*.
 =Inspect output=
 There are a number of ways to see what is going on inside the executive. One of them is the [TrexLog TREX.log] which is generated anew on every run. All executive log data is oupt to a directory designated by the TREX_LOG_DIR environment variable. This variable can also be set by the ros parameter trex/log_dir. It is this mechanism that is used on the project structure you have just created.
 
