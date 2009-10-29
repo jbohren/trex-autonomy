@@ -65,3 +65,10 @@ TREX requires the following ROS parameters:
  trex/log_dir:    An output directory for TREX log files.
 }}}
 == trexmonitor ==
+[TrexMonitor] trexmonitor is a runtime visualization tool for the trex executive.
+{{{
+Usage: trexmonitor [--help] [--dir log_dir]
+ --help Produces this menu.
+ --dir  Sets log_dir to be the source directory for reading executive output.
+}}}
+
