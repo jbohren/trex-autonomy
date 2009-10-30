@@ -5,7 +5,7 @@ Create a working directory called trex_tutorials:
 mkdir trex_tutorials
 cd trex_tutorials
 }}}
-This working directory must not be under any ROS package (it must not have a manifest.xml in or above it). We will assume this is the working directory for remaining tutorials. Add this directory to the ROS_PACKAGE_PATH, if it is not already included:
+This working directory must not be a subdirectory of any ROS package (it must not have a manifest.xml file in or above it). We will assume this is the working directory for remaining tutorials. Add this directory to the ROS_PACKAGE_PATH, if it is not already included:
 {{{
 ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
 }}}
