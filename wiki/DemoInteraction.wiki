@@ -1,4 +1,4 @@
-#summary In this summary you will learn the basics of execution and visualization of trex incremetally and interactively.
+#summary In this tutorial you will learn the basics of incremental, interactive execution and visualization of trex.
 
 *Prerequisities*: Successful completion of [DemoExecutionMonitor]
 
@@ -10,18 +10,18 @@ trexrun --console --hyper
 }}}
 You should see a console open up with the following output:
 {{{
-[ INFO] 1256917677.371804000: Starting signal handler
-[ INFO] 1256917677.394803000: Registering trex_pr2 Schema
-[ INFO] 1256917677.403303000: Registering trex_pr2 Schema
-[ INFO] 1256917677.407401000: Executive created.
+[ INFO] 1256922335.220563000: Starting signal handler
+[ INFO] 1256922335.246109000: Registering demo Schema
+[ INFO] 1256922335.253864000: Registering demo Schema
+[ INFO] 1256922335.262132000: Executive created.
 
-[ INFO] 1256917677.407533000: Finished creating executive
-[ INFO] 1256917677.407608000: Running the executive in interactive mode.
+[ INFO] 1256922335.262348000: Finished creating executive
+[ INFO] 1256922335.262475000: Running the executive in interactive mode.
 
 At the start of tick 0, H for help.
 > 
 }}}
-This indicates that the executive has been successfully loaded, but the clock has not yet advanced beyond the initial tick value of 1. Notice the command prompt. To display a help menu:
+This indicates the executive has been successfully loaded, but the clock has not yet advanced beyond the initial tick value of 1. Notice the command prompt. To display a help menu:
 {{{
 >h
 }}}
@@ -62,12 +62,12 @@ You should see the TREX Log Reader Control window front and center as shown belo
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.interactive_tick_0.png]
 
-{{{
-Arrange windows so that the Log Reader Control, Timeline, and executive console are all visible together.
-}}}
 
 Observe that there are no reactors in the background Timeline window, and no ticks are displayed. This is because no visualization data has been logged from the executive yet.
 
+{{{
+Arrange windows so that the Log Reader Control, Timeline, and executive console are all visible together.
+}}}
 =Set up trexmonitor to track execution=
 In this example we will configure [TrexMonitor trexmonitor] to track the execution fronter, defined by the latest tick:
 {{{
@@ -90,10 +90,7 @@ At the start of tick 1, H for help.
 > 
 }}}
 
-We now want to switch our attention to the client reactor window. Observe that the plan has not been created yet. The visible state remains tick 0 since the executive does not log data for vuisualization until th end of a tick.
-
-
-Now advance again through the console:
+We now want to switch our attention to the client reactor window. Observe that the plan has not been created yet. The visible state remains tick 0 since the executive does not log data for vuisualization until th end of a tick. Now advance again through the console:
 {{{
 >n
 }}}
@@ -113,3 +110,26 @@ select 'View token properties'
 This will pop up the following window which illustrates all parameters associated with the token, and its model rules.
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.token_properties.png]
+
+=Visualize the token network=
+We can visualize the relationship between tokens in this reactor:
+{{{
+select the 'Hello' token in the Timeline window.
+right-mouse click
+select 'Highlight in token network'
+}}}
+The token network viewer will now appear showing tokens organized in a graph, indicating dependencies:
+
+[http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.token_network.png]
+
+At the root of the graph is the [http://code.google.com/p/europa-pso/wiki/PlanningApproach#Token_State_Model active token] selected. It is contained in a slot of the timeline. More than one token can be in a slot. For example, tokens 129 and 91 share slot 1000000. Token 129 is [http://code.google.com/p/europa-pso/wiki/PlanningApproach#Token_State_Model merged] onto token 91.
+
+Any node in the graph can be inspected by clicking on it, which will bring up the token properties window again. Clickable entities are either tokens (reactangles) or rules (parallelograms). The rules govern the semantics of dependencies between tokens. For example, the rule (node 111) :
+{{{
+HelloWorldTimeline::Hello{ //Hello definition.
+  duration == 2; //Enforce duration is equal to two.
+  meets(HelloWorldTimeline.Goodbye a); //Require a goodbye token after this hello token.
+  met_by(HelloWorldTimeline.Goodbye b); //Require a goodbye before this hello token.
+}
+}}}
+creates connections to 2 different sub-goal tokens indicating required successor and predecessor states.
