@@ -200,7 +200,12 @@ namespace TREX {
   }
 
   void makeFile(const std::string& outputStr, const char* prefix, const char* suffix){
-    std::string fname(prefix);
+    const char * start_dir = getenv("TREX_START_DIR");
+    std::string path;
+    if(start_dir != NULL)
+      path = start_dir;
+
+    std::string fname = path + "/" + prefix;
     fname = fname + ".";
     fname = fname + suffix;
     std::ofstream f(fname.c_str());

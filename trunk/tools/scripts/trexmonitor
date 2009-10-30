@@ -12,12 +12,31 @@ from TREX import *
 from TREX.core import *
 from TREX.widgets_gtk import *
 
+def printHelp():
+  print "trexmonitor is a runtime visualization tool for the trex executive."
+  print "Usage: trexmonitor [--help] [--dir log_dir]"
+  print " --help Produces this menu."
+  print " --dir  Sets log_dir to be the source directory for reading executive output."
+
 def main():
-  # Process cli arguments
-  if len(sys.argv) > 1:
-    log_path = sys.argv[1]
-  else:
-    log_path = "."
+  # Process arguments
+  if("--help" in sys.argv or len(sys.argv) > 4):
+    printHelp()
+    quit()
+
+  dir_enabled = 0
+  log_path = "."
+
+  for i in range(1, len(sys.argv)):
+    if(sys.argv[i] == "--dir"):
+      if(dir_enabled == 1):
+        printHelp()
+        quit()
+      else:
+        dir_enabled = 1
+    elif(dir_enabled == 1):
+      log_path = sys.argv[i]
+
 
   # Window configuration for a window that should not be allowed to be closed
   WINDOW_FUNCTIONS = gtk.gdk.FUNC_MOVE | gtk.gdk.FUNC_RESIZE | gtk.gdk.FUNC_MINIMIZE | gtk.gdk.FUNC_MAXIMIZE;
