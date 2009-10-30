@@ -156,4 +156,4 @@ At the start of tick 10, H for help.
 >
 }}}
 
-When you are done, simply type Q in the trex console to make it quit.
+When you are done, simply type Q in the trex console to exit the console.
