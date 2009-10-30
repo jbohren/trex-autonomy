@@ -1,20 +1,21 @@
-#summary Outline of tutorials which are intended to teach T-REX by incremental examples which you can try out. All tutorials assume the steps in the [GetStarted Getting Started] section have been completed successfully.
+#summary Outline of tutorials which are intended to teach T-REX by incremental examples which you can try out. 
 
 =Bare Essentials=
-These  tutorials will get you working with the basic elements of T-REX.
+These  tutorials will get you working with the basic elements of T-REX. All tutorials assume the steps in the [GetStarted Getting Started] section have been completed successfully, and that you have read the [LearnMore backgound material] on T-REX concepts.
  * [CreateProject Create a Project] - Creates and explores simple Hello World project.
  * [DemoTest Use the Test Harness] - Demonstrates running the test harness and illustrates its main components.
  * [DemoExecutionMonitor Visualize Prior Execution] - Shows you how to visualize logged data using [Tools#trexmonitor trexmonitor]. 
  * [DemoInteraction Interactive Execution and Visualization ] - Use [Tools#trexrun trexrun] to step through the agent incrementally, and use advanced visualization to explore execution state.
- * [DemoDebugFile Control Debug Output] - Illustrates the use of high-fidelity debugging for inspecting execution state.
-=Multiple Reactors=
-These tutorials will take your through the steps of building and running a slightly more elaborate example that demonstrates co-ordinated action across multiple timelines and multiple reactors.
- * A model for Rock, Paper, Scissors
- * Playing the game
- * Working with multiple reactors
- * Implementing a Tele-Reactor
+=Agent Actions=
+The default demo project does not actually do anything interesting outside the executive. In this set of tutorials you will create your own project to integrate external actions with T-REX.
+ * [TrivialReactor Create a custom reactor] - Explains the Teleo-Reactor base class and walks you through implementing a simple sub-class of your own.
+ * [IntegratedReactor  Integrate your reactor] - Walks you through integrating your reactor into a model and in the executive.
+ * [AgentActions Agent Actions] - You will learn about and implement a standard model element in T-REX for dealing with external actions.
+=The Handy Bot=
+You are now ready to aplpy T-REX to more interesting situations. For this set of tutorials, we imagine *HandyBot*, a fictitious robot, which we will empower incrementally to do increasingly sophistciated things, albeit in a simulated world.
 =Basic Trouble-Shooting=
 These tutorials will focus on using the Execution Monitor in conjunction with different debugging strategies to identify and debug problems.
+ * [DemoDebugFile Control Debug Output] - Illustrates the use of high-fidelity debugging for inspecting execution state.
  * How to use the Token Network Viewer
  * Detecting and fixing constraint violations
  * Detecting and fixing an over-constrained model
