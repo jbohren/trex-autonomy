@@ -1,4 +1,4 @@
-#summary  In this tutorial you will create a project called _demo_ and execute a test case. You will learn about the main artifacts and structure of a T-REX project.
+#summary  In this tutorial you will create a demo project and execute a test case.
 =Create the project=
 Create a working directory called trex_tutorials:
 {{{
