@@ -4,7 +4,8 @@
 These  tutorials will get you working with the basic elements of T-REX.
  * [CreateProject Create a Project] - Creates and explores simple Hello World project.
  * [DemoTest Use the Test Harness] - Demonstrates running the test harness and illustrates its main components.
- * [DemoExecutionMonitor Visualize Execution] - Shows you how to visualize execution using [Tools#trexmonitor trexmonitor]. 
+ * [DemoExecutionMonitor Visualize Prior Execution] - Shows you how to visualize logged data using [Tools#trexmonitor trexmonitor]. 
+ * [DemoInteraction Interactive Execution and Visualization ] - Use [Tools#trexrun trexrun] to step through the agent incrementally, and use advanced visualization to explore execution state.
  * [DemoDebugFile Control Debug Output] - Illustrates the use of high-fidelity debugging for inspecting execution state.
 =Multiple Reactors=
 These tutorials will take your through the steps of building and running a slightly more elaborate example that demonstrates co-ordinated action across multiple timelines and multiple reactors.

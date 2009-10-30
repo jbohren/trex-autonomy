@@ -60,3 +60,9 @@ Advance to tick 2 using the tick control right-arrow.
 }}}
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.tick_2_server.png]
+
+Finally, close all windows by:
+{{{
+selecting the TREX Log Reader Control window
+clicking on the top-right X icon
+}}}
