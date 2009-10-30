@@ -41,8 +41,8 @@ Observe that the tick value becomes 0.0. Both the client and server reactors hav
 =Visualize the plan=
 The demo project is trivial. A single goal to say Hello, which is planned immediately and dispatched at tick 1. To see the state where the client has a plan and the server does not:
 {{{
-Advance to tick 1 using the tick control right-arrow
-Select the demo.client reactor in the TREX Timelines window
+Advance to tick 1 using the tick control right-arrow in the TREX Log Reader Control.
+Select the demo.client reactor in the TREX Timelines window.
 }}}
 
 The expected result is shown below:
@@ -56,13 +56,13 @@ Select the demo.server reactor in the TREX Timeline window
 
 Observe that there is still only a single token indicating the new value has not been planned yet. By tick 2 that has been rectified. To see that:
 {{{
-Advance to tick 2 using the tick control right-arrow.
+Advance to tick 2 using the tick control right-arrow in the TREX Log Reader Control.
 }}}
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.tick_2_server.png]
 
 Finally, close all windows by:
 {{{
-selecting the TREX Log Reader Control window
-clicking on the top-right X icon
+selecting the TREX Log Reader Control window.
+clicking on the top-right X icon.
 }}}
