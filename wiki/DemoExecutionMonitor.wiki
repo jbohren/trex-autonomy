@@ -34,7 +34,7 @@ To return to the initial state (tick 0):
 {{{
 click on the left-most tick control icon
 }}}
-Observe that the tick value becomes 0.0. Both the client and server reactors have a single *hello* timeline. The color of the timeline is determined by the color of the reactor that _owns_ that timeline. Clearly, the server reactor owns this timeline as is consistent with the nddl input shown [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.server.nddl demo/demo.client.nddl earlier]. The earliest end time is shown for the initial value (it is 1 in this case).
+Observe that the tick value becomes 0.0. Both the client and server reactors have a single *hello* timeline. The color of the timeline is determined by the color of the reactor that _owns_ that timeline. Clearly, the server reactor owns this timeline as is consistent with the nddl input shown [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.server.nddl demo/demo.server.nddl earlier]. The earliest end time is shown for the initial value (it is 1 in this case).
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.tick_0_server.png]
 
