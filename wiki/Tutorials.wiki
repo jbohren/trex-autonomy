@@ -8,11 +8,17 @@ These  tutorials will get you working with the basic elements of T-REX. All tuto
  * [DemoInteraction Interactive Execution and Visualization ] - Use [Tools#trexrun trexrun] to step through the agent incrementally, and use advanced visualization to explore execution state.
 =Agent Actions=
 The default demo project does not actually do anything interesting outside the executive. In this set of tutorials you will create your own project to integrate external actions with T-REX.
- * [TrivialReactor Create a custom reactor] - Explains the Teleo-Reactor base class and walks you through implementing a simple sub-class of your own.
+=The HandyBot=
+You are now ready to apply T-REX to more interesting situations. For this set of tutorials, we imagine *HandyBot*, a fictitious robot, which we will empower incrementally to do increasingly sophisticated things, albeit in a simulated world.
+ * [AgentActions Introducting agent actions] - You will learn about and use a standard model element in T-REX for dealing with actions.
+ * [ActionSequence Create and run an action sequence] - You will learn how to create a new test case to create and ordered set of actions to execute.
+ * [ActionInteractions Co-ordinate concurrent action execution] - Many times, more than one thing can and/or should be done at a time. In this tutorial you will update your *HandyBot* model to demonstrate this capability.
+ * [Regression Working backwards from the goal] - At times a programmer only cares about the next goal to achieve, and would prefer to let the system fill in the blanks on how to do that. In this tutorial you will build an example that leverages the T-REX planner to work backwards from a goal do exactly that.
+ * [ConditionalExecution Conditional execution based on action feedback] - Sometimes it is better to wait till we discover the outcome of executing an action rather than plan too far ahead. In this tutorial you will implement a control strategy that branches base on action feedback.
+ * [Preemption Preempting actions] - In this tutorial you will learn how to bound the duration of an action, and how to check for preemption.
+=Integration with external actions=
+ * [TrivialReactor Create a custom reactor for an external action] - Explains the AgentActionAdapter base class and walks you through implementing a simple sub-class of your own to integrate external actions and internal
  * [IntegratedReactor  Integrate your reactor] - Walks you through integrating your reactor into a model and in the executive.
- * [AgentActions Agent Actions] - You will learn about and implement a standard model element in T-REX for dealing with external actions.
-=The Handy Bot=
-You are now ready to aplpy T-REX to more interesting situations. For this set of tutorials, we imagine *HandyBot*, a fictitious robot, which we will empower incrementally to do increasingly sophistciated things, albeit in a simulated world.
 =Basic Trouble-Shooting=
 These tutorials will focus on using the Execution Monitor in conjunction with different debugging strategies to identify and debug problems.
  * [DemoDebugFile Control Debug Output] - Illustrates the use of high-fidelity debugging for inspecting execution state.
@@ -22,9 +28,8 @@ These tutorials will focus on using the Execution Monitor in conjunction with di
  * Detecting and fixing an under constrained model
 =Design Patterns=
 These tutorials will introduce you to common modeling approaches for modeling problem domains.
- * Using Agent Actions
  * Implementing a State Machine
- * Implementing an Iterators
+ * Implementing an Iterator
  * Value Abstraction
  * Handling Timeouts
 =Testing=
