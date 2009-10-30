@@ -1,4 +1,4 @@
-#summary  In this tutorial you will learn about the test harness structure put in place for testing the executive
+#summary In this tutorial you will learn about the test harness structure put in place for testing the executive
 
 *Prerequisites:* We assume you have completed the tutorial for [CreateProject creating a project].
 
@@ -59,6 +59,7 @@ The format for this [EventLog event log] is a slim-down version of the contents 
 =Force test to fail=
 It is easy to force a test to fail. Simply modify the .valid file. For example, prepend a `!` to the start of the last line in demo.valid and save the file. Then:
 {{{
+roscd demo
 make test
 }}}
 This time, you should see results indicating an error. This will look something like:
@@ -85,9 +86,9 @@ SUMMARY
 
 In the case of a discrepancy between the actual and expected event logs, the test harness will generate a file: test-case-name.error, in the test case directory, which will contain the actual event log for you to commpare against. The event log can be captured by simply promoting the .error file to a .valid status, or by generating a new .valid file. To regenerate the .valid file:
 {{{
+roscd demo
 rm test/demo/demo.error
 rm test/demo/demo.valid
 make test
 }}}
 You should see that once again the test passes and now a new .valid file has been created.
-
