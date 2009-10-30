@@ -133,3 +133,25 @@ HelloWorldTimeline::Hello{ //Hello definition.
 }
 }}}
 creates connections to 2 different sub-goal tokens indicating required successor and predecessor states.
+
+=Run to completion=
+Switch to the server reactor in the Timeline window. We can now run the executive one step at a time to completion (it is a short example), and observe the state of execution as you go:
+{{{
+> n
+At the start of tick 3, H for help.
+> n
+At the start of tick 4, H for help.
+> n
+At the start of tick 5, H for help.
+> n
+At the start of tick 6, H for help.
+> n
+At the start of tick 7, H for help.
+> n
+At the start of tick 8, H for help.
+> n
+At the start of tick 9, H for help.
+> n
+At the start of tick 10, H for help.
+>
+}}}
