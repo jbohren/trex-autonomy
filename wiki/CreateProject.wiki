@@ -1,13 +1,13 @@
-#summary  In this tutorial you will create a demo project and execute a test case.
+#summary In this tutorial you will create a demo project and execute a test case.
 =Create the project=
 Create a working directory called trex_tutorials:
 {{{
 mkdir trex_tutorials
 cd trex_tutorials
 }}}
-We will assume this is the working directory for remaining tutorials. Add this directory to the ROS_PACKAGE_PATH, if it is not already included:
+This working directory must not be under any ROS package (it must not have a manifest.xml in or above it). We will assume this is the working directory for remaining tutorials. Add this directory to the ROS_PACKAGE_PATH, if it is not already included:
 {{{
-ROS_PACKAGE_PATH=`pwd`:ROS_PACKAGE_PATH
+ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
 }}}
 Create a project called *demo* using [Tutorials#trexcreate trexcreate]:
 {{{
@@ -37,7 +37,11 @@ Using [Tools command line tools] requires your new package to be built. To build
 {{{
 rosmake demo
 }}}
-You should now be able to apply [Tools command line tools] now that your package has been built. To find the configuration file `demo.cfg`:
+You should now be able to apply [Tools command line tools] now that your package has been built. To use these tools, you must be in the project's working directory, or bellow it. To get to the project easily, use roscd:
+{{{
+roscd demo
+}}}
+To find the configuration file `demo.cfg`:
 {{{
 trexfind demo.cfg
 }}}
