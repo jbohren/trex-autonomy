@@ -1,9 +1,9 @@
 #summary In this tutorial you will learn the basics of incremental, interactive execution and visualization of trex.
 
-*Prerequisities*: Successful completion of [DemoExecutionMonitor]
+*Prerequisites*: Successful completion of [DemoExecutionMonitor]
 
 =Start trex for incremental execution=
-We want to run the executive under tight user control. To do this, we simply start [Tools#trexrun trexrun] with console mode enabled. For maximum speed of execution (faster than real time), we will also use the *hyper* clock:
+We want to run the executive under tight user control. To do this, we simply start [Tools#trexrun trexrun] with console mode enabled. For maximum speed of execution (faster than real time), we will also use the *hyper* clock. First start ros as we did in tutorial for [CreateProject creating a project] and then type the following in a new terminal:
 {{{
 roscd demo
 trexrun --console --hyper
@@ -42,7 +42,7 @@ Options:
  H :- Help
 }}}
 =Enable verbose visualization output=
-In this tutorial we will use additional features of [TrexMonitor trexmonitor]. To support these features, we need to enable certain settings in the executive that are not set by default because they generate alot of data which can hamper performance for large systems. To enable verbose output we enable a [TrexDebugFile trex debug flag] as follows:
+In this tutorial we will use additional features of [TrexMonitor trexmonitor]. To support these features, we need to enable certain settings in the executive that are not set by default because they generate a lot of data which can hamper performance for large systems. To enable verbose output we enable a [TrexDebugFile trex debug flag] as follows:
 {{{
 >+trex:monitor:verbose
 }}}
@@ -71,7 +71,7 @@ Arrange windows so that the Log Reader Control, Timeline, and executive console 
 =Set up trexmonitor to track execution=
 In this example we will configure [TrexMonitor trexmonitor] to track the execution fronter, defined by the latest tick:
 {{{
-select the LOG Reader Control window
+select the Log Reader Control window
 click on the 'latest' tick control button
 }}}
 You can always switch back and forth between tracking the lastest state and moving through specific points in execution history.
@@ -90,7 +90,7 @@ At the start of tick 1, H for help.
 > 
 }}}
 
-We now want to switch our attention to the client reactor window. Observe that the plan has not been created yet. The visible state remains tick 0 since the executive does not log data for vuisualization until th end of a tick. Now advance again through the console:
+We now want to switch our attention to the client reactor window. Observe that the plan has not been created yet. The visible state remains tick 0 since the executive does not log data for visualization until th end of a tick. Now advance again through the console:
 {{{
 >n
 }}}
@@ -155,3 +155,5 @@ At the start of tick 9, H for help.
 At the start of tick 10, H for help.
 >
 }}}
+
+When you are done, simply type Q in the trex console to make it quit.
