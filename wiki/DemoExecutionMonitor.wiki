@@ -30,11 +30,13 @@ Select the TREX Log Reader Control window and drag it out of the way to reveal a
 
 This window shows all reactors in the executive for which we are logging timeline data. In the demo project, we have 2 such reactors, a client and a server. Notice that the *demo.server* reactor is selected (indicated in the tabbed side-bars).
 
-To return to the initial state:
+To return to the initial state (tick 0):
 {{{
 click on the left-most tick control icon
 }}}
 Observe that the tick value becomes 0.0. Both the client and server reactors have a single *hello* timeline. The color of the timeline is determined by the color of the reactor that _owns_ that timeline. Clearly, the server reactor owns this timeline as is consistent with the nddl input shown [http://code.ros.org/svn/wg-ros-pkg/trunk/stacks/trex/trex_core/trex_create_template/test/demo/demo.client.nddl demo/demo.client.nddl earlier]. The earliest end time is shown for the initial value (it is 1 in this case).
+
+[http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.tick_0_server.png]
 
 =Visualize the plan=
 The demo project is trivial. A single goal to say Hello, which is planned immediately and dispatched at tick 1. To see the state where the client has a plan and the server does not:
