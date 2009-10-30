@@ -1,0 +1,15 @@
+#summary In this tutorial you will learn the basics of using the trexmonitor tool to visualize execution
+
+*Prerequisites*: We assume you have successfully completed the tutorial for [DemoTest testing the demo project].
+
+=Starting the trexmonitor=
+By default, the executive created in the [CreateProject tutorial] is configured to log information suitable for visualization using the [TrexMonitor trexmonitor]. Since you will already have run the *demo* test case, the log files are in place to visualize the executions you have already made. To see this:
+{{{
+roscd demo
+trexmonitor --dir logs/latest
+}}}
+This will launch the trexmonitor application which includes multiple windows. The first window of interest is the TREX Log Reader Control shown below:
+[http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.controller.png]
+
+Select this window and drag it out of the way to reveal a second window titled 'TREX Timelines':
+[http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.timelines.png]
