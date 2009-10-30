@@ -9,7 +9,7 @@
         <property name="visible">True</property>
         <child>
           <widget class="GtkMenuBar" id="menubar1">
-            <property name="visible">True</property>
+            <property name="visible">False</property>
             <child>
               <widget class="GtkMenuItem" id="file_menu">
                 <property name="visible">True</property>
