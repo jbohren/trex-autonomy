@@ -8,8 +8,25 @@ By default, the executive created in the [CreateProject tutorial] is configured 
 roscd demo
 trexmonitor --dir logs/latest
 }}}
-This will launch the trexmonitor application which includes multiple windows. The first window of interest is the TREX Log Reader Control shown below:
+This will launch the trexmonitor application which includes multiple windows. 
+
+=The Log Reader Control Window=
+The first window of interest is the TREX Log Reader Control shown below:
+
 [http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.controller.png]
 
-Select this window and drag it out of the way to reveal a second window titled 'TREX Timelines':
+This window is used to dictate where execution log data is sourced from. We started the execution monitor to point to the logs/latest subdirectory of the demo package. When first launched, the reader is at the last tick of execution. Tick controllers are located at the bottom of this window, permitting:
+ * Skipping to the beginning of execution
+ * Skipping backwards 1 tick
+ * Advancing to a specific tick
+ * Skipping forward 1 tick
+ * Skipping to the current point of execution
+ * Keeping up with the latest point of execution
+
+To return to the initial state, click on the left-most tick control icon. Observe that the tick value becomes 0.0.
+
+=The Timelines Window=
+Select the TREX Log Reader Control window and drag it out of the way to reveal a second window titled 'TREX Timelines' as shown below:
+
 [http://trex-autonomy.googlecode.com/svn/wiki/images/trexmonitor.timelines.png]
+
