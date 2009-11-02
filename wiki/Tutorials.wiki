@@ -1,6 +1,6 @@
 #summary Outline of tutorials which are intended to teach T-REX by incremental examples which you can try out.
 
-All tutorials assume the steps in the [GetStarted Getting Started] section have been completed successfully, and that you have read the [LearnMore backgound material] on T-REX concepts. Individual tutorials may stipulate additional pre-requisites. The general intention is that tutorials will be conducted in the order in which they are listed below.
+All tutorials assume the steps in the [GetStarted Getting Started] section have been completed successfully, and that you have read the [LearnMore background material] on T-REX concepts. Individual tutorials may stipulate additional pre-requisites. The general intention is that tutorials will be conducted in the order in which they are listed below.
 
 =Bare Essentials=
 These  tutorials will get you working with the basic elements of T-REX.
