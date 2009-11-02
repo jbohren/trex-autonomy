@@ -13,6 +13,6 @@ if ! $(TREX_READY) {
 
 
  # Create a build target for module tests
- ModuleMain agent-module-tests : module-tests.cc GamePlayAdapter.cc RecallAdapter.cc : TREX : agent-module-tests ;
+ ModuleMain agent-module-tests : module-tests.cc GamePlayAdapter.cc RecallAdapter.cc ActionAdapter.cc : TREX : agent-module-tests ;
  RunModuleMain run-agent-module-tests : agent-module-tests ;
 }

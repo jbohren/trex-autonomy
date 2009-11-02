@@ -723,3 +723,23 @@ class LogTesting extends AgentTimeline{
 
   LogTesting(Mode m){ super(m, "Holds"); }
 };
+
+class MultByTimeline extends AgentTimeline {
+  MultByTimeline(Mode m){ super(m, "Holds"); }
+  predicate Inactive {
+      float nstate;
+      bool active;
+  }
+  predicate Active {
+      float nstate;
+      bool active;
+  }
+};
+MultByTimeline::Active{
+  meets(Inactive);
+  met_by(Inactive);
+}
+MultByTimeline::Inactive{
+  meets(Active);
+  met_by(Active);
+}
