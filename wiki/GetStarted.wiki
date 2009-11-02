@@ -68,5 +68,5 @@ AgentTests::test PASSED.
 = Setting up the environment =
 There are a number of tools available from the command line, and a number of environment variables required for correct execution. It is convenient to set these up whenever you open up a new bash shell. To do this:
 {{{
-echo "source `rospack find trex_core`/.bashrc.trex" >> ~/.bashrc
+echo "source `rospack find trex_core`/bashrc.trex" >> ~/.bashrc
 }}}
