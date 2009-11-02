@@ -36,6 +36,7 @@
 #include <fstream>
 #include "Utilities.hh"
 #include "XMLUtils.hh"
+#include <string.h>
 
 namespace TREX {
 
@@ -60,21 +61,21 @@ namespace TREX {
 
       for(int i = 1; i < argc; i++){
 	// If it is arg 1, it should be the file. Invalid if it is a marker
-	if(i == 1 && std::strncmp(argv[i], "--", 2) == 0){
+	if(i == 1 && strncmp(argv[i], "--", 2) == 0){
 	  is_valid = false;
 	}
 
-	if(std::strcmp(argv[i], "--help") == 0){
+	if(strcmp(argv[i], "--help") == 0){
 	  print_help = true;
 	}
-	else if(std::strcmp(argv[i], "--dir") == 0){
+	else if(strcmp(argv[i], "--dir") == 0){
 	  if(dir_enabled){
 	    printHelp();
 	    return 2;
 	  }
 	  dir_enabled = true;
 	}
-	else if(std::strcmp(argv[i], "--path") == 0){
+	else if(strcmp(argv[i], "--path") == 0){
 	  show_path = true;
 	}
 	else if(dir_enabled){
