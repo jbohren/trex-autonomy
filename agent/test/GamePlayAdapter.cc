@@ -39,6 +39,7 @@
 #include "Token.hh"
 #include "TokenVariable.hh"
 #include "Observer.hh"
+#include "ActionAdapter.hh"
 
 /**
  * @author Conor McGann
@@ -97,4 +98,5 @@ namespace TREX {
 
   // Allocate a Factory
   TeleoReactor::ConcreteFactory<GamePlayAdapter> l_GamePlayAdapter_Factory("GamePlayAdapter");
+
 }

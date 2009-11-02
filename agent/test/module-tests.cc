@@ -91,6 +91,7 @@ void runAgentWithSchema(const char* configFile, unsigned int stepsPerTick, const
 class GamePlayTests {
 public:
   static bool test(){ 
+    runTest(testActionAdapter);
     runTest(testDispatch);
     runTest(testSqueezeObserver);
     runTest(testSimulation);
@@ -117,6 +118,11 @@ public:
   }
 
 private:
+
+  static bool testActionAdapter(){
+    runAgentWithSchema("action_adapter.0.cfg", 50, "action_adapter.0");
+    return true;
+  }
 
   static bool testPersonalRobots(){
     runAgentWithSchema("personal_robots/pr.0.cfg", 50, "pr.0");
