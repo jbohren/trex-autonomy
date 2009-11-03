@@ -84,7 +84,7 @@ Camera::Off{
  meets(WarmingUp);
 }
 }}}
-Similarly, if it is * WarmingUp *, it will transition into * Ready *, and it it's prior value must be * Off *.
+Similarly, if it is * WarmingUp *, it will transition into * Ready *, and its prior value must be * Off *.
 {{{
 Camera::WarmingUp{
  meets(Ready);
