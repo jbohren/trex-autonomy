@@ -14,7 +14,7 @@ In T-REX terminology, this means that the agent control structure can be divided
  * A working system can be built and tested incrementally.
 
 = The Compositional Nature of a Teleo-Reactor =
-The symmetry of inbound and outbound goals and observations enables natural composition of _reactors_. This is shown below with a 4 reactor configuration. The internal details of a reactor are irrelevant. Reactor _A_ is the top-level reactor. It can dispatch goals and observations to other reactors (i.e. reactors _B_ and _C_). It's goals originate outside the agent. Both _B_ and _C_ interact with _D_. Thus, the aggregate control structure is partitioned into a collection of reactors. Goals flow top down. Observations flow bottom up.
+The symmetry of inbound and outbound goals and observations enables natural composition of _reactors_. This is shown below with a 4 reactor configuration. The internal details of a reactor are irrelevant. Reactor _A_ is the top-level reactor. It can dispatch goals and observations to other reactors (i.e. reactors _B_ and _C_). It's goals originate outside the agent. Both _B_ and _C_ interact with _D_. Thus, the aggregate control structure is partitioned into a collection of reactors. Goals flow top down. Observations flow bottom up. Note that observations for a single timeline may be published to more than one reactor, and goals for a given timeline can be dispatched from more than one reactor.
 
 [http://trex-autonomy.googlecode.com/svn/wiki/images/composition.png]
 
