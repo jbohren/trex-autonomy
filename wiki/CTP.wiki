@@ -78,7 +78,7 @@ Engine::Thrusting{
  met_by(Off);
 }
 }}}
-*Meets* and *met_by* are examples of qualitative constraints between temporal intervals known as [http://code.google.com/p/europa-pso/wiki/NDDLReference#Slave_Allocation_and_Temporal_Relations Allen Relations]. If the *Camera* is * Off * it's next state will always be * WarmingUp *:
+*Meets* and *met_by* are examples of qualitative constraints between temporal intervals known as [http://code.google.com/p/europa-pso/wiki/NDDLReference#Slave_Allocation_and_Temporal_Relations Allen Relations]. If the *Camera* is * Off * its next state will always be * WarmingUp *:
 {{{
 Camera::Off{
  meets(WarmingUp);
