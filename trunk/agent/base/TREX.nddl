@@ -103,10 +103,10 @@ class StateVariable extends AgentTimeline{
 };
 
 enum ResultStatus {
-  UNDEFINED,  // Used when the behavior becomes inactive in an undefined state, such as when rebooting
-  SUCCESS,    // Indicates the behavior terminated, accomplsihing its goals. Or so it believes!
-  ABORTED,    // Means the behavior aborted pursuit of its goal of its own volition
-  PREEMPTED   // Means the behavior terminated on command from a client.
+  UNDEFINED,  // The action becomes inactive, but no meaningful result status applies.
+  SUCCESS,    // Indicates the behavior terminated, accomplsihing its goals. 
+  ABORTED,    // The action aborted pursuit of its goal of its own volition
+  PREEMPTED   // The behavioraction terminated on command from a client.
 };
 
 /**
@@ -120,7 +120,7 @@ class AgentAction extends AgentTimeline {
 
   predicate Active{
     int dispatch_time; // The time at which the goal was dispatched
-    int max_duration; // If duration exceeds this, the token should be preempted.
+    int max_duration;  // If duration exceeds this, the token should be preempted.
     dispatch_time <= start;
     start < MISSION_END; 
     trex_behavior(object); // Maintains connection between this token and its parent, if also a behavior. Use this to propagate max duration bounds.
