@@ -6,12 +6,17 @@
 # 4. LD_LIBRARY_PATH - required for loading shared libraries from PLASMA and TREX 
 # 5. PYTHONPATH - required if using any python tools for TREX
 export TREX=`pwd`/TREX
-export PLASMA_HOME=`pwd`/PLASMA
+if [ -z "${PLASMA_HOME}" ] ; then
+   echo "Setting PLASMA home $PLASMA_HOME"
+   export PLASMA_HOME=`pwd`/PLASMA
+fi
 export PLASMA=$PLASMA_HOME/src/PLASMA
 export TREX_LOG_DIR=$TREX/logs
 export LD_LIBRARY_PATH=$PLASMA_HOME/build/lib:$LD_LIBRARY_PATH
 export PYTHONPATH=$TREX/tools/modules:$TREX/tools/ext:$PYTHONPATH
 if [ -d `pwd`/antlr/antlr_install ] ; then
-   export ANTLR_HOME=`pwd`/antlr/antlr_install
+   if [ -e $ANTLR_HOME ] ; then
+      export ANTLR_HOME=`pwd`/antlr/antlr_install
+   fi
    export LD_LIBRARY_PATH=$ANTLR_HOME/lib:$LD_LIBRARY_PATH
 fi
